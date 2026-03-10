@@ -1,0 +1,29 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\DocumentType;
+use App\Models\Employee;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EmployeeDocument>
+ */
+class EmployeeDocumentFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'employee_id' => Employee::factory(),
+            'document_type_id' => DocumentType::factory(),
+            'file_name' => fake()->slug(3).'.pdf',
+            'file_path' => 'employee-documents/'.fake()->numerify('##').'/'.fake()->slug(3).'.pdf',
+            'file_size' => fake()->numberBetween(50000, 5000000),
+            'mime_type' => 'application/pdf',
+            'uploaded_by' => User::factory(),
+            'notes' => fake()->boolean(40) ? fake()->sentence() : null,
+            'is_confidential' => false,
+        ];
+    }
+}

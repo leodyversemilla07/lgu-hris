@@ -21,10 +21,16 @@ export function UserInfo({
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                {showEmail && (
+                {user.primary_role ? (
                     <span className="truncate text-xs text-muted-foreground">
-                        {user.email}
+                        {user.primary_role}
                     </span>
+                ) : (
+                    showEmail && (
+                        <span className="truncate text-xs text-muted-foreground">
+                            {user.email}
+                        </span>
+                    )
                 )}
             </div>
         </>

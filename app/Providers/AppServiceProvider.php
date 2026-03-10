@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Employee;
+use App\Models\LeaveRequest;
+use App\Observers\EmployeeObserver;
+use App\Observers\LeaveRequestObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +28,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerObservers();
+    }
+
+    protected function registerObservers(): void
+    {
+        Employee::observe(EmployeeObserver::class);
+        LeaveRequest::observe(LeaveRequestObserver::class);
     }
 
     /**

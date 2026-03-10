@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,11 +12,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(RoleAndPermissionSeeder::class);
+        $this->call(HrReferenceSeeder::class);
+        $this->call(DocumentTypeSeeder::class);
+        $this->call(LeaveTypeSeeder::class);
+        $this->call(MovementTypeSeeder::class);
+        $this->call(SalaryGradeSeeder::class);
+        $this->call(WorkScheduleSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
+        $employeeUser = User::query()->firstOrCreate([
             'email' => 'test@example.com',
+        ], [
+            'name' => 'HR Staff User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'email_verified_at' => now(),
         ]);
+
+        $employeeUser->syncRoles(['HR Staff']);
     }
 }

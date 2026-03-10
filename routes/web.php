@@ -1,5 +1,17 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\EmployeeCompensationController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\LeaveBalanceController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\PersonnelMovementController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -8,7 +20,141 @@ Route::inertia('/', 'welcome', [
 ])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('employees', [EmployeeController::class, 'index'])
+        ->middleware('permission:employees.view')
+        ->name('employees.index');
+    Route::get('employees/create', [EmployeeController::class, 'create'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.create');
+    Route::post('employees', [EmployeeController::class, 'store'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.store');
+    Route::get('employees/{employee}', [EmployeeController::class, 'show'])
+        ->middleware('permission:employees.view')
+        ->name('employees.show');
+    Route::get('employees/{employee}/edit', [EmployeeController::class, 'edit'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.edit');
+    Route::put('employees/{employee}', [EmployeeController::class, 'update'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.update');
+    Route::patch('employees/{employee}/archive', [EmployeeController::class, 'archive'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.archive');
+    Route::patch('employees/{employee}/restore', [EmployeeController::class, 'restore'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.restore');
+
+    Route::get('documents', [DocumentController::class, 'index'])
+        ->middleware('permission:documents.view')
+        ->name('documents.index');
+    Route::post('documents', [DocumentController::class, 'store'])
+        ->middleware('permission:documents.manage')
+        ->name('documents.store');
+    Route::get('documents/{document}/download', [DocumentController::class, 'download'])
+        ->middleware('permission:documents.view')
+        ->name('documents.download');
+    Route::delete('documents/{document}', [DocumentController::class, 'destroy'])
+        ->middleware('permission:documents.manage')
+        ->name('documents.destroy');
+
+    Route::get('leave', [LeaveController::class, 'index'])
+        ->middleware('permission:leave.file|leave.approve')
+        ->name('leave.index');
+    Route::get('leave/create', [LeaveController::class, 'create'])
+        ->middleware('permission:leave.file')
+        ->name('leave.create');
+    Route::post('leave', [LeaveController::class, 'store'])
+        ->middleware('permission:leave.file')
+        ->name('leave.store');
+    Route::get('leave/{leaveRequest}', [LeaveController::class, 'show'])
+        ->middleware('permission:leave.file|leave.approve')
+        ->name('leave.show');
+    Route::post('leave/{leaveRequest}/approve', [LeaveController::class, 'approve'])
+        ->middleware('permission:leave.approve')
+        ->name('leave.approve');
+    Route::patch('leave/{leaveRequest}/cancel', [LeaveController::class, 'cancel'])
+        ->middleware('permission:leave.file')
+        ->name('leave.cancel');
+
+    Route::get('leave-balances', [LeaveBalanceController::class, 'index'])
+        ->middleware('permission:leave.approve')
+        ->name('leave-balances.index');
+    Route::post('leave-balances/upsert', [LeaveBalanceController::class, 'upsert'])
+        ->middleware('permission:leave.approve')
+        ->name('leave-balances.upsert');
+
+    Route::get('personnel-movements', [PersonnelMovementController::class, 'index'])
+        ->middleware('permission:movements.view')
+        ->name('personnel-movements.index');
+    Route::get('personnel-movements/create', [PersonnelMovementController::class, 'create'])
+        ->middleware('permission:movements.manage')
+        ->name('personnel-movements.create');
+    Route::post('personnel-movements', [PersonnelMovementController::class, 'store'])
+        ->middleware('permission:movements.manage')
+        ->name('personnel-movements.store');
+    Route::get('personnel-movements/{personnelMovement}', [PersonnelMovementController::class, 'show'])
+        ->middleware('permission:movements.view')
+        ->name('personnel-movements.show');
+
+    Route::get('employees/{employee}/compensation', [EmployeeCompensationController::class, 'create'])
+        ->middleware('permission:employees.manage')
+        ->name('employee-compensation.create');
+    Route::post('employees/{employee}/compensation', [EmployeeCompensationController::class, 'store'])
+        ->middleware('permission:employees.manage')
+        ->name('employee-compensation.store');
+
+    Route::get('attendance', [AttendanceController::class, 'index'])
+        ->middleware('permission:attendance.view')
+        ->name('attendance.index');
+    Route::get('attendance/log', [AttendanceController::class, 'create'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.create');
+    Route::post('attendance', [AttendanceController::class, 'store'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.store');
+    Route::post('attendance/bulk', [AttendanceController::class, 'bulkStore'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.bulk-store');
+
+    Route::get('reports', [ReportController::class, 'index'])
+        ->middleware('permission:reports.view|reports.export')
+        ->name('reports.index');
+
+    Route::middleware('permission:reports.export')->group(function () {
+        Route::get('exports/masterlist/excel', [ExportController::class, 'masterlistExcel'])->name('exports.masterlist.excel');
+        Route::get('exports/masterlist/csv', [ExportController::class, 'masterlistCsv'])->name('exports.masterlist.csv');
+        Route::get('exports/masterlist/pdf', [ExportController::class, 'masterlistPdf'])->name('exports.masterlist.pdf');
+        Route::get('exports/plantilla/excel', [ExportController::class, 'plantillaExcel'])->name('exports.plantilla.excel');
+        Route::get('exports/plantilla/csv', [ExportController::class, 'plantillaCsv'])->name('exports.plantilla.csv');
+        Route::get('exports/leave-ledger/excel', [ExportController::class, 'leaveLedgerExcel'])->name('exports.leave-ledger.excel');
+        Route::get('exports/leave-ledger/csv', [ExportController::class, 'leaveLedgerCsv'])->name('exports.leave-ledger.csv');
+        Route::get('exports/attendance/excel', [ExportController::class, 'attendanceSummaryExcel'])->name('exports.attendance.excel');
+        Route::get('exports/movements/excel', [ExportController::class, 'personnelMovementsExcel'])->name('exports.movements.excel');
+        Route::get('exports/service-record/{employee}/pdf', [ExportController::class, 'serviceRecordPdf'])->name('exports.service-record.pdf');
+    });
+
+    Route::get('access-control', [UserController::class, 'index'])
+        ->middleware('permission:access-control.manage')
+        ->name('access-control.index');
+    Route::post('access-control/users', [UserController::class, 'store'])
+        ->middleware('permission:access-control.manage')
+        ->name('access-control.users.store');
+    Route::put('access-control/users/{user}', [UserController::class, 'update'])
+        ->middleware('permission:access-control.manage')
+        ->name('access-control.users.update');
+    Route::delete('access-control/users/{user}', [UserController::class, 'destroy'])
+        ->middleware('permission:access-control.manage')
+        ->name('access-control.users.destroy');
+
+    Route::post('import/employees', [ImportController::class, 'store'])
+        ->middleware('permission:employees.manage')
+        ->name('import.employees');
+    Route::get('import/employees/template', [ImportController::class, 'template'])
+        ->middleware('permission:employees.manage')
+        ->name('import.employees.template');
 });
 
 require __DIR__.'/settings.php';
