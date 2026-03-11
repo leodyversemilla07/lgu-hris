@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LeaveApprovalRequest;
 use App\Http\Requests\LeaveRequestStoreRequest;
+use App\Mail\LeaveRequestActioned;
+use App\Mail\LeaveRequestSubmitted;
 use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -124,7 +128,7 @@ class LeaveController extends Controller
 
     public function store(LeaveRequestStoreRequest $request): RedirectResponse
     {
-        LeaveRequest::query()->create([
+        $leaveRequest = LeaveRequest::query()->create([
             'employee_id' => $request->integer('employee_id'),
             'leave_type_id' => $request->integer('leave_type_id'),
             'start_date' => $request->date('start_date'),
@@ -133,6 +137,13 @@ class LeaveController extends Controller
             'reason' => $request->string('reason')->trim()->value() ?: null,
             'status' => 'submitted',
         ]);
+
+        $leaveRequest->load(['employee', 'leaveType']);
+
+        // Notify users who can approve leave
+        User::permission('leave.approve')->get()->each(function (User $approver) use ($leaveRequest) {
+            Mail::to($approver->email)->queue(new LeaveRequestSubmitted($leaveRequest));
+        });
 
         return to_route('leave.index');
     }
@@ -163,6 +174,13 @@ class LeaveController extends Controller
             $this->deductLeaveBalance($leaveRequest);
         }
 
+        // Notify the employee if linked to a user account
+        $leaveRequest->load(['employee.user', 'leaveType', 'actionedBy']);
+        $employeeUser = $leaveRequest->employee?->user;
+        if ($employeeUser) {
+            Mail::to($employeeUser->email)->queue(new LeaveRequestActioned($leaveRequest));
+        }
+
         return to_route('leave.show', $leaveRequest);
     }
 
@@ -175,6 +193,12 @@ class LeaveController extends Controller
             'actioned_by' => $request->user()->id,
             'actioned_at' => now(),
         ]);
+
+        $leaveRequest->load(['employee.user', 'leaveType', 'actionedBy']);
+        $employeeUser = $leaveRequest->employee?->user;
+        if ($employeeUser) {
+            Mail::to($employeeUser->email)->queue(new LeaveRequestActioned($leaveRequest));
+        }
 
         return to_route('leave.show', $leaveRequest);
     }
