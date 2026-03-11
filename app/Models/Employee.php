@@ -13,14 +13,29 @@ class Employee extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'employee_number',
         'first_name',
         'middle_name',
         'last_name',
         'suffix',
+        'sex',
+        'civil_status',
         'email',
         'phone',
         'birth_date',
+        'address_street',
+        'address_city',
+        'address_province',
+        'address_zip',
+        'tin',
+        'gsis_number',
+        'philhealth_number',
+        'pagibig_number',
+        'sss_number',
+        'emergency_contact_name',
+        'emergency_contact_relationship',
+        'emergency_contact_phone',
         'hired_at',
         'department_id',
         'position_id',
@@ -38,6 +53,11 @@ class Employee extends Model
             'is_active' => 'boolean',
             'archived_at' => 'datetime',
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function department(): BelongsTo

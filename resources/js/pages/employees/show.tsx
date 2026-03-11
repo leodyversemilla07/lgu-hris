@@ -53,16 +53,31 @@ import type { BreadcrumbItem } from '@/types';
 
 type EmployeeDetail = {
     id: number;
+    user_id: number | null;
     employee_number: string;
     first_name: string;
     middle_name: string | null;
     last_name: string;
     suffix: string | null;
+    sex: string | null;
+    civil_status: string | null;
     full_name: string;
     email: string | null;
     phone: string | null;
     birth_date: string | null;
     birth_date_formatted: string | null;
+    address_street: string | null;
+    address_city: string | null;
+    address_province: string | null;
+    address_zip: string | null;
+    tin: string | null;
+    gsis_number: string | null;
+    philhealth_number: string | null;
+    pagibig_number: string | null;
+    sss_number: string | null;
+    emergency_contact_name: string | null;
+    emergency_contact_relationship: string | null;
+    emergency_contact_phone: string | null;
     hired_at: string | null;
     hired_at_formatted: string | null;
     department_id: string;
@@ -316,7 +331,7 @@ export default function EmployeeShow({ employee, documents, documentTypes, movem
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="personal" className="mt-4">
+                    <TabsContent value="personal" className="mt-4 space-y-4">
                         <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                             <CardHeader>
                                 <CardTitle className="text-slate-950">
@@ -327,37 +342,48 @@ export default function EmployeeShow({ employee, documents, documentTypes, movem
                                     employee record.
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                                    <ProfileField
-                                        label="First name"
-                                        value={employee.first_name}
-                                    />
-                                    <ProfileField
-                                        label="Middle name"
-                                        value={employee.middle_name}
-                                    />
-                                    <ProfileField
-                                        label="Last name"
-                                        value={employee.last_name}
-                                    />
-                                    <ProfileField
-                                        label="Suffix"
-                                        value={employee.suffix}
-                                    />
-                                    <ProfileField
-                                        label="Birth date"
-                                        value={employee.birth_date_formatted}
-                                    />
-                                    <ProfileField
-                                        label="Email"
-                                        value={employee.email}
-                                    />
-                                    <ProfileField
-                                        label="Phone"
-                                        value={employee.phone}
-                                    />
-                                </dl>
+                            <CardContent className="space-y-6">
+                                <div>
+                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 border-b pb-1">Basic Details</p>
+                                    <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+                                        <ProfileField label="First name" value={employee.first_name} />
+                                        <ProfileField label="Middle name" value={employee.middle_name} />
+                                        <ProfileField label="Last name" value={employee.last_name} />
+                                        <ProfileField label="Suffix" value={employee.suffix} />
+                                        <ProfileField label="Birth date" value={employee.birth_date_formatted} />
+                                        <ProfileField label="Sex" value={employee.sex ? employee.sex.charAt(0).toUpperCase() + employee.sex.slice(1) : null} />
+                                        <ProfileField label="Civil status" value={employee.civil_status ? employee.civil_status.charAt(0).toUpperCase() + employee.civil_status.slice(1) : null} />
+                                        <ProfileField label="Email" value={employee.email} />
+                                        <ProfileField label="Phone" value={employee.phone} />
+                                    </dl>
+                                </div>
+                                <div>
+                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 border-b pb-1">Address</p>
+                                    <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+                                        <ProfileField label="Street / Barangay" value={employee.address_street} />
+                                        <ProfileField label="City / Municipality" value={employee.address_city} />
+                                        <ProfileField label="Province" value={employee.address_province} />
+                                        <ProfileField label="ZIP code" value={employee.address_zip} />
+                                    </dl>
+                                </div>
+                                <div>
+                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 border-b pb-1">Government IDs</p>
+                                    <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+                                        <ProfileField label="TIN" value={employee.tin} />
+                                        <ProfileField label="GSIS number" value={employee.gsis_number} />
+                                        <ProfileField label="PhilHealth number" value={employee.philhealth_number} />
+                                        <ProfileField label="Pag-IBIG number" value={employee.pagibig_number} />
+                                        <ProfileField label="SSS number" value={employee.sss_number} />
+                                    </dl>
+                                </div>
+                                <div>
+                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 border-b pb-1">Emergency Contact</p>
+                                    <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-3">
+                                        <ProfileField label="Name" value={employee.emergency_contact_name} />
+                                        <ProfileField label="Relationship" value={employee.emergency_contact_relationship} />
+                                        <ProfileField label="Phone" value={employee.emergency_contact_phone} />
+                                    </dl>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

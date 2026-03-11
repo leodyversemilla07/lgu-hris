@@ -42,21 +42,43 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Create employee', href: '/employees/create' },
 ];
 
-export default function CreateEmployee({
-    departments,
-    positions,
-    employmentTypes,
-    employmentStatuses,
-}: Props) {
+const SEX_OPTIONS = [{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }];
+const CIVIL_STATUS_OPTIONS = [
+    { value: 'single', label: 'Single' },
+    { value: 'married', label: 'Married' },
+    { value: 'widowed', label: 'Widowed' },
+    { value: 'separated', label: 'Separated' },
+    { value: 'divorced', label: 'Divorced' },
+];
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+    return <h3 className="col-span-full text-sm font-semibold text-slate-500 uppercase tracking-wide border-b pb-1">{children}</h3>;
+}
+
+export default function CreateEmployee({ departments, positions, employmentTypes, employmentStatuses }: Props) {
     const form = useForm({
         employee_number: '',
         first_name: '',
         middle_name: '',
         last_name: '',
         suffix: '',
+        sex: '',
+        civil_status: '',
         email: '',
         phone: '',
         birth_date: '',
+        address_street: '',
+        address_city: '',
+        address_province: '',
+        address_zip: '',
+        tin: '',
+        gsis_number: '',
+        philhealth_number: '',
+        pagibig_number: '',
+        sss_number: '',
+        emergency_contact_name: '',
+        emergency_contact_relationship: '',
+        emergency_contact_phone: '',
         hired_at: '',
         department_id: '',
         position_id: '',
@@ -66,354 +88,222 @@ export default function CreateEmployee({
     });
 
     const filteredPositions = form.data.department_id
-        ? positions.filter(
-              (position) =>
-                  departments.find(
-                      (department) =>
-                          department.value === form.data.department_id,
-                  )?.label === position.department,
-          )
+        ? positions.filter((p) => departments.find((d) => d.value === form.data.department_id)?.label === p.department)
         : positions;
-
-    const submit = (): void => {
-        form.post('/employees');
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Employee" />
-
             <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
                 <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">
-                            <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">
-                                Employee intake
-                            </Badge>
-                            <Heading
-                                title="Create employee record"
-                                description="Capture the core employee profile, assignment, and employment details needed for the digital 201 foundation."
-                            />
+                            <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">Employee intake</Badge>
+                            <Heading title="Create employee record" description="Capture the employee's personal, contact, government IDs, and employment details." />
                         </div>
-
                         <Button asChild variant="outline">
-                            <Link href="/employees">
-                                <ArrowLeft className="size-4" />
-                                Back to registry
-                            </Link>
+                            <Link href="/employees"><ArrowLeft className="size-4" />Back to registry</Link>
                         </Button>
                     </div>
                 </section>
 
                 <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-slate-950">
-                            Employee profile
-                        </CardTitle>
-                        <CardDescription>
-                            Required fields are aligned with the initial
-                            employee master record workflow.
-                        </CardDescription>
+                        <CardTitle>Employee profile</CardTitle>
+                        <CardDescription>All fields marked as required must be filled before saving.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-8">
-                        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        {/* Personal Information */}
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            <SectionTitle>Personal Information</SectionTitle>
                             <div className="grid gap-2">
-                                <Label htmlFor="employee_number">
-                                    Employee number
-                                </Label>
-                                <Input
-                                    id="employee_number"
-                                    value={form.data.employee_number}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'employee_number',
-                                            event.target.value,
-                                        )
-                                    }
-                                    placeholder="EMP-1002"
-                                />
-                                <InputError
-                                    message={form.errors.employee_number}
-                                />
+                                <Label htmlFor="employee_number">Employee number *</Label>
+                                <Input id="employee_number" value={form.data.employee_number} onChange={(e) => form.setData('employee_number', e.target.value)} placeholder="EMP-1002" />
+                                <InputError message={form.errors.employee_number} />
                             </div>
-
                             <div className="grid gap-2">
-                                <Label htmlFor="first_name">First name</Label>
-                                <Input
-                                    id="first_name"
-                                    value={form.data.first_name}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'first_name',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                <Label htmlFor="first_name">First name *</Label>
+                                <Input id="first_name" value={form.data.first_name} onChange={(e) => form.setData('first_name', e.target.value)} />
                                 <InputError message={form.errors.first_name} />
                             </div>
-
                             <div className="grid gap-2">
                                 <Label htmlFor="middle_name">Middle name</Label>
-                                <Input
-                                    id="middle_name"
-                                    value={form.data.middle_name}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'middle_name',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                <Input id="middle_name" value={form.data.middle_name} onChange={(e) => form.setData('middle_name', e.target.value)} />
                                 <InputError message={form.errors.middle_name} />
                             </div>
-
                             <div className="grid gap-2">
-                                <Label htmlFor="last_name">Last name</Label>
-                                <Input
-                                    id="last_name"
-                                    value={form.data.last_name}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'last_name',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                <Label htmlFor="last_name">Last name *</Label>
+                                <Input id="last_name" value={form.data.last_name} onChange={(e) => form.setData('last_name', e.target.value)} />
                                 <InputError message={form.errors.last_name} />
                             </div>
-
                             <div className="grid gap-2">
                                 <Label htmlFor="suffix">Suffix</Label>
-                                <Input
-                                    id="suffix"
-                                    value={form.data.suffix}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'suffix',
-                                            event.target.value,
-                                        )
-                                    }
-                                    placeholder="Jr., Sr., III"
-                                />
+                                <Input id="suffix" value={form.data.suffix} onChange={(e) => form.setData('suffix', e.target.value)} placeholder="Jr., Sr., III" />
                                 <InputError message={form.errors.suffix} />
                             </div>
-
                             <div className="grid gap-2">
                                 <Label htmlFor="birth_date">Birth date</Label>
-                                <Input
-                                    id="birth_date"
-                                    type="date"
-                                    value={form.data.birth_date}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'birth_date',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                <Input id="birth_date" type="date" value={form.data.birth_date} onChange={(e) => form.setData('birth_date', e.target.value)} />
                                 <InputError message={form.errors.birth_date} />
                             </div>
-
+                            <div className="grid gap-2">
+                                <Label>Sex</Label>
+                                <Select value={form.data.sex} onValueChange={(v) => form.setData('sex', v)}>
+                                    <SelectTrigger><SelectValue placeholder="Select sex" /></SelectTrigger>
+                                    <SelectContent>{SEX_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <InputError message={form.errors.sex} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Civil status</Label>
+                                <Select value={form.data.civil_status} onValueChange={(v) => form.setData('civil_status', v)}>
+                                    <SelectTrigger><SelectValue placeholder="Select civil status" /></SelectTrigger>
+                                    <SelectContent>{CIVIL_STATUS_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <InputError message={form.errors.civil_status} />
+                            </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={form.data.email}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'email',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                <Input id="email" type="email" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                                 <InputError message={form.errors.email} />
                             </div>
-
                             <div className="grid gap-2">
                                 <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={form.data.phone}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'phone',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
+                                <Input id="phone" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} placeholder="09XX-XXX-XXXX" />
                                 <InputError message={form.errors.phone} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="hired_at">Start date</Label>
-                                <Input
-                                    id="hired_at"
-                                    type="date"
-                                    value={form.data.hired_at}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'hired_at',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
-                                <InputError message={form.errors.hired_at} />
                             </div>
                         </div>
 
-                        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-                            <div className="grid gap-2">
-                                <Label>Department</Label>
-                                <Select
-                                    value={form.data.department_id}
-                                    onValueChange={(value) => {
-                                        form.setData('department_id', value);
-                                        form.setData('position_id', '');
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select department" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {departments.map((department) => (
-                                            <SelectItem
-                                                key={department.value}
-                                                value={department.value}
-                                            >
-                                                {department.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError
-                                    message={form.errors.department_id}
-                                />
+                        {/* Address */}
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <SectionTitle>Address</SectionTitle>
+                            <div className="col-span-full grid gap-2">
+                                <Label htmlFor="address_street">Street / Barangay</Label>
+                                <Input id="address_street" value={form.data.address_street} onChange={(e) => form.setData('address_street', e.target.value)} placeholder="123 Rizal St., Brgy. San Juan" />
+                                <InputError message={form.errors.address_street} />
                             </div>
-
                             <div className="grid gap-2">
-                                <Label>Position</Label>
-                                <Select
-                                    value={form.data.position_id}
-                                    onValueChange={(value) =>
-                                        form.setData('position_id', value)
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select position" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {filteredPositions.map((position) => (
-                                            <SelectItem
-                                                key={position.value}
-                                                value={position.value}
-                                            >
-                                                {position.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
+                                <Label htmlFor="address_city">City / Municipality</Label>
+                                <Input id="address_city" value={form.data.address_city} onChange={(e) => form.setData('address_city', e.target.value)} />
+                                <InputError message={form.errors.address_city} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="address_province">Province</Label>
+                                <Input id="address_province" value={form.data.address_province} onChange={(e) => form.setData('address_province', e.target.value)} />
+                                <InputError message={form.errors.address_province} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="address_zip">ZIP code</Label>
+                                <Input id="address_zip" value={form.data.address_zip} onChange={(e) => form.setData('address_zip', e.target.value)} placeholder="0000" />
+                                <InputError message={form.errors.address_zip} />
+                            </div>
+                        </div>
+
+                        {/* Government IDs */}
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            <SectionTitle>Government IDs</SectionTitle>
+                            <div className="grid gap-2">
+                                <Label htmlFor="tin">TIN</Label>
+                                <Input id="tin" value={form.data.tin} onChange={(e) => form.setData('tin', e.target.value)} placeholder="000-000-000-000" />
+                                <InputError message={form.errors.tin} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="gsis_number">GSIS number</Label>
+                                <Input id="gsis_number" value={form.data.gsis_number} onChange={(e) => form.setData('gsis_number', e.target.value)} />
+                                <InputError message={form.errors.gsis_number} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="philhealth_number">PhilHealth number</Label>
+                                <Input id="philhealth_number" value={form.data.philhealth_number} onChange={(e) => form.setData('philhealth_number', e.target.value)} />
+                                <InputError message={form.errors.philhealth_number} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="pagibig_number">Pag-IBIG number</Label>
+                                <Input id="pagibig_number" value={form.data.pagibig_number} onChange={(e) => form.setData('pagibig_number', e.target.value)} />
+                                <InputError message={form.errors.pagibig_number} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="sss_number">SSS number</Label>
+                                <Input id="sss_number" value={form.data.sss_number} onChange={(e) => form.setData('sss_number', e.target.value)} />
+                                <InputError message={form.errors.sss_number} />
+                            </div>
+                        </div>
+
+                        {/* Emergency Contact */}
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <SectionTitle>Emergency Contact</SectionTitle>
+                            <div className="grid gap-2">
+                                <Label htmlFor="emergency_contact_name">Name</Label>
+                                <Input id="emergency_contact_name" value={form.data.emergency_contact_name} onChange={(e) => form.setData('emergency_contact_name', e.target.value)} />
+                                <InputError message={form.errors.emergency_contact_name} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="emergency_contact_relationship">Relationship</Label>
+                                <Input id="emergency_contact_relationship" value={form.data.emergency_contact_relationship} onChange={(e) => form.setData('emergency_contact_relationship', e.target.value)} placeholder="Spouse, Parent, Sibling…" />
+                                <InputError message={form.errors.emergency_contact_relationship} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="emergency_contact_phone">Phone</Label>
+                                <Input id="emergency_contact_phone" value={form.data.emergency_contact_phone} onChange={(e) => form.setData('emergency_contact_phone', e.target.value)} placeholder="09XX-XXX-XXXX" />
+                                <InputError message={form.errors.emergency_contact_phone} />
+                            </div>
+                        </div>
+
+                        {/* Employment Details */}
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            <SectionTitle>Employment Details</SectionTitle>
+                            <div className="grid gap-2">
+                                <Label htmlFor="hired_at">Start date *</Label>
+                                <Input id="hired_at" type="date" value={form.data.hired_at} onChange={(e) => form.setData('hired_at', e.target.value)} />
+                                <InputError message={form.errors.hired_at} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Department *</Label>
+                                <Select value={form.data.department_id} onValueChange={(v) => { form.setData('department_id', v); form.setData('position_id', ''); }}>
+                                    <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                                    <SelectContent>{departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <InputError message={form.errors.department_id} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Position *</Label>
+                                <Select value={form.data.position_id} onValueChange={(v) => form.setData('position_id', v)}>
+                                    <SelectTrigger><SelectValue placeholder="Select position" /></SelectTrigger>
+                                    <SelectContent>{filteredPositions.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
                                 </Select>
                                 <InputError message={form.errors.position_id} />
                             </div>
-
                             <div className="grid gap-2">
-                                <Label>Employment type</Label>
-                                <Select
-                                    value={form.data.employment_type_id}
-                                    onValueChange={(value) =>
-                                        form.setData(
-                                            'employment_type_id',
-                                            value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {employmentTypes.map(
-                                            (employmentType) => (
-                                                <SelectItem
-                                                    key={employmentType.value}
-                                                    value={employmentType.value}
-                                                >
-                                                    {employmentType.label}
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectContent>
+                                <Label>Employment type *</Label>
+                                <Select value={form.data.employment_type_id} onValueChange={(v) => form.setData('employment_type_id', v)}>
+                                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                                    <SelectContent>{employmentTypes.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
                                 </Select>
-                                <InputError
-                                    message={form.errors.employment_type_id}
-                                />
+                                <InputError message={form.errors.employment_type_id} />
                             </div>
-
                             <div className="grid gap-2">
-                                <Label>Employment status</Label>
-                                <Select
-                                    value={form.data.employment_status_id}
-                                    onValueChange={(value) =>
-                                        form.setData(
-                                            'employment_status_id',
-                                            value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {employmentStatuses.map(
-                                            (employmentStatus) => (
-                                                <SelectItem
-                                                    key={employmentStatus.value}
-                                                    value={
-                                                        employmentStatus.value
-                                                    }
-                                                >
-                                                    {employmentStatus.label}
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectContent>
+                                <Label>Employment status *</Label>
+                                <Select value={form.data.employment_status_id} onValueChange={(v) => form.setData('employment_status_id', v)}>
+                                    <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                                    <SelectContent>{employmentStatuses.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
                                 </Select>
-                                <InputError
-                                    message={form.errors.employment_status_id}
-                                />
+                                <InputError message={form.errors.employment_status_id} />
                             </div>
                         </div>
 
                         <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
                             <div>
-                                <p className="font-medium text-slate-950">
-                                    Record status
-                                </p>
-                                <p className="text-sm text-slate-600">
-                                    New employee records are active by default
-                                    unless you are encoding archival data.
-                                </p>
+                                <p className="font-medium text-slate-950">Record status</p>
+                                <p className="text-sm text-slate-600">New records are active by default unless encoding archival data.</p>
                             </div>
-                            <Button
-                                type="button"
-                                variant={
-                                    form.data.is_active ? 'default' : 'outline'
-                                }
-                                onClick={() =>
-                                    form.setData(
-                                        'is_active',
-                                        !form.data.is_active,
-                                    )
-                                }
-                            >
+                            <Button type="button" variant={form.data.is_active ? 'default' : 'outline'} onClick={() => form.setData('is_active', !form.data.is_active)}>
                                 {form.data.is_active ? 'Active' : 'Archived'}
                             </Button>
                         </div>
-                        <InputError message={form.errors.is_active} />
 
                         <div className="flex justify-end">
-                            <Button onClick={submit} disabled={form.processing}>
-                                <Save className="size-4" />
-                                Save employee
+                            <Button onClick={() => form.post('/employees')} disabled={form.processing}>
+                                <Save className="size-4" />Save employee
                             </Button>
                         </div>
                     </CardContent>

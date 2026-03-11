@@ -268,11 +268,14 @@ class EmployeeController extends Controller
     {
         return [
             'id' => $employee->id,
+            'user_id' => $employee->user_id,
             'employee_number' => $employee->employee_number,
             'first_name' => $employee->first_name,
             'middle_name' => $employee->middle_name,
             'last_name' => $employee->last_name,
             'suffix' => $employee->suffix,
+            'sex' => $employee->sex,
+            'civil_status' => $employee->civil_status,
             'full_name' => trim(collect([
                 $employee->first_name,
                 $employee->middle_name,
@@ -283,6 +286,22 @@ class EmployeeController extends Controller
             'phone' => $employee->phone,
             'birth_date' => $employee->birth_date?->format('Y-m-d'),
             'birth_date_formatted' => $employee->birth_date?->format('M d, Y'),
+            // Address
+            'address_street' => $employee->address_street,
+            'address_city' => $employee->address_city,
+            'address_province' => $employee->address_province,
+            'address_zip' => $employee->address_zip,
+            // Government IDs
+            'tin' => $employee->tin,
+            'gsis_number' => $employee->gsis_number,
+            'philhealth_number' => $employee->philhealth_number,
+            'pagibig_number' => $employee->pagibig_number,
+            'sss_number' => $employee->sss_number,
+            // Emergency contact
+            'emergency_contact_name' => $employee->emergency_contact_name,
+            'emergency_contact_relationship' => $employee->emergency_contact_relationship,
+            'emergency_contact_phone' => $employee->emergency_contact_phone,
+            // Employment
             'hired_at' => $employee->hired_at?->format('Y-m-d'),
             'hired_at_formatted' => $employee->hired_at?->format('M d, Y'),
             'department_id' => (string) $employee->department_id,
