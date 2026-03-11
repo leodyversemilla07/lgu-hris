@@ -21,10 +21,14 @@ test('hr staff can view the employee create page', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('employees/create')
-            ->has('departments')
-            ->has('positions')
-            ->has('employmentTypes')
-            ->has('employmentStatuses')
+            ->has('departments.0.value')
+            ->has('departments.0.label')
+            ->has('positions.0.value')
+            ->has('positions.0.label')
+            ->has('employmentTypes.0.value')
+            ->has('employmentTypes.0.label')
+            ->has('employmentStatuses.0.value')
+            ->has('employmentStatuses.0.label')
         );
 });
 

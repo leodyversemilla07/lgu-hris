@@ -15,7 +15,15 @@ import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardAction,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
@@ -101,11 +109,13 @@ type Props = {
     documentTypes: DocumentType[];
 };
 
+const numberFormatter = new Intl.NumberFormat();
+
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
 function ActiveBadge({ active }: { active: boolean }) {
     return active ? (
-        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">Active</Badge>
+        <Badge>Active</Badge>
     ) : (
         <Badge variant="secondary">Inactive</Badge>
     );
@@ -263,7 +273,7 @@ function EditDepartmentDialog({ dept }: { dept: Department }) {
 function DepartmentsTab({ departments }: { departments: Department[] }) {
     return (
         <Card>
-            <CardHeader className="flex flex-row items-start justify-between">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Departments</CardTitle>
                     <CardDescription>Organizational units for grouping employees and positions.</CardDescription>
@@ -283,7 +293,7 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
                     <TableBody>
                         {departments.map((dept) => (
                             <TableRow key={dept.id} className={!dept.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-slate-500">{dept.code ?? '—'}</TableCell>
+                                <TableCell className="font-mono text-xs text-muted-foreground">{dept.code ?? '—'}</TableCell>
                                 <TableCell className="font-medium">{dept.name}</TableCell>
                                 <TableCell>
                                     <ActiveBadge active={dept.is_active} />
@@ -296,7 +306,7 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => deactivate('department', dept.id, dept.name)}
-                                                className="text-slate-400 hover:text-destructive"
+                                                className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
                                                 <PowerOff className="size-4" />
@@ -308,7 +318,7 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
                         ))}
                         {departments.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="py-8 text-center text-sm text-slate-400">
+                                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
                                     No departments yet.
                                 </TableCell>
                             </TableRow>
@@ -508,7 +518,7 @@ function PositionsTab({ positions, departments }: { positions: Position[]; depar
 
     return (
         <Card>
-            <CardHeader className="flex flex-row items-start justify-between">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Positions</CardTitle>
                     <CardDescription>Job positions linked to departments.</CardDescription>
@@ -529,9 +539,9 @@ function PositionsTab({ positions, departments }: { positions: Position[]; depar
                     <TableBody>
                         {positions.map((pos) => (
                             <TableRow key={pos.id} className={!pos.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-slate-500">{pos.code ?? '—'}</TableCell>
+                                <TableCell className="font-mono text-xs text-muted-foreground">{pos.code ?? '—'}</TableCell>
                                 <TableCell className="font-medium">{pos.name}</TableCell>
-                                <TableCell className="text-sm text-slate-600">{pos.department_name}</TableCell>
+                                <TableCell className="text-sm text-muted-foreground">{pos.department_name}</TableCell>
                                 <TableCell>
                                     <ActiveBadge active={pos.is_active} />
                                 </TableCell>
@@ -543,7 +553,7 @@ function PositionsTab({ positions, departments }: { positions: Position[]; depar
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => deactivate('position', pos.id, pos.name)}
-                                                className="text-slate-400 hover:text-destructive"
+                                                className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
                                                 <PowerOff className="size-4" />
@@ -555,7 +565,7 @@ function PositionsTab({ positions, departments }: { positions: Position[]; depar
                         ))}
                         {positions.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} className="py-8 text-center text-sm text-slate-400">
+                                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                                     No positions yet.
                                 </TableCell>
                             </TableRow>
@@ -734,7 +744,7 @@ function SimpleRefTab({
 }) {
     return (
         <Card>
-            <CardHeader className="flex flex-row items-start justify-between">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>{cardTitle}</CardTitle>
                     <CardDescription>{cardDescription}</CardDescription>
@@ -758,7 +768,7 @@ function SimpleRefTab({
                     <TableBody>
                         {records.map((rec) => (
                             <TableRow key={rec.id} className={!rec.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-slate-500">{rec.code ?? '—'}</TableCell>
+                                <TableCell className="font-mono text-xs text-muted-foreground">{rec.code ?? '—'}</TableCell>
                                 <TableCell className="font-medium">{rec.name}</TableCell>
                                 <TableCell>
                                     <ActiveBadge active={rec.is_active} />
@@ -775,7 +785,7 @@ function SimpleRefTab({
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => deactivate(type, rec.id, rec.name)}
-                                                className="text-slate-400 hover:text-destructive"
+                                                className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
                                                 <PowerOff className="size-4" />
@@ -787,7 +797,7 @@ function SimpleRefTab({
                         ))}
                         {records.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="py-8 text-center text-sm text-slate-400">
+                                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
                                     No records yet.
                                 </TableCell>
                             </TableRow>
@@ -984,7 +994,7 @@ function EditLeaveTypeDialog({ lt }: { lt: LeaveType }) {
 function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
     return (
         <Card>
-            <CardHeader className="flex flex-row items-start justify-between">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Leave Types</CardTitle>
                     <CardDescription>Categories of leave with maximum day allowances.</CardDescription>
@@ -1006,7 +1016,7 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                     <TableBody>
                         {leaveTypes.map((lt) => (
                             <TableRow key={lt.id} className={!lt.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-slate-500">{lt.code ?? '—'}</TableCell>
+                                <TableCell className="font-mono text-xs text-muted-foreground">{lt.code ?? '—'}</TableCell>
                                 <TableCell className="font-medium">{lt.name}</TableCell>
                                 <TableCell className="text-sm">{lt.max_days_per_year}</TableCell>
                                 <TableCell>
@@ -1015,7 +1025,7 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                                             Required
                                         </Badge>
                                     ) : (
-                                        <span className="text-xs text-slate-400">Not required</span>
+                                        <span className="text-xs text-muted-foreground">Not required</span>
                                     )}
                                 </TableCell>
                                 <TableCell>
@@ -1029,7 +1039,7 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => deactivate('leave_type', lt.id, lt.name)}
-                                                className="text-slate-400 hover:text-destructive"
+                                                className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
                                                 <PowerOff className="size-4" />
@@ -1041,7 +1051,7 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                         ))}
                         {leaveTypes.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="py-8 text-center text-sm text-slate-400">
+                                <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
                                     No leave types yet.
                                 </TableCell>
                             </TableRow>
@@ -1214,7 +1224,7 @@ function EditDocumentTypeDialog({ dt }: { dt: DocumentType }) {
 function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) {
     return (
         <Card>
-            <CardHeader className="flex flex-row items-start justify-between">
+            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Document Types</CardTitle>
                     <CardDescription>Categories used to classify HR documents.</CardDescription>
@@ -1235,7 +1245,7 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                     <TableBody>
                         {documentTypes.map((dt) => (
                             <TableRow key={dt.id} className={!dt.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-slate-500">{dt.code ?? '—'}</TableCell>
+                                <TableCell className="font-mono text-xs text-muted-foreground">{dt.code ?? '—'}</TableCell>
                                 <TableCell className="font-medium">{dt.name}</TableCell>
                                 <TableCell>
                                     {dt.is_confidential ? (
@@ -1243,7 +1253,7 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                                             Confidential
                                         </Badge>
                                     ) : (
-                                        <span className="text-xs text-slate-400">Public</span>
+                                        <span className="text-xs text-muted-foreground">Public</span>
                                     )}
                                 </TableCell>
                                 <TableCell>
@@ -1257,7 +1267,7 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() => deactivate('document_type', dt.id, dt.name)}
-                                                className="text-slate-400 hover:text-destructive"
+                                                className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
                                                 <PowerOff className="size-4" />
@@ -1269,7 +1279,7 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                         ))}
                         {documentTypes.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} className="py-8 text-center text-sm text-slate-400">
+                                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                                     No document types yet.
                                 </TableCell>
                             </TableRow>
@@ -1293,77 +1303,237 @@ export default function ReferenceDataIndex({
     leaveTypes,
     documentTypes,
 }: Props) {
+    const catalogCount = 6;
+    const totalRecords =
+        departments.length +
+        positions.length +
+        employmentTypes.length +
+        employmentStatuses.length +
+        leaveTypes.length +
+        documentTypes.length;
+    const activeRecords = [
+        ...departments,
+        ...positions,
+        ...employmentTypes,
+        ...employmentStatuses,
+        ...leaveTypes,
+        ...documentTypes,
+    ].filter((record) => record.is_active).length;
+    const summaryCards = [
+        {
+            title: 'Reference catalogs',
+            value: numberFormatter.format(catalogCount),
+            detail: 'Departments, positions, employment, leave, and document registries',
+            hint: 'Catalogs',
+            icon: Database,
+        },
+        {
+            title: 'Total records',
+            value: numberFormatter.format(totalRecords),
+            detail: `${numberFormatter.format(activeRecords)} active and ${numberFormatter.format(totalRecords - activeRecords)} inactive records`,
+            hint: 'Coverage',
+            icon: Building2,
+        },
+        {
+            title: 'Positions',
+            value: numberFormatter.format(positions.length),
+            detail: `${numberFormatter.format(departments.length)} departments with assignment definitions`,
+            hint: 'Workforce',
+            icon: Briefcase,
+        },
+        {
+            title: 'Policy references',
+            value: numberFormatter.format(leaveTypes.length + documentTypes.length),
+            detail: `${numberFormatter.format(leaveTypes.length)} leave types and ${numberFormatter.format(documentTypes.length)} document types`,
+            hint: 'Rules',
+            icon: FileText,
+        },
+    ];
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Reference Data" />
-            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-                <div>
-                    <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-                        <Database className="size-6 text-[#1e3a5f]" /> Reference Data
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-500">
-                        Manage lookup tables used across the HRIS — departments, positions, leave types, and more.
-                    </p>
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="px-4 lg:px-6">
+                            <div className="flex max-w-3xl flex-col gap-2">
+                                <Badge variant="outline" className="w-fit">
+                                    Configuration
+                                </Badge>
+                                <h1 className="text-2xl font-semibold tracking-tight">
+                                    Reference data
+                                </h1>
+                                <p className="text-sm text-muted-foreground">
+                                    Maintain the lookup tables that power the
+                                    rest of the HRIS, from departments and
+                                    positions to leave and document definitions.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
+                                    <CardHeader>
+                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                {item.hint}
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <item.icon className="size-4" />
+                                            Snapshot
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                            {item.detail}
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+
+                        <div className="px-4 lg:px-6">
+                            <Tabs defaultValue="departments">
+                                <Card>
+                                    <CardHeader className="flex flex-col gap-4">
+                                        <div className="flex flex-col gap-1">
+                                            <CardTitle>Reference workspace</CardTitle>
+                                            <CardDescription>
+                                                Review and update each catalog
+                                                from one consistent admin
+                                                workspace.
+                                            </CardDescription>
+                                        </div>
+                                        <TabsList className="h-auto w-full flex-wrap justify-start gap-2 rounded-lg bg-muted/50 p-1">
+                                            <TabsTrigger
+                                                value="departments"
+                                                className="gap-1.5"
+                                            >
+                                                <Building2 />
+                                                Departments (
+                                                {departments.length})
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="positions"
+                                                className="gap-1.5"
+                                            >
+                                                <Briefcase />
+                                                Positions ({positions.length})
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="employment-types"
+                                                className="gap-1.5"
+                                            >
+                                                <UserCheck />
+                                                Employment Types (
+                                                {employmentTypes.length})
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="employment-statuses"
+                                                className="gap-1.5"
+                                            >
+                                                <ClipboardList />
+                                                Employment Statuses (
+                                                {employmentStatuses.length})
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="leave-types"
+                                                className="gap-1.5"
+                                            >
+                                                <CalendarDays />
+                                                Leave Types ({leaveTypes.length}
+                                                )
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="document-types"
+                                                className="gap-1.5"
+                                            >
+                                                <FileText />
+                                                Document Types (
+                                                {documentTypes.length})
+                                            </TabsTrigger>
+                                        </TabsList>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <TabsContent
+                                            value="departments"
+                                            className="mt-0"
+                                        >
+                                            <DepartmentsTab
+                                                departments={departments}
+                                            />
+                                        </TabsContent>
+
+                                        <TabsContent
+                                            value="positions"
+                                            className="mt-0"
+                                        >
+                                            <PositionsTab
+                                                positions={positions}
+                                                departments={departments}
+                                            />
+                                        </TabsContent>
+
+                                        <TabsContent
+                                            value="employment-types"
+                                            className="mt-0"
+                                        >
+                                            <SimpleRefTab
+                                                type="employment_type"
+                                                cardTitle="Employment Types"
+                                                cardDescription="Categories of employment arrangement (Regular, Casual, Contract of Service, etc.)."
+                                                singularTitle="Employment Type"
+                                                records={employmentTypes}
+                                            />
+                                        </TabsContent>
+
+                                        <TabsContent
+                                            value="employment-statuses"
+                                            className="mt-0"
+                                        >
+                                            <SimpleRefTab
+                                                type="employment_status"
+                                                cardTitle="Employment Statuses"
+                                                cardDescription="Current employment standing (Active, On Leave, Separated, Retired, etc.)."
+                                                singularTitle="Employment Status"
+                                                records={employmentStatuses}
+                                            />
+                                        </TabsContent>
+
+                                        <TabsContent
+                                            value="leave-types"
+                                            className="mt-0"
+                                        >
+                                            <LeaveTypesTab
+                                                leaveTypes={leaveTypes}
+                                            />
+                                        </TabsContent>
+
+                                        <TabsContent
+                                            value="document-types"
+                                            className="mt-0"
+                                        >
+                                            <DocumentTypesTab
+                                                documentTypes={documentTypes}
+                                            />
+                                        </TabsContent>
+                                    </CardContent>
+                                </Card>
+                            </Tabs>
+                        </div>
+                    </div>
                 </div>
-
-                <Tabs defaultValue="departments">
-                    <TabsList className="flex-wrap h-auto gap-1">
-                        <TabsTrigger value="departments" className="gap-1.5">
-                            <Building2 className="size-4" /> Departments ({departments.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="positions" className="gap-1.5">
-                            <Briefcase className="size-4" /> Positions ({positions.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="employment-types" className="gap-1.5">
-                            <UserCheck className="size-4" /> Employment Types ({employmentTypes.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="employment-statuses" className="gap-1.5">
-                            <ClipboardList className="size-4" /> Employment Statuses ({employmentStatuses.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="leave-types" className="gap-1.5">
-                            <CalendarDays className="size-4" /> Leave Types ({leaveTypes.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="document-types" className="gap-1.5">
-                            <FileText className="size-4" /> Document Types ({documentTypes.length})
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="departments" className="mt-4">
-                        <DepartmentsTab departments={departments} />
-                    </TabsContent>
-
-                    <TabsContent value="positions" className="mt-4">
-                        <PositionsTab positions={positions} departments={departments} />
-                    </TabsContent>
-
-                    <TabsContent value="employment-types" className="mt-4">
-                        <SimpleRefTab
-                            type="employment_type"
-                            cardTitle="Employment Types"
-                            cardDescription="Categories of employment arrangement (Regular, Casual, Contract of Service, etc.)."
-                            singularTitle="Employment Type"
-                            records={employmentTypes}
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="employment-statuses" className="mt-4">
-                        <SimpleRefTab
-                            type="employment_status"
-                            cardTitle="Employment Statuses"
-                            cardDescription="Current employment standing (Active, On Leave, Separated, Retired, etc.)."
-                            singularTitle="Employment Status"
-                            records={employmentStatuses}
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="leave-types" className="mt-4">
-                        <LeaveTypesTab leaveTypes={leaveTypes} />
-                    </TabsContent>
-
-                    <TabsContent value="document-types" className="mt-4">
-                        <DocumentTypesTab documentTypes={documentTypes} />
-                    </TabsContent>
-                </Tabs>
             </div>
         </AppLayout>
     );

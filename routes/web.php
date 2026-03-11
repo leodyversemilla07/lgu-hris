@@ -9,7 +9,6 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
-use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\PersonnelMovementController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportController;
@@ -23,8 +22,6 @@ Route::inertia('/', 'welcome', [
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    Route::get('my-profile', [MyProfileController::class, 'index'])->name('my-profile.index');
 
     Route::get('employees', [EmployeeController::class, 'index'])
         ->middleware('permission:employees.view')

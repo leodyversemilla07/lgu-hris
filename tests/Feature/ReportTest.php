@@ -124,6 +124,8 @@ test('dashboard recentMovements is capped at 5', function () {
 
 test('reports page passes departments employees leaveTypes and years props', function () {
     makeReportEmployee();
+    $leaveType = LeaveType::factory()->create(['name' => 'Vacation Leave']);
+
     $this->actingAs($this->hrAdmin)
         ->get('/reports')
         ->assertOk()
@@ -133,6 +135,9 @@ test('reports page passes departments employees leaveTypes and years props', fun
             ->has('employees')
             ->has('leaveTypes')
             ->has('years')
+            ->where('departments.0.label', 'Finance')
+            ->where('leaveTypes.0.label', $leaveType->name)
+            ->where('years.0.value', (string) now()->year)
         );
 });
 

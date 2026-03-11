@@ -1,23 +1,50 @@
-import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    CalendarDays,
+    Save,
+    Search,
+    ShieldCheck,
+    WalletCards,
+} from 'lucide-react';
+import { useDeferredValue, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCaption,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -34,7 +61,10 @@ type BalanceRow = {
     balance_id: number | null;
 };
 
-type LeaveTypeOption = { value: string; label: string };
+type LeaveTypeOption = {
+    value: string;
+    label: string;
+};
 
 type Props = {
     rows: BalanceRow[];
@@ -48,115 +78,249 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Leave balances', href: '/leave-balances' },
 ];
 
-export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
-    const [typeFilter, setTypeFilter] = useState('');
+const numberFormatter = new Intl.NumberFormat();
 
-    const filtered =
-        typeFilter && typeFilter !== 'all'
-            ? rows.filter((r) => r.leave_type_id === typeFilter)
-            : rows;
+export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [query, setQuery] = useState('');
+    const deferredQuery = useDeferredValue(query);
+
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+
+    const filteredRows = rows.filter((row) => {
+        const matchesType =
+            typeFilter === 'all' || row.leave_type_id === typeFilter;
+
+        if (!matchesType) {
+            return false;
+        }
+
+        if (!normalizedQuery) {
+            return true;
+        }
+
+        const searchableText = [
+            row.employee_name,
+            row.employee_number,
+            row.leave_type,
+        ]
+            .join(' ')
+            .toLowerCase();
+
+        return searchableText.includes(normalizedQuery);
+    });
+
+    const employeesCovered = new Set(rows.map((row) => row.employee_id)).size;
+    const configuredBalances = rows.filter((row) => row.total_days > 0).length;
+    const negativeBalances = rows.filter((row) => row.remaining_days < 0).length;
+    const totalAllocated = rows.reduce((sum, row) => sum + row.total_days, 0);
+
+    const summaryCards = [
+        {
+            title: 'Employees covered',
+            value: numberFormatter.format(employeesCovered),
+            detail: `${numberFormatter.format(rows.length)} employee and leave-type combinations in view`,
+            hint: 'Coverage',
+            icon: ShieldCheck,
+        },
+        {
+            title: 'Configured balances',
+            value: numberFormatter.format(configuredBalances),
+            detail: 'Rows with a total-day allocation already set',
+            hint: 'Configured',
+            icon: WalletCards,
+        },
+        {
+            title: 'Allocated days',
+            value: numberFormatter.format(totalAllocated),
+            detail: 'Total leave days assigned across all visible rows',
+            hint: 'Allocation',
+            icon: CalendarDays,
+        },
+        {
+            title: 'Negative balances',
+            value: numberFormatter.format(negativeBalances),
+            detail: 'Rows where used days currently exceed total allocation',
+            hint: 'Attention',
+            icon: Save,
+        },
+    ];
+
+    function resetFilters(): void {
+        setQuery('');
+        setTypeFilter('all');
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Leave Balances" />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
-                <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">
-                                Leave Management
-                            </Badge>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                                    Leave balances — {year}
-                                </h1>
-                                <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                                    Set and track leave day allocations for
-                                    each employee and leave type.
-                                </p>
-                            </div>
-                        </div>
-                        <Button asChild variant="outline">
-                            <a href="/leave">
-                                <ArrowLeft className="size-4" />
-                                Back to requests
-                            </a>
-                        </Button>
-                    </div>
-                </section>
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="px-4 lg:px-6">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex max-w-3xl flex-col gap-2">
+                                    <Badge variant="outline" className="w-fit">
+                                        Leave
+                                    </Badge>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Leave balances
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Set and review employee leave allocations for {year} from the same shared table layout used across the updated HRIS.
+                                    </p>
+                                </div>
 
-                <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <CardTitle className="text-slate-950">
-                                    Balance registry
-                                </CardTitle>
-                                <CardDescription className="mt-1">
-                                    Edit the total days column to set an
-                                    employee's allocation.
-                                </CardDescription>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
+                                    <Button asChild variant="outline">
+                                        <Link href="/leave">
+                                            <ArrowLeft data-icon="inline-start" />
+                                            Back to requests
+                                        </Link>
+                                    </Button>
+                                </div>
                             </div>
-                            <Select
-                                value={typeFilter}
-                                onValueChange={setTypeFilter}
-                            >
-                                <SelectTrigger className="w-52">
-                                    <SelectValue placeholder="All leave types" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">
-                                        All types
-                                    </SelectItem>
-                                    {leaveTypes.map((t) => (
-                                        <SelectItem
-                                            key={t.value}
-                                            value={t.value}
-                                        >
-                                            {t.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-200 text-sm">
-                                <thead>
-                                    <tr className="text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-                                        <th className="px-3 py-3">Employee</th>
-                                        <th className="px-3 py-3">
-                                            Leave type
-                                        </th>
-                                        <th className="px-3 py-3">
-                                            Total days
-                                        </th>
-                                        <th className="px-3 py-3">Used</th>
-                                        <th className="px-3 py-3">
-                                            Remaining
-                                        </th>
-                                        <th className="px-3 py-3">
-                                            <span className="sr-only">
-                                                Save
-                                            </span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filtered.map((row) => (
-                                        <BalanceEditRow
-                                            key={`${row.employee_id}_${row.leave_type_id}`}
-                                            row={row}
-                                            year={year}
-                                        />
-                                    ))}
-                                </tbody>
-                            </table>
+
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card key={item.title} className="@container/card shadow-xs">
+                                    <CardHeader>
+                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                {item.hint}
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="text-sm text-muted-foreground">
+                                        {item.detail}
+                                    </CardFooter>
+                                </Card>
+                            ))}
                         </div>
-                    </CardContent>
-                </Card>
+
+                        <div className="px-4 lg:px-6">
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex flex-col gap-1">
+                                        <CardTitle>Balance registry</CardTitle>
+                                        <CardDescription>
+                                            Filter the registry, then update total days inline for each employee and leave type.
+                                        </CardDescription>
+                                    </div>
+                                    <CardAction>
+                                        <Badge variant="secondary">
+                                            {numberFormatter.format(filteredRows.length)} of {numberFormatter.format(rows.length)} shown
+                                        </Badge>
+                                    </CardAction>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-4">
+                                    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+                                        <div className="relative">
+                                            <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                value={query}
+                                                onChange={(event) => setQuery(event.target.value)}
+                                                placeholder="Search employee number, employee name, or leave type"
+                                                aria-label="Search leave balances"
+                                                className="pl-9"
+                                            />
+                                        </div>
+
+                                        <Select value={typeFilter} onValueChange={setTypeFilter}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="All leave types" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All types
+                                                    </SelectItem>
+                                                    {leaveTypes.map((type) => (
+                                                        <SelectItem key={type.value} value={type.value}>
+                                                            {type.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {filteredRows.length > 0 ? (
+                                        <div className="overflow-hidden rounded-lg border">
+                                            <Table>
+                                                <TableCaption>
+                                                    Balance registry for {numberFormatter.format(filteredRows.length)} leave balance rows.
+                                                </TableCaption>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Employee</TableHead>
+                                                        <TableHead>Leave type</TableHead>
+                                                        <TableHead>Total days</TableHead>
+                                                        <TableHead>Used</TableHead>
+                                                        <TableHead>Remaining</TableHead>
+                                                        <TableHead className="text-right">
+                                                            Action
+                                                        </TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {filteredRows.map((row) => (
+                                                        <BalanceEditRow
+                                                            key={`${row.employee_id}_${row.leave_type_id}`}
+                                                            row={row}
+                                                            year={year}
+                                                        />
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    ) : (
+                                        <Empty className="min-h-[280px] border-border bg-muted/20">
+                                            <EmptyHeader>
+                                                <EmptyMedia variant="icon">
+                                                    <WalletCards />
+                                                </EmptyMedia>
+                                                <EmptyTitle>No matching balances</EmptyTitle>
+                                                <EmptyDescription>
+                                                    Adjust the search or leave type filter to bring leave balance rows back into view.
+                                                </EmptyDescription>
+                                            </EmptyHeader>
+                                            <EmptyContent>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={resetFilters}
+                                                >
+                                                    Reset filters
+                                                </Button>
+                                            </EmptyContent>
+                                        </Empty>
+                                    )}
+
+                                    {(query || typeFilter !== 'all') && filteredRows.length > 0 ? (
+                                        <div className="flex justify-end">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={resetFilters}
+                                            >
+                                                Reset filters
+                                            </Button>
+                                        </div>
+                                    ) : null}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );
@@ -170,61 +334,70 @@ function BalanceEditRow({ row, year }: { row: BalanceRow; year: number }) {
         total_days: String(row.total_days),
     });
 
-    const handleSave = () => {
-        form.post('/leave-balances/upsert', {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
-
-    const remaining = Number(form.data.total_days) - row.used_days;
+    const remaining = Number(form.data.total_days || 0) - row.used_days;
 
     return (
-        <tr className="align-middle">
-            <td className="px-3 py-2">
-                <div className="font-medium text-slate-900">
-                    {row.employee_name}
+        <TableRow>
+            <TableCell className="min-w-[240px]">
+                <div className="flex flex-col gap-1">
+                    <div className="font-medium">{row.employee_name}</div>
+                    <div className="text-sm text-muted-foreground">
+                        {row.employee_number}
+                    </div>
                 </div>
-                <div className="text-xs text-slate-500">
-                    {row.employee_number}
+            </TableCell>
+            <TableCell>
+                <div className="flex flex-col gap-1">
+                    <span>{row.leave_type}</span>
+                    {row.max_days_per_year ? (
+                        <span className="text-sm text-muted-foreground">
+                            Limit: {numberFormatter.format(row.max_days_per_year)} days/year
+                        </span>
+                    ) : null}
                 </div>
-            </td>
-            <td className="px-3 py-2 text-slate-700">{row.leave_type}</td>
-            <td className="px-3 py-2">
-                <Input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={form.data.total_days}
-                    onChange={(e) =>
-                        form.setData('total_days', e.target.value)
-                    }
-                    className="w-24"
-                />
-            </td>
-            <td className="px-3 py-2 text-slate-600">{row.used_days}</td>
-            <td className="px-3 py-2">
+            </TableCell>
+            <TableCell>
+                <div className="flex max-w-28 flex-col gap-1">
+                    <Input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={form.data.total_days}
+                        onChange={(event) =>
+                            form.setData('total_days', event.target.value)
+                        }
+                    />
+                </div>
+            </TableCell>
+            <TableCell>{numberFormatter.format(row.used_days)}</TableCell>
+            <TableCell>
                 <span
                     className={
                         remaining < 0
-                            ? 'font-medium text-red-600'
-                            : 'text-slate-700'
+                            ? 'font-medium text-destructive'
+                            : 'text-foreground'
                     }
                 >
                     {remaining.toFixed(1)}
                 </span>
-            </td>
-            <td className="px-3 py-2">
+            </TableCell>
+            <TableCell className="text-right">
                 <Button
+                    type="button"
                     size="sm"
                     variant="ghost"
-                    onClick={handleSave}
+                    onClick={() =>
+                        form.post('/leave-balances/upsert', {
+                            preserveState: true,
+                            preserveScroll: true,
+                        })
+                    }
                     disabled={form.processing}
                 >
-                    <Save className="size-3.5" />
+                    <Save data-icon="inline-start" />
                     Save
                 </Button>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 }

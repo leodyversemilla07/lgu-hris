@@ -1,6 +1,13 @@
-import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    CalendarDays,
+    CheckCircle2,
+    Clock3,
+    FileText,
+    XCircle,
+} from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,8 +23,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -47,23 +56,49 @@ type LeaveRequestDetail = {
 
 type Props = {
     leaveRequest: LeaveRequestDetail;
+    canApprove: boolean;
+    canCancel: boolean;
 };
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-    submitted: { label: 'Pending', className: 'bg-amber-100 text-amber-800' },
-    approved: { label: 'Approved', className: 'bg-green-100 text-green-800' },
-    rejected: { label: 'Rejected', className: 'bg-red-100 text-red-800' },
+const statusConfig: Record<
+    LeaveRequestDetail['status'],
+    {
+        label: string;
+        variant: 'default' | 'secondary' | 'destructive' | 'outline';
+        summary: string;
+    }
+> = {
+    submitted: {
+        label: 'Pending',
+        variant: 'outline',
+        summary: 'Waiting for final action.',
+    },
+    approved: {
+        label: 'Approved',
+        variant: 'default',
+        summary: 'Approved and ready for scheduling.',
+    },
+    rejected: {
+        label: 'Rejected',
+        variant: 'destructive',
+        summary: 'Closed without approval.',
+    },
     cancelled: {
         label: 'Cancelled',
-        className: 'bg-slate-100 text-slate-600',
+        variant: 'secondary',
+        summary: 'Withdrawn before final approval.',
     },
 };
 
-export default function LeaveShow({ leaveRequest: lr }: Props) {
+export default function LeaveShow({
+    leaveRequest: leaveRequest,
+    canApprove,
+    canCancel,
+}: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Leave', href: '/leave' },
-        { title: `Leave #${lr.id}`, href: `/leave/${lr.id}` },
+        { title: `Leave #${leaveRequest.id}`, href: `/leave/${leaveRequest.id}` },
     ];
 
     const [approvalAction, setApprovalAction] = useState<
@@ -71,257 +106,419 @@ export default function LeaveShow({ leaveRequest: lr }: Props) {
     >(null);
     const approvalForm = useForm({ action: '', remarks: '' });
     const cancelForm = useForm({});
+    const status = statusConfig[leaveRequest.status];
 
-    const openApproval = (action: 'approved' | 'rejected') => {
+    const summaryCards = [
+        {
+            title: 'Status',
+            value: status.label,
+            detail: status.summary,
+            icon: Clock3,
+        },
+        {
+            title: 'Leave type',
+            value: leaveRequest.leave_type,
+            detail: `Request #${leaveRequest.id}`,
+            icon: FileText,
+        },
+        {
+            title: 'Duration',
+            value: `${leaveRequest.days_requested} day${leaveRequest.days_requested !== 1 ? 's' : ''}`,
+            detail: `${leaveRequest.start_date} to ${leaveRequest.end_date}`,
+            icon: CalendarDays,
+        },
+        {
+            title: 'Filed on',
+            value: leaveRequest.submitted_at,
+            detail: leaveRequest.employee_number,
+            icon: CheckCircle2,
+        },
+    ];
+
+    function openApproval(action: 'approved' | 'rejected'): void {
         setApprovalAction(action);
         approvalForm.setData('action', action);
         approvalForm.setData('remarks', '');
-    };
+    }
 
-    const submitApproval = () => {
-        approvalForm.post(`/leave/${lr.id}/approve`, {
+    function submitApproval(): void {
+        approvalForm.post(`/leave/${leaveRequest.id}/approve`, {
             onSuccess: () => setApprovalAction(null),
         });
-    };
+    }
 
-    const handleCancel = () => {
-        cancelForm.patch(`/leave/${lr.id}/cancel`);
-    };
-
-    const st = statusConfig[lr.status] ?? statusConfig.submitted;
+    function handleCancel(): void {
+        cancelForm.patch(`/leave/${leaveRequest.id}/cancel`);
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Leave Request #${lr.id}`} />
+            <Head title={`Leave Request #${leaveRequest.id}`} />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
-                {/* Header */}
-                <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <span
-                                className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${st.className}`}
-                            >
-                                {st.label}
-                            </span>
-                            <div className="space-y-1">
-                                <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                                    Leave request #{lr.id}
-                                </h1>
-                                <p className="text-sm text-slate-600">
-                                    {lr.employee_name} ·{' '}
-                                    {lr.employee_number}
-                                </p>
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="px-4 lg:px-6">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex max-w-3xl flex-col gap-2">
+                                    <Badge variant="outline" className="w-fit">
+                                        Leave
+                                    </Badge>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Leave request #{leaveRequest.id}
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Review the request details, current
+                                        status, and the most recent action for{' '}
+                                        {leaveRequest.employee_name}.
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
+                                    <Button asChild variant="outline">
+                                        <Link href="/leave">
+                                            <ArrowLeft data-icon="inline-start" />
+                                            Back to leave
+                                        </Link>
+                                    </Button>
+                                    {canApprove &&
+                                        leaveRequest.status === 'submitted' && (
+                                            <>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        openApproval(
+                                                            'rejected',
+                                                        )
+                                                    }
+                                                >
+                                                    <XCircle data-icon="inline-start" />
+                                                    Reject
+                                                </Button>
+                                                <Button
+                                                    onClick={() =>
+                                                        openApproval(
+                                                            'approved',
+                                                        )
+                                                    }
+                                                >
+                                                    <CheckCircle2 data-icon="inline-start" />
+                                                    Approve
+                                                </Button>
+                                            </>
+                                        )}
+                                    {canCancel && (
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="outline">
+                                                    Cancel request
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>
+                                                        Cancel leave request?
+                                                    </AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This withdraws the
+                                                        request before final
+                                                        action. This cannot be
+                                                        undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>
+                                                        Keep request
+                                                    </AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={handleCancel}
+                                                        disabled={
+                                                            cancelForm.processing
+                                                        }
+                                                    >
+                                                        Yes, cancel
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <Button asChild variant="outline">
-                                <a href="/leave">
-                                    <ArrowLeft className="size-4" />
-                                    Back
-                                </a>
-                            </Button>
 
-                            {/* Approve / Reject buttons */}
-                            {lr.status === 'submitted' && (
-                                <>
-                                    <Button
-                                        variant="outline"
-                                        className="text-red-600 hover:text-red-700"
-                                        onClick={() => openApproval('rejected')}
-                                    >
-                                        <XCircle className="size-4" />
-                                        Reject
-                                    </Button>
-                                    <Button
-                                        className="bg-green-600 hover:bg-green-700"
-                                        onClick={() => openApproval('approved')}
-                                    >
-                                        <CheckCircle className="size-4" />
-                                        Approve
-                                    </Button>
-                                </>
-                            )}
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
+                                    <CardHeader>
+                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardTitle className="text-2xl font-semibold @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                Overview
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <item.icon className="size-4" />
+                                            Snapshot
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                            {item.detail}
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
 
-                            {/* Cancel button */}
-                            {lr.status === 'submitted' && (
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="outline">
-                                            Cancel request
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Cancel leave request?
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This will withdraw the leave
-                                                request. This action cannot be
-                                                undone.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>
-                                                Keep it
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={handleCancel}
-                                                disabled={cancelForm.processing}
+                        <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-6">
+                            <div className="flex flex-col gap-4">
+                                {approvalAction && (
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>
+                                                {approvalAction === 'approved'
+                                                    ? 'Approve leave request'
+                                                    : 'Reject leave request'}
+                                            </CardTitle>
+                                            <CardDescription>
+                                                {approvalAction === 'approved'
+                                                    ? 'Confirm the request and record any remarks for the employee.'
+                                                    : 'Record the reason before closing the request.'}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex flex-col gap-4">
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="remarks">
+                                                    Remarks
+                                                </Label>
+                                                <Textarea
+                                                    id="remarks"
+                                                    rows={4}
+                                                    value={
+                                                        approvalForm.data
+                                                            .remarks
+                                                    }
+                                                    onChange={(event) =>
+                                                        approvalForm.setData(
+                                                            'remarks',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="Add remarks for the final action"
+                                                />
+                                                <InputError
+                                                    message={
+                                                        approvalForm.errors
+                                                            .remarks
+                                                    }
+                                                />
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter className="justify-end gap-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() =>
+                                                    setApprovalAction(null)
+                                                }
                                             >
-                                                Yes, cancel
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            )}
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={submitApproval}
+                                                disabled={
+                                                    approvalForm.processing
+                                                }
+                                                variant={
+                                                    approvalAction ===
+                                                    'approved'
+                                                        ? 'default'
+                                                        : 'destructive'
+                                                }
+                                            >
+                                                Confirm{' '}
+                                                {approvalAction === 'approved'
+                                                    ? 'approval'
+                                                    : 'rejection'}
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                )}
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Request details</CardTitle>
+                                        <CardDescription>
+                                            Core information recorded when this
+                                            leave request was filed.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
+                                            <DetailField
+                                                label="Employee"
+                                                value={
+                                                    leaveRequest.employee_name
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Employee ID"
+                                                value={
+                                                    leaveRequest.employee_number
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Leave type"
+                                                value={
+                                                    leaveRequest.leave_type
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Start date"
+                                                value={
+                                                    leaveRequest.start_date
+                                                }
+                                            />
+                                            <DetailField
+                                                label="End date"
+                                                value={leaveRequest.end_date}
+                                            />
+                                            <DetailField
+                                                label="Days requested"
+                                                value={`${leaveRequest.days_requested} day${leaveRequest.days_requested !== 1 ? 's' : ''}`}
+                                            />
+                                            <DetailField
+                                                label="Filed on"
+                                                value={
+                                                    leaveRequest.submitted_at
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Reason"
+                                                value={leaveRequest.reason}
+                                                wide
+                                            />
+                                        </dl>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Decision record</CardTitle>
+                                        <CardDescription>
+                                            The latest processing outcome and
+                                            any final remarks on the request.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
+                                            <DetailField
+                                                label="Current status"
+                                                value={
+                                                    <Badge
+                                                        variant={
+                                                            status.variant
+                                                        }
+                                                    >
+                                                        {status.label}
+                                                    </Badge>
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Actioned by"
+                                                value={
+                                                    leaveRequest.actioned_by
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Actioned on"
+                                                value={
+                                                    leaveRequest.actioned_at
+                                                }
+                                            />
+                                            <DetailField
+                                                label="Remarks"
+                                                value={leaveRequest.remarks}
+                                                wide
+                                            />
+                                        </dl>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Request status</CardTitle>
+                                        <CardDescription>
+                                            A quick summary of where this leave
+                                            request currently stands.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-4">
+                                        <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-4">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-sm font-medium">
+                                                    Final status
+                                                </span>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {status.summary}
+                                                </span>
+                                            </div>
+                                            <Badge variant={status.variant}>
+                                                {status.label}
+                                            </Badge>
+                                        </div>
+                                        <div className="grid gap-3">
+                                            <SideItem
+                                                label="Employee"
+                                                value={
+                                                    leaveRequest.employee_name
+                                                }
+                                            />
+                                            <SideItem
+                                                label="Reference"
+                                                value={`Leave request #${leaveRequest.id}`}
+                                            />
+                                            <SideItem
+                                                label="Schedule"
+                                                value={`${leaveRequest.start_date} to ${leaveRequest.end_date}`}
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Processing guidance</CardTitle>
+                                        <CardDescription>
+                                            Use the action controls only while
+                                            the request is still pending.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+                                        <p>
+                                            Pending requests can be approved,
+                                            rejected, or cancelled based on your
+                                            available permissions.
+                                        </p>
+                                        <p>
+                                            Once a final action is recorded, the
+                                            request remains available here as a
+                                            read-only record.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     </div>
-                </section>
-
-                {/* Approval form panel (inline) */}
-                {approvalAction && (
-                    <Card
-                        className={`border-2 shadow-sm ${approvalAction === 'approved' ? 'border-green-200 bg-green-50/60' : 'border-red-200 bg-red-50/60'}`}
-                    >
-                        <CardHeader>
-                            <CardTitle className="text-slate-950">
-                                {approvalAction === 'approved'
-                                    ? 'Approve leave request'
-                                    : 'Reject leave request'}
-                            </CardTitle>
-                            <CardDescription>
-                                {approvalAction === 'approved'
-                                    ? 'Confirming approval will deduct from the employee\'s leave balance.'
-                                    : 'Provide a reason for rejecting this request.'}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="remarks">
-                                    Remarks{' '}
-                                    {approvalAction === 'rejected' && (
-                                        <span className="text-xs text-slate-500">
-                                            (recommended)
-                                        </span>
-                                    )}
-                                </Label>
-                                <Textarea
-                                    id="remarks"
-                                    rows={3}
-                                    value={approvalForm.data.remarks}
-                                    onChange={(e) =>
-                                        approvalForm.setData(
-                                            'remarks',
-                                            e.target.value,
-                                        )
-                                    }
-                                    placeholder="Optional remarks..."
-                                />
-                                <InputError
-                                    message={approvalForm.errors.remarks}
-                                />
-                            </div>
-                            <div className="flex gap-3 justify-end">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setApprovalAction(null)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={submitApproval}
-                                    disabled={approvalForm.processing}
-                                    className={
-                                        approvalAction === 'approved'
-                                            ? 'bg-green-600 hover:bg-green-700'
-                                            : 'bg-red-600 hover:bg-red-700'
-                                    }
-                                >
-                                    Confirm{' '}
-                                    {approvalAction === 'approved'
-                                        ? 'approval'
-                                        : 'rejection'}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Details */}
-                <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-slate-950">
-                            Request details
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                            <DetailField label="Employee" value={lr.employee_name} />
-                            <DetailField
-                                label="Employee No."
-                                value={lr.employee_number}
-                            />
-                            <DetailField label="Leave type" value={lr.leave_type} />
-                            <DetailField label="Start date" value={lr.start_date} />
-                            <DetailField label="End date" value={lr.end_date} />
-                            <DetailField
-                                label="Days requested"
-                                value={`${lr.days_requested} day${lr.days_requested !== 1 ? 's' : ''}`}
-                            />
-                            <DetailField
-                                label="Filed on"
-                                value={lr.submitted_at}
-                            />
-                            <DetailField
-                                label="Reason"
-                                value={lr.reason}
-                                wide
-                            />
-                        </dl>
-                    </CardContent>
-                </Card>
-
-                {/* Action record */}
-                {lr.actioned_by && (
-                    <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-950">
-                                Decision
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-                                <DetailField
-                                    label="Decision"
-                                    value={
-                                        <span
-                                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${st.className}`}
-                                        >
-                                            {st.label}
-                                        </span>
-                                    }
-                                />
-                                <DetailField
-                                    label="Actioned by"
-                                    value={lr.actioned_by}
-                                />
-                                <DetailField
-                                    label="Actioned on"
-                                    value={lr.actioned_at}
-                                />
-                                {lr.remarks && (
-                                    <DetailField
-                                        label="Remarks"
-                                        value={lr.remarks}
-                                        wide
-                                    />
-                                )}
-                            </dl>
-                        </CardContent>
-                    </Card>
-                )}
+                </div>
             </div>
         </AppLayout>
     );
@@ -330,22 +527,37 @@ export default function LeaveShow({ leaveRequest: lr }: Props) {
 function DetailField({
     label,
     value,
-    wide,
+    wide = false,
 }: {
     label: string;
-    value: string | number | React.ReactNode | null | undefined;
+    value: ReactNode | null | undefined;
     wide?: boolean;
 }) {
     return (
-        <div className={`space-y-1${wide ? ' sm:col-span-2' : ''}`}>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <div className={wide ? 'sm:col-span-2 xl:col-span-3' : undefined}>
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {label}
             </dt>
-            <dd className="text-sm text-slate-900">
+            <dd className="mt-1 text-sm text-foreground">
                 {value ?? (
-                    <span className="italic text-slate-400">Not provided</span>
+                    <span className="italic text-muted-foreground">
+                        Not provided
+                    </span>
                 )}
             </dd>
+        </div>
+    );
+}
+
+function SideItem({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="rounded-lg border bg-background p-3">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {label}
+            </div>
+            <div className="mt-1 text-sm font-medium text-foreground">
+                {value}
+            </div>
         </div>
     );
 }

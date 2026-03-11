@@ -171,6 +171,8 @@ test('hr staff can view compensation create form for employee', function () {
             ->component('employees/compensation')
             ->has('salaryGrades')
             ->has('employee')
+            ->where('employee.id', $employee->id)
+            ->where('current', null)
         );
 });
 

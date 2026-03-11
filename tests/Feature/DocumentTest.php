@@ -16,18 +16,59 @@ beforeEach(function () {
 
 test('hr staff can view the documents index', function () {
     $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(DocumentTypeSeeder::class);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create();
+    $documentType = DocumentType::where('code', 'PDS')->first();
+
+    EmployeeDocument::factory()->create([
+        'employee_id' => $employee->id,
+        'document_type_id' => $documentType->id,
+        'file_name' => 'pds.pdf',
+        'uploaded_by' => $user->id,
+        'is_confidential' => true,
+    ]);
 
     $this->actingAs($user)
         ->get(route('documents.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('documents/index')
-            ->has('documents')
+            ->has('documents', 1)
             ->has('employees')
             ->has('documentTypes')
+            ->where('documents.0.file_name', 'pds.pdf')
+            ->where('documents.0.document_type', $documentType->name)
+            ->where('documents.0.is_confidential', true)
+            ->where('employees.0.value', (string) $employee->id)
+        );
+});
+
+test('documents index returns multiple records for frontend pagination', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(DocumentTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create();
+    $documentType = DocumentType::where('code', 'PDS')->first();
+
+    EmployeeDocument::factory()->count(12)->create([
+        'employee_id' => $employee->id,
+        'document_type_id' => $documentType->id,
+        'uploaded_by' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('documents.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('documents/index')
+            ->has('documents', 12)
         );
 });
 

@@ -39,6 +39,9 @@ test('hr staff can view the employee edit page', function () {
             ->has('employmentTypes')
             ->has('employmentStatuses')
             ->where('employee.id', $employee->id)
+            ->where('employee.employee_number', $employee->employee_number)
+            ->where('employee.department_id', (string) $department->id)
+            ->where('employee.position_id', (string) $position->id)
         );
 });
 

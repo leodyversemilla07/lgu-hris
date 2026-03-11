@@ -5,10 +5,13 @@ import {
     FileArchive,
     FileText,
     Lock,
+    Search,
+    ShieldAlert,
     Trash2,
     Upload,
+    Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,20 +27,49 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -81,14 +113,54 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Documents', href: '/documents' },
 ];
 
+const ITEMS_PER_PAGE = 10;
+const numberFormatter = new Intl.NumberFormat();
+
+function paginationItems(
+    currentPage: number,
+    totalPages: number,
+): Array<number | 'ellipsis'> {
+    if (totalPages <= 5) {
+        return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    if (currentPage <= 3) {
+        return [1, 2, 3, 4, 'ellipsis', totalPages];
+    }
+
+    if (currentPage >= totalPages - 2) {
+        return [
+            1,
+            'ellipsis',
+            totalPages - 3,
+            totalPages - 2,
+            totalPages - 1,
+            totalPages,
+        ];
+    }
+
+    return [
+        1,
+        'ellipsis',
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        'ellipsis',
+        totalPages,
+    ];
+}
+
 export default function DocumentsIndex({
     documents,
     employees,
     documentTypes,
 }: Props) {
-    const [employeeFilter, setEmployeeFilter] = useState('');
-    const [typeFilter, setTypeFilter] = useState('');
+    const [employeeFilter, setEmployeeFilter] = useState('all');
+    const [typeFilter, setTypeFilter] = useState('all');
+    const [query, setQuery] = useState('');
+    const [page, setPage] = useState(1);
     const [showUploadForm, setShowUploadForm] = useState(false);
+    const deferredQuery = useDeferredValue(query);
 
     const form = useForm<{
         employee_id: string;
@@ -107,22 +179,104 @@ export default function DocumentsIndex({
     const deleteForm = useForm({});
 
     const selectedType = documentTypes.find(
-        (t) => t.value === form.data.document_type_id,
+        (type) => type.value === form.data.document_type_id,
     );
 
-    const filteredDocuments = documents.filter((doc) => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+    const confidentialDocuments = documents.filter(
+        (document) => document.is_confidential,
+    ).length;
+    const documentTypesInUse = new Set(
+        documents.map((document) => document.document_type),
+    ).size;
+    const employeesCovered = new Set(
+        documents.map((document) => document.employee_id),
+    ).size;
+
+    const filteredDocuments = documents.filter((document) => {
         const matchesEmployee =
-            !employeeFilter ||
             employeeFilter === 'all' ||
-            String(doc.employee_id) === employeeFilter;
+            String(document.employee_id) === employeeFilter;
         const matchesType =
-            !typeFilter ||
-            typeFilter === 'all' ||
-            doc.document_type === typeFilter;
-        return matchesEmployee && matchesType;
+            typeFilter === 'all' || document.document_type === typeFilter;
+
+        if (!matchesEmployee || !matchesType) {
+            return false;
+        }
+
+        if (!normalizedQuery) {
+            return true;
+        }
+
+        const searchableText = [
+            document.employee_name,
+            document.employee_number,
+            document.document_type,
+            document.file_name,
+            document.uploaded_by,
+            document.notes,
+        ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+        return searchableText.includes(normalizedQuery);
     });
 
-    const handleUpload = (): void => {
+    useEffect(() => {
+        setPage(1);
+    }, [normalizedQuery, employeeFilter, typeFilter]);
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE),
+    );
+    const currentPage = Math.min(page, totalPages);
+    const pageStartIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedDocuments = filteredDocuments.slice(
+        pageStartIndex,
+        pageStartIndex + ITEMS_PER_PAGE,
+    );
+    const pageEndIndex =
+        filteredDocuments.length === 0
+            ? 0
+            : Math.min(
+                  pageStartIndex + paginatedDocuments.length,
+                  filteredDocuments.length,
+              );
+
+    const summaryCards = [
+        {
+            title: 'Total documents',
+            value: numberFormatter.format(documents.length),
+            detail: `${numberFormatter.format(filteredDocuments.length)} in the current view`,
+            hint: 'Registry',
+            icon: FileText,
+        },
+        {
+            title: 'Confidential files',
+            value: numberFormatter.format(confidentialDocuments),
+            detail: `${numberFormatter.format(documents.length - confidentialDocuments)} standard access files`,
+            hint: 'Restricted',
+            icon: ShieldAlert,
+        },
+        {
+            title: 'Employees covered',
+            value: numberFormatter.format(employeesCovered),
+            detail: 'Active personnel with at least one stored document',
+            hint: 'Coverage',
+            icon: Users,
+        },
+        {
+            title: 'Types in use',
+            value: numberFormatter.format(documentTypesInUse),
+            detail: `${numberFormatter.format(documentTypes.length)} active document categories available`,
+            hint: 'Catalog',
+            icon: FileArchive,
+        },
+    ];
+
+    function handleUpload(): void {
         form.post('/documents', {
             forceFormData: true,
             onSuccess: () => {
@@ -130,427 +284,800 @@ export default function DocumentsIndex({
                 form.reset();
             },
         });
-    };
+    }
 
-    const handleDelete = (documentId: number): void => {
+    function handleDelete(documentId: number): void {
         deleteForm.delete(`/documents/${documentId}`);
-    };
+    }
+
+    function resetFilters(): void {
+        setQuery('');
+        setEmployeeFilter('all');
+        setTypeFilter('all');
+    }
+
+    function goToPage(nextPage: number): void {
+        setPage(Math.min(Math.max(nextPage, 1), totalPages));
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Documents" />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
-                <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">
-                                Document Management
-                            </Badge>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                                    Employee documents
-                                </h1>
-                                <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                                    Secure storage and retrieval for appointment
-                                    papers, service records, and other employee
-                                    files.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <Button
-                                onClick={() =>
-                                    setShowUploadForm(!showUploadForm)
-                                }
-                            >
-                                <Upload className="size-4" />
-                                Upload document
-                            </Button>
-                            <Button asChild variant="outline">
-                                <Link href="/employees">
-                                    <ArrowRight className="size-4" />
-                                    Go to employees
-                                </Link>
-                            </Button>
-                        </div>
-                    </div>
-                </section>
-
-                {showUploadForm && (
-                    <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-950">
-                                Upload document
-                            </CardTitle>
-                            <CardDescription>
-                                Attach a file to an employee's digital 201
-                                record.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                                <div className="grid gap-2">
-                                    <Label>Employee</Label>
-                                    <Select
-                                        value={form.data.employee_id}
-                                        onValueChange={(value) =>
-                                            form.setData('employee_id', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select employee" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {employees.map((employee) => (
-                                                <SelectItem
-                                                    key={employee.value}
-                                                    value={employee.value}
-                                                >
-                                                    {employee.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={form.errors.employee_id}
-                                    />
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="px-4 lg:px-6">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex max-w-3xl flex-col gap-2">
+                                    <Badge variant="outline" className="w-fit">
+                                        Records
+                                    </Badge>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Documents
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Manage uploaded employee files, filter
+                                        the registry, and keep confidential
+                                        records clearly identified.
+                                    </p>
                                 </div>
 
-                                <div className="grid gap-2">
-                                    <Label>Document type</Label>
-                                    <Select
-                                        value={form.data.document_type_id}
-                                        onValueChange={(value) => {
-                                            const type = documentTypes.find(
-                                                (t) => t.value === value,
-                                            );
-                                            form.setData('document_type_id', value);
-                                            if (type?.is_confidential) {
-                                                form.setData('is_confidential', true);
-                                            }
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {documentTypes.map((type) => (
-                                                <SelectItem
-                                                    key={type.value}
-                                                    value={type.value}
-                                                >
-                                                    {type.label}
-                                                    {type.is_confidential && (
-                                                        <span className="ml-1 text-xs text-slate-400">
-                                                            (confidential)
-                                                        </span>
-                                                    )}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={form.errors.document_type_id}
-                                    />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="file">File</Label>
-                                    <Input
-                                        id="file"
-                                        type="file"
-                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                        onChange={(e) =>
-                                            form.setData(
-                                                'file',
-                                                e.target.files?.[0] ?? null,
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
+                                    <Button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowUploadForm(
+                                                (current) => !current,
                                             )
                                         }
-                                    />
-                                    <InputError message={form.errors.file} />
+                                    >
+                                        <Upload data-icon="inline-start" />
+                                        {showUploadForm
+                                            ? 'Close upload'
+                                            : 'Upload document'}
+                                    </Button>
+                                    <Button asChild variant="outline">
+                                        <Link href="/employees">
+                                            Go to employees
+                                            <ArrowRight data-icon="inline-end" />
+                                        </Link>
+                                    </Button>
                                 </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="notes">Notes</Label>
-                                    <Input
-                                        id="notes"
-                                        value={form.data.notes}
-                                        onChange={(e) =>
-                                            form.setData('notes', e.target.value)
-                                        }
-                                        placeholder="Optional note"
-                                    />
-                                    <InputError message={form.errors.notes} />
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-                                <div>
-                                    <p className="text-sm font-medium text-slate-950">
-                                        Confidential
-                                        {selectedType?.is_confidential && (
-                                            <span className="ml-2 text-xs text-amber-600">
-                                                Required by document type
-                                            </span>
-                                        )}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                        Restrict visibility to authorized HR
-                                        staff only.
-                                    </p>
-                                </div>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant={
-                                        form.data.is_confidential
-                                            ? 'default'
-                                            : 'outline'
-                                    }
-                                    onClick={() =>
-                                        !selectedType?.is_confidential &&
-                                        form.setData(
-                                            'is_confidential',
-                                            !form.data.is_confidential,
-                                        )
-                                    }
-                                >
-                                    {form.data.is_confidential
-                                        ? 'Confidential'
-                                        : 'Not confidential'}
-                                </Button>
-                            </div>
-
-                            <div className="flex justify-end gap-3">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setShowUploadForm(false);
-                                        form.reset();
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleUpload}
-                                    disabled={form.processing}
-                                >
-                                    <Upload className="size-4" />
-                                    Upload
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <CardTitle className="text-slate-950">
-                                    Document registry
-                                </CardTitle>
-                                <CardDescription className="mt-1">
-                                    {filteredDocuments.length} document
-                                    {filteredDocuments.length !== 1 ? 's' : ''}
-                                </CardDescription>
-                            </div>
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                                <Select
-                                    value={employeeFilter}
-                                    onValueChange={setEmployeeFilter}
-                                >
-                                    <SelectTrigger className="w-full sm:w-52">
-                                        <SelectValue placeholder="All employees" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            All employees
-                                        </SelectItem>
-                                        {employees.map((employee) => (
-                                            <SelectItem
-                                                key={employee.value}
-                                                value={employee.value}
-                                            >
-                                                {employee.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <Select
-                                    value={typeFilter}
-                                    onValueChange={setTypeFilter}
-                                >
-                                    <SelectTrigger className="w-full sm:w-52">
-                                        <SelectValue placeholder="All types" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            All types
-                                        </SelectItem>
-                                        {documentTypes.map((type) => (
-                                            <SelectItem
-                                                key={type.value}
-                                                value={type.label}
-                                            >
-                                                {type.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        {filteredDocuments.length === 0 ? (
-                            <div className="flex flex-col items-center gap-3 py-12 text-slate-400">
-                                <FileArchive className="size-10" />
-                                <p className="text-sm">No documents found.</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-200 text-sm">
-                                    <thead>
-                                        <tr className="text-left text-slate-500">
-                                            <th className="px-3 py-3 font-medium">
-                                                Employee
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                Type
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                File
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                Uploaded
-                                            </th>
-                                            <th className="px-3 py-3 font-medium">
-                                                <span className="sr-only">
-                                                    Actions
-                                                </span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {filteredDocuments.map((doc) => (
-                                            <tr
-                                                key={doc.id}
-                                                className="align-middle"
-                                            >
-                                                <td className="px-3 py-3">
-                                                    <div className="font-medium text-slate-950">
-                                                        {doc.employee_name}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500">
-                                                        {doc.employee_number}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="flex items-center gap-1.5">
-                                                        {doc.is_confidential && (
-                                                            <Lock className="size-3.5 text-amber-500" />
-                                                        )}
-                                                        <span className="text-slate-700">
-                                                            {doc.document_type}
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="flex items-center gap-1.5 text-slate-700">
-                                                        <FileText className="size-3.5 text-slate-400" />
-                                                        {doc.file_name}
-                                                    </div>
-                                                    <div className="text-xs text-slate-400">
-                                                        {doc.file_size_formatted}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="text-slate-700">
-                                                        {doc.uploaded_at}
-                                                    </div>
-                                                    <div className="text-xs text-slate-400">
-                                                        {doc.uploaded_by}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            asChild
-                                                            variant="ghost"
-                                                            size="sm"
-                                                        >
-                                                            <a
-                                                                href={`/documents/${doc.id}/download`}
-                                                            >
-                                                                <Download className="size-3.5" />
-                                                                Download
-                                                            </a>
-                                                        </Button>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger
-                                                                asChild
-                                                            >
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="text-red-600 hover:text-red-700"
-                                                                >
-                                                                    <Trash2 className="size-3.5" />
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>
-                                                                        Delete
-                                                                        document?
-                                                                    </AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        This
-                                                                        will
-                                                                        permanently
-                                                                        remove{' '}
-                                                                        <strong>
-                                                                            {
-                                                                                doc.file_name
-                                                                            }
-                                                                        </strong>{' '}
-                                                                        from the
-                                                                        system.
-                                                                        This
-                                                                        action
-                                                                        cannot
-                                                                        be
-                                                                        undone.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>
-                                                                        Cancel
-                                                                    </AlertDialogCancel>
-                                                                    <AlertDialogAction
-                                                                        onClick={() =>
-                                                                            handleDelete(
-                                                                                doc.id,
-                                                                            )
+
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
+                                    <CardHeader>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                {item.hint}
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <item.icon className="size-4" />
+                                            Snapshot
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                            {item.detail}
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
+
+                        {showUploadForm && (
+                            <div className="px-4 lg:px-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Upload document</CardTitle>
+                                        <CardDescription>
+                                            Attach a file to an employee record
+                                            and mark it confidential when access
+                                            should be restricted.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-6">
+                                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="employee_id">
+                                                    Employee
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        form.data.employee_id
+                                                    }
+                                                    onValueChange={(value) =>
+                                                        form.setData(
+                                                            'employee_id',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger
+                                                        id="employee_id"
+                                                        className="w-full"
+                                                    >
+                                                        <SelectValue placeholder="Select employee" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {employees.map(
+                                                                (employee) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            employee.value
                                                                         }
-                                                                        className="bg-red-600 hover:bg-red-700"
+                                                                        value={
+                                                                            employee.value
+                                                                        }
                                                                     >
-                                                                        Delete
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                                                        {
+                                                                            employee.label
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError
+                                                    message={
+                                                        form.errors.employee_id
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="document_type_id">
+                                                    Document type
+                                                </Label>
+                                                <Select
+                                                    value={
+                                                        form.data
+                                                            .document_type_id
+                                                    }
+                                                    onValueChange={(value) => {
+                                                        const type =
+                                                            documentTypes.find(
+                                                                (item) =>
+                                                                    item.value ===
+                                                                    value,
+                                                            );
+
+                                                        form.setData(
+                                                            'document_type_id',
+                                                            value,
+                                                        );
+
+                                                        if (
+                                                            type?.is_confidential
+                                                        ) {
+                                                            form.setData(
+                                                                'is_confidential',
+                                                                true,
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    <SelectTrigger
+                                                        id="document_type_id"
+                                                        className="w-full"
+                                                    >
+                                                        <SelectValue placeholder="Select type" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {documentTypes.map(
+                                                                (type) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            type.value
+                                                                        }
+                                                                        value={
+                                                                            type.value
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            type.label
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                                <InputError
+                                                    message={
+                                                        form.errors
+                                                            .document_type_id
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="file">
+                                                    File
+                                                </Label>
+                                                <Input
+                                                    id="file"
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'file',
+                                                            e.target
+                                                                .files?.[0] ??
+                                                                null,
+                                                        )
+                                                    }
+                                                />
+                                                <InputError
+                                                    message={form.errors.file}
+                                                />
+                                            </div>
+
+                                            <div className="flex flex-col gap-2">
+                                                <Label htmlFor="notes">
+                                                    Notes
+                                                </Label>
+                                                <Input
+                                                    id="notes"
+                                                    value={form.data.notes}
+                                                    onChange={(e) =>
+                                                        form.setData(
+                                                            'notes',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="Optional note"
+                                                />
+                                                <InputError
+                                                    message={form.errors.notes}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col gap-4 rounded-lg border p-4 lg:flex-row lg:items-center lg:justify-between">
+                                            <div className="flex items-start gap-3">
+                                                <Checkbox
+                                                    id="is_confidential"
+                                                    checked={
+                                                        form.data
+                                                            .is_confidential
+                                                    }
+                                                    disabled={
+                                                        selectedType?.is_confidential
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked,
+                                                    ) =>
+                                                        form.setData(
+                                                            'is_confidential',
+                                                            checked === true,
+                                                        )
+                                                    }
+                                                />
+                                                <div className="flex flex-col gap-1">
+                                                    <Label htmlFor="is_confidential">
+                                                        Confidential access
+                                                    </Label>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Restrict visibility to
+                                                        authorized HR staff.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {selectedType?.is_confidential && (
+                                                    <Badge variant="secondary">
+                                                        <Lock />
+                                                        Required by type
+                                                    </Badge>
+                                                )}
+                                                <Badge
+                                                    variant={
+                                                        form.data
+                                                            .is_confidential
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
+                                                >
+                                                    {form.data.is_confidential
+                                                        ? 'Confidential'
+                                                        : 'Standard access'}
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex justify-end gap-3">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => {
+                                                    setShowUploadForm(false);
+                                                    form.reset();
+                                                }}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                onClick={handleUpload}
+                                                disabled={form.processing}
+                                            >
+                                                <Upload data-icon="inline-start" />
+                                                Upload document
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         )}
-                    </CardContent>
-                </Card>
+
+                        <div className="px-4 lg:px-6">
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex flex-col gap-1">
+                                        <CardTitle>Document registry</CardTitle>
+                                        <CardDescription>
+                                            Search files, filter by employee or
+                                            type, and download or remove
+                                            records.
+                                        </CardDescription>
+                                    </div>
+                                    <CardAction>
+                                        <Badge variant="secondary">
+                                            {numberFormatter.format(
+                                                filteredDocuments.length,
+                                            )}{' '}
+                                            of{' '}
+                                            {numberFormatter.format(
+                                                documents.length,
+                                            )}{' '}
+                                            shown
+                                        </Badge>
+                                    </CardAction>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-4">
+                                    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
+                                        <div className="relative">
+                                            <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
+                                            <Input
+                                                value={query}
+                                                onChange={(event) =>
+                                                    setQuery(event.target.value)
+                                                }
+                                                placeholder="Search employee, file name, uploader, or note"
+                                                aria-label="Search documents"
+                                                className="pl-9"
+                                            />
+                                        </div>
+
+                                        <Select
+                                            value={employeeFilter}
+                                            onValueChange={setEmployeeFilter}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="All employees" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All employees
+                                                    </SelectItem>
+                                                    {employees.map(
+                                                        (employee) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    employee.value
+                                                                }
+                                                                value={
+                                                                    employee.value
+                                                                }
+                                                            >
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select
+                                            value={typeFilter}
+                                            onValueChange={setTypeFilter}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="All types" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All types
+                                                    </SelectItem>
+                                                    {documentTypes.map(
+                                                        (type) => (
+                                                            <SelectItem
+                                                                key={type.value}
+                                                                value={
+                                                                    type.label
+                                                                }
+                                                            >
+                                                                {type.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {filteredDocuments.length > 0 ? (
+                                        <div className="overflow-hidden rounded-lg border">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>
+                                                            Employee
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Type
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            File
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Uploaded
+                                                        </TableHead>
+                                                        <TableHead className="text-right">
+                                                            Actions
+                                                        </TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {paginatedDocuments.map(
+                                                        (document) => (
+                                                            <TableRow
+                                                                key={
+                                                                    document.id
+                                                                }
+                                                            >
+                                                                <TableCell className="min-w-[220px]">
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <div className="font-medium">
+                                                                            {
+                                                                                document.employee_name
+                                                                            }
+                                                                        </div>
+                                                                        <div className="text-sm text-muted-foreground">
+                                                                            {
+                                                                                document.employee_number
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        <Badge variant="outline">
+                                                                            {
+                                                                                document.document_type
+                                                                            }
+                                                                        </Badge>
+                                                                        {document.is_confidential && (
+                                                                            <Badge variant="secondary">
+                                                                                <Lock />
+                                                                                Confidential
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell className="min-w-[260px]">
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <div className="flex items-center gap-2 font-medium">
+                                                                            <FileText className="size-4 text-muted-foreground" />
+                                                                            {
+                                                                                document.file_name
+                                                                            }
+                                                                        </div>
+                                                                        <div className="text-sm text-muted-foreground">
+                                                                            {
+                                                                                document.file_size_formatted
+                                                                            }
+                                                                            {document.notes
+                                                                                ? ` • ${document.notes}`
+                                                                                : ''}
+                                                                        </div>
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <div className="flex flex-col gap-1">
+                                                                        <div>
+                                                                            {
+                                                                                document.uploaded_at
+                                                                            }
+                                                                        </div>
+                                                                        <div className="text-sm text-muted-foreground">
+                                                                            {
+                                                                                document.uploaded_by
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell className="text-right">
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <Button
+                                                                            asChild
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                        >
+                                                                            <a
+                                                                                href={`/documents/${document.id}/download`}
+                                                                            >
+                                                                                <Download data-icon="inline-start" />
+                                                                                Download
+                                                                            </a>
+                                                                        </Button>
+
+                                                                        <AlertDialog>
+                                                                            <AlertDialogTrigger
+                                                                                asChild
+                                                                            >
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                >
+                                                                                    <Trash2 data-icon="inline-start" />
+                                                                                    Delete
+                                                                                </Button>
+                                                                            </AlertDialogTrigger>
+                                                                            <AlertDialogContent>
+                                                                                <AlertDialogHeader>
+                                                                                    <AlertDialogTitle>
+                                                                                        Delete
+                                                                                        document?
+                                                                                    </AlertDialogTitle>
+                                                                                    <AlertDialogDescription>
+                                                                                        This
+                                                                                        will
+                                                                                        permanently
+                                                                                        remove{' '}
+                                                                                        <strong>
+                                                                                            {
+                                                                                                document.file_name
+                                                                                            }
+                                                                                        </strong>{' '}
+                                                                                        from
+                                                                                        the
+                                                                                        system.
+                                                                                    </AlertDialogDescription>
+                                                                                </AlertDialogHeader>
+                                                                                <AlertDialogFooter>
+                                                                                    <AlertDialogCancel>
+                                                                                        Cancel
+                                                                                    </AlertDialogCancel>
+                                                                                    <AlertDialogAction
+                                                                                        onClick={() =>
+                                                                                            handleDelete(
+                                                                                                document.id,
+                                                                                            )
+                                                                                        }
+                                                                                        className="bg-destructive text-white hover:bg-destructive/90"
+                                                                                    >
+                                                                                        Delete
+                                                                                    </AlertDialogAction>
+                                                                                </AlertDialogFooter>
+                                                                            </AlertDialogContent>
+                                                                        </AlertDialog>
+                                                                    </div>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ),
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    ) : (
+                                        <Empty className="min-h-[280px] border-border bg-muted/20">
+                                            <EmptyHeader>
+                                                <EmptyMedia variant="icon">
+                                                    <FileArchive />
+                                                </EmptyMedia>
+                                                <EmptyTitle>
+                                                    {documents.length === 0
+                                                        ? 'No documents yet'
+                                                        : 'No matching documents'}
+                                                </EmptyTitle>
+                                                <EmptyDescription>
+                                                    {documents.length === 0
+                                                        ? 'Upload the first employee file to start building the document registry.'
+                                                        : 'Adjust the search or filters to bring matching records back into view.'}
+                                                </EmptyDescription>
+                                            </EmptyHeader>
+                                            <EmptyContent>
+                                                <div className="flex flex-wrap justify-center gap-2">
+                                                    {documents.length === 0 ? (
+                                                        <>
+                                                            <Button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setShowUploadForm(
+                                                                        true,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Upload data-icon="inline-start" />
+                                                                Upload document
+                                                            </Button>
+                                                            <Button
+                                                                asChild
+                                                                variant="outline"
+                                                            >
+                                                                <Link href="/employees">
+                                                                    <Users data-icon="inline-start" />
+                                                                    View
+                                                                    employees
+                                                                </Link>
+                                                            </Button>
+                                                        </>
+                                                    ) : (
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={
+                                                                resetFilters
+                                                            }
+                                                        >
+                                                            Reset filters
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </EmptyContent>
+                                        </Empty>
+                                    )}
+
+                                    {(query ||
+                                        employeeFilter !== 'all' ||
+                                        typeFilter !== 'all') &&
+                                        filteredDocuments.length > 0 && (
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={resetFilters}
+                                                >
+                                                    Reset filters
+                                                </Button>
+                                            </div>
+                                        )}
+
+                                    {filteredDocuments.length > 0 && (
+                                        <div className="flex flex-col gap-3 pt-2 md:flex-row md:items-center md:justify-between">
+                                            <p className="text-sm text-muted-foreground">
+                                                Showing{' '}
+                                                {numberFormatter.format(
+                                                    pageStartIndex + 1,
+                                                )}{' '}
+                                                to{' '}
+                                                {numberFormatter.format(
+                                                    pageEndIndex,
+                                                )}{' '}
+                                                of{' '}
+                                                {numberFormatter.format(
+                                                    filteredDocuments.length,
+                                                )}{' '}
+                                                document records.
+                                            </p>
+
+                                            {filteredDocuments.length >
+                                                ITEMS_PER_PAGE && (
+                                                <Pagination className="md:justify-end">
+                                                    <PaginationContent>
+                                                        <PaginationItem>
+                                                            <PaginationPrevious
+                                                                href="#"
+                                                                onClick={(event) => {
+                                                                    event.preventDefault();
+                                                                    goToPage(
+                                                                        currentPage -
+                                                                            1,
+                                                                    );
+                                                                }}
+                                                                aria-disabled={
+                                                                    currentPage ===
+                                                                    1
+                                                                }
+                                                                className={
+                                                                    currentPage ===
+                                                                    1
+                                                                        ? 'pointer-events-none opacity-50'
+                                                                        : undefined
+                                                                }
+                                                            />
+                                                        </PaginationItem>
+                                                        {paginationItems(
+                                                            currentPage,
+                                                            totalPages,
+                                                        ).map(
+                                                            (
+                                                                item,
+                                                                index,
+                                                            ) => (
+                                                                <PaginationItem
+                                                                    key={`${item}-${index}`}
+                                                                >
+                                                                    {item ===
+                                                                    'ellipsis' ? (
+                                                                        <PaginationEllipsis />
+                                                                    ) : (
+                                                                        <PaginationLink
+                                                                            href="#"
+                                                                            isActive={
+                                                                                item ===
+                                                                                currentPage
+                                                                            }
+                                                                            onClick={(event) => {
+                                                                                event.preventDefault();
+                                                                                goToPage(
+                                                                                    item,
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                item
+                                                                            }
+                                                                        </PaginationLink>
+                                                                    )}
+                                                                </PaginationItem>
+                                                            ),
+                                                        )}
+                                                        <PaginationItem>
+                                                            <PaginationNext
+                                                                href="#"
+                                                                onClick={(event) => {
+                                                                    event.preventDefault();
+                                                                    goToPage(
+                                                                        currentPage +
+                                                                            1,
+                                                                    );
+                                                                }}
+                                                                aria-disabled={
+                                                                    currentPage ===
+                                                                    totalPages
+                                                                }
+                                                                className={
+                                                                    currentPage ===
+                                                                    totalPages
+                                                                        ? 'pointer-events-none opacity-50'
+                                                                        : undefined
+                                                                }
+                                                            />
+                                                        </PaginationItem>
+                                                    </PaginationContent>
+                                                </Pagination>
+                                            )}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );

@@ -148,12 +148,15 @@ class LeaveController extends Controller
         return to_route('leave.index');
     }
 
-    public function show(LeaveRequest $leaveRequest): Response
+    public function show(Request $request, LeaveRequest $leaveRequest): Response
     {
         $leaveRequest->load(['employee', 'leaveType', 'actionedBy']);
+        $user = $request->user();
 
         return Inertia::render('leave/show', [
             'leaveRequest' => $this->mapLeaveRequestDetail($leaveRequest),
+            'canApprove' => $user->hasPermissionTo('leave.approve'),
+            'canCancel' => $user->hasPermissionTo('leave.file') && $leaveRequest->isSubmitted(),
         ]);
     }
 

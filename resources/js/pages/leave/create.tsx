@@ -1,26 +1,44 @@
-import { Head, useForm } from '@inertiajs/react';
-import { ArrowLeft, CalendarDays } from 'lucide-react';
-import { useEffect } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { format, parseISO } from 'date-fns';
+import {
+    ArrowLeft,
+    CalendarDays,
+    CheckCircle2,
+    Clock3,
+    FileText,
+    Save,
+    ShieldCheck,
+} from 'lucide-react';
+import { type ReactNode, useEffect } from 'react';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -39,7 +57,14 @@ type LeaveTypeOption = {
 
 type BalanceMap = Record<
     string,
-    Record<string, { total_days: number; used_days: number; remaining_days: number }>
+    Record<
+        string,
+        {
+            total_days: number;
+            used_days: number;
+            remaining_days: number;
+        }
+    >
 >;
 
 type Props = {
@@ -55,6 +80,78 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Leave', href: '/leave' },
     { title: 'File leave request', href: '/leave/create' },
 ];
+
+const numberFormatter = new Intl.NumberFormat();
+
+function toCalendarDate(value: string): Date | undefined {
+    return value ? parseISO(value) : undefined;
+}
+
+function DatePickerField({
+    value,
+    onChange,
+    placeholder,
+    invalid = false,
+    minDate,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    invalid?: boolean;
+    minDate?: string;
+}): ReactNode {
+    const selectedDate = toCalendarDate(value);
+    const minimumDate = minDate ? parseISO(minDate) : undefined;
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                    aria-invalid={invalid ? 'true' : 'false'}
+                >
+                    <CalendarDays data-icon="inline-start" />
+                    {selectedDate ? format(selectedDate, 'PPP') : placeholder}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) =>
+                        onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                    }
+                    disabled={(date) =>
+                        minimumDate ? date < minimumDate : false
+                    }
+                    initialFocus
+                />
+            </PopoverContent>
+        </Popover>
+    );
+}
+
+function FormSection({
+    title,
+    description,
+    children,
+}: {
+    title: string;
+    description: string;
+    children: ReactNode;
+}): ReactNode {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>{children}</CardContent>
+        </Card>
+    );
+}
 
 export default function LeaveCreate({
     employees,
@@ -72,10 +169,12 @@ export default function LeaveCreate({
         reason: '',
     });
 
-    const selectedType = leaveTypes.find(
-        (t) => t.value === form.data.leave_type_id,
+    const selectedEmployee = employees.find(
+        (employee) => employee.value === form.data.employee_id,
     );
-
+    const selectedType = leaveTypes.find(
+        (type) => type.value === form.data.leave_type_id,
+    );
     const balance =
         form.data.employee_id && form.data.leave_type_id
             ? balances[form.data.employee_id]?.[form.data.leave_type_id] ?? null
@@ -85,247 +184,334 @@ export default function LeaveCreate({
         if (form.data.start_date && form.data.end_date) {
             const start = new Date(form.data.start_date);
             const end = new Date(form.data.end_date);
+
             if (end >= start) {
                 const diffMs = end.getTime() - start.getTime();
                 const diffDays =
                     Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+
                 form.setData('days_requested', String(diffDays));
             }
         }
-    }, [form.data.start_date, form.data.end_date]);
+    }, [form.data.end_date, form.data.start_date]);
 
-    const handleSubmit = () => {
-        form.post('/leave');
-    };
+    const summaryCards = [
+        {
+            title: 'Leave year',
+            value: String(year),
+            detail: 'Current balance lookup and validation year for this filing.',
+            icon: CalendarDays,
+        },
+        {
+            title: 'Employees',
+            value: numberFormatter.format(employees.length),
+            detail: 'Active employees available for leave filing.',
+            icon: FileText,
+        },
+        {
+            title: 'Leave types',
+            value: numberFormatter.format(leaveTypes.length),
+            detail: 'Configured leave categories available for this request.',
+            icon: CheckCircle2,
+        },
+        {
+            title: 'Approval path',
+            value: selectedType?.requires_approval ? 'Approval required' : 'Auto processed',
+            detail: 'Driven by the selected leave type and its workflow rules.',
+            icon: Clock3,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="File Leave Request" />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
-                <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">
-                                Leave Management
-                            </Badge>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                                    File leave request
-                                </h1>
-                                <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                                    Submit a leave request for{' '}
-                                    {year}. Check available balances before
-                                    filing.
-                                </p>
-                            </div>
-                        </div>
-                        <Button asChild variant="outline">
-                            <a href="/leave">
-                                <ArrowLeft className="size-4" />
-                                Back to requests
-                            </a>
-                        </Button>
-                    </div>
-                </section>
-
-                <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-slate-950">
-                            Request details
-                        </CardTitle>
-                        <CardDescription>
-                            Fill in the leave details. Days will be
-                            auto-calculated from the selected date range.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid gap-5 sm:grid-cols-2">
-                            {/* Employee */}
-                            <div className="space-y-1.5">
-                                <Label>
-                                    Employee{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Select
-                                    value={form.data.employee_id}
-                                    onValueChange={(v) => {
-                                        form.setData('employee_id', v);
-                                        form.setData('leave_type_id', '');
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select employee" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {employees.map((e) => (
-                                            <SelectItem
-                                                key={e.value}
-                                                value={e.value}
-                                            >
-                                                {e.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError
-                                    message={form.errors.employee_id}
-                                />
-                            </div>
-
-                            {/* Leave type */}
-                            <div className="space-y-1.5">
-                                <Label>
-                                    Leave type{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Select
-                                    value={form.data.leave_type_id}
-                                    onValueChange={(v) =>
-                                        form.setData('leave_type_id', v)
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {leaveTypes.map((t) => (
-                                            <SelectItem
-                                                key={t.value}
-                                                value={t.value}
-                                            >
-                                                {t.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError
-                                    message={form.errors.leave_type_id}
-                                />
-                            </div>
-
-                            {/* Balance display */}
-                            {balance && (
-                                <div className="sm:col-span-2">
-                                    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm">
-                                        <CalendarDays className="size-4 text-[#1f4e79]" />
-                                        <span className="font-medium text-slate-900">
-                                            Balance ({year}):
-                                        </span>
-                                        <span className="text-slate-600">
-                                            {balance.remaining_days} of{' '}
-                                            {balance.total_days} days
-                                            remaining
-                                        </span>
-                                        {selectedType?.max_days_per_year && (
-                                            <span className="ml-auto text-xs text-slate-400">
-                                                Max{' '}
-                                                {selectedType.max_days_per_year}{' '}
-                                                days/year
-                                            </span>
-                                        )}
-                                    </div>
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            form.post('/leave');
+                        }}
+                        className="flex flex-col gap-4 py-4 md:gap-6 md:py-6"
+                    >
+                        <div className="px-4 lg:px-6">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex max-w-3xl flex-col gap-2">
+                                    <Badge variant="outline" className="w-fit">
+                                        Leave
+                                    </Badge>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        File leave request
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Submit a leave request for {year} from
+                                        the same neutral workspace used across
+                                        the updated HRIS modules. Balances and
+                                        requested days stay visible while you
+                                        file.
+                                    </p>
                                 </div>
-                            )}
 
-                            {/* Start date */}
-                            <div className="space-y-1.5">
-                                <Label htmlFor="start_date">
-                                    Start date{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="start_date"
-                                    type="date"
-                                    value={form.data.start_date}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            'start_date',
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <InputError
-                                    message={form.errors.start_date}
-                                />
-                            </div>
-
-                            {/* End date */}
-                            <div className="space-y-1.5">
-                                <Label htmlFor="end_date">
-                                    End date{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="end_date"
-                                    type="date"
-                                    value={form.data.end_date}
-                                    min={form.data.start_date}
-                                    onChange={(e) =>
-                                        form.setData('end_date', e.target.value)
-                                    }
-                                />
-                                <InputError message={form.errors.end_date} />
-                            </div>
-
-                            {/* Days requested */}
-                            <div className="space-y-1.5">
-                                <Label htmlFor="days_requested">
-                                    Days requested{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="days_requested"
-                                    type="number"
-                                    min="0.5"
-                                    step="0.5"
-                                    value={form.data.days_requested}
-                                    onChange={(e) =>
-                                        form.setData(
-                                            'days_requested',
-                                            e.target.value,
-                                        )
-                                    }
-                                    placeholder="Auto-calculated"
-                                />
-                                <InputError
-                                    message={form.errors.days_requested}
-                                />
-                            </div>
-
-                            {/* Reason */}
-                            <div className="space-y-1.5 sm:col-span-2">
-                                <Label htmlFor="reason">Reason</Label>
-                                <Textarea
-                                    id="reason"
-                                    value={form.data.reason}
-                                    onChange={(e) =>
-                                        form.setData('reason', e.target.value)
-                                    }
-                                    placeholder="Optional reason for the leave..."
-                                    rows={3}
-                                />
-                                <InputError message={form.errors.reason} />
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
+                                    <Button asChild variant="outline">
+                                        <Link href="/leave">
+                                            <ArrowLeft data-icon="inline-start" />
+                                            Back to requests
+                                        </Link>
+                                    </Button>
+                                    <Button type="submit" disabled={form.processing}>
+                                        <Save data-icon="inline-start" />
+                                        Submit leave request
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={() => history.back()}
-                                type="button"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={handleSubmit}
-                                disabled={form.processing}
-                            >
-                                Submit leave request
-                            </Button>
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card key={item.title} className="@container/card shadow-xs">
+                                    <CardHeader>
+                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                Overview
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="text-sm text-muted-foreground">
+                                        {item.detail}
+                                    </CardFooter>
+                                </Card>
+                            ))}
                         </div>
-                    </CardContent>
-                </Card>
+
+                        <div className="grid gap-6 px-4 lg:px-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                            <div className="flex flex-col gap-6">
+                                <FormSection
+                                    title="Request details"
+                                    description="Select the employee, choose the leave type, and define the requested period."
+                                >
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="flex flex-col gap-2">
+                                            <Label>
+                                                Employee <span className="text-destructive">*</span>
+                                            </Label>
+                                            <Select
+                                                value={form.data.employee_id}
+                                                onValueChange={(value) => {
+                                                    form.setData('employee_id', value);
+                                                    form.setData('leave_type_id', '');
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select employee" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {employees.map((employee) => (
+                                                            <SelectItem key={employee.value} value={employee.value}>
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={form.errors.employee_id} />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <Label>
+                                                Leave type <span className="text-destructive">*</span>
+                                            </Label>
+                                            <Select
+                                                value={form.data.leave_type_id}
+                                                onValueChange={(value) =>
+                                                    form.setData('leave_type_id', value)
+                                                }
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select leave type" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {leaveTypes.map((type) => (
+                                                            <SelectItem key={type.value} value={type.value}>
+                                                                {type.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError message={form.errors.leave_type_id} />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <Label>
+                                                Start date <span className="text-destructive">*</span>
+                                            </Label>
+                                            <DatePickerField
+                                                value={form.data.start_date}
+                                                onChange={(value) => form.setData('start_date', value)}
+                                                placeholder="Pick start date"
+                                                invalid={Boolean(form.errors.start_date)}
+                                            />
+                                            <InputError message={form.errors.start_date} />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <Label>
+                                                End date <span className="text-destructive">*</span>
+                                            </Label>
+                                            <DatePickerField
+                                                value={form.data.end_date}
+                                                onChange={(value) => form.setData('end_date', value)}
+                                                placeholder="Pick end date"
+                                                invalid={Boolean(form.errors.end_date)}
+                                                minDate={form.data.start_date}
+                                            />
+                                            <InputError message={form.errors.end_date} />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <Label htmlFor="days_requested">
+                                                Days requested <span className="text-destructive">*</span>
+                                            </Label>
+                                            <Input
+                                                id="days_requested"
+                                                type="number"
+                                                min="0.5"
+                                                step="0.5"
+                                                value={form.data.days_requested}
+                                                onChange={(event) =>
+                                                    form.setData('days_requested', event.target.value)
+                                                }
+                                                placeholder="Auto-calculated"
+                                            />
+                                            <InputError message={form.errors.days_requested} />
+                                        </div>
+
+                                        <div className="flex flex-col gap-2 md:col-span-2">
+                                            <Label htmlFor="reason">Reason</Label>
+                                            <Textarea
+                                                id="reason"
+                                                value={form.data.reason}
+                                                onChange={(event) =>
+                                                    form.setData('reason', event.target.value)
+                                                }
+                                                placeholder="Optional reason for the leave request"
+                                                rows={4}
+                                            />
+                                            <InputError message={form.errors.reason} />
+                                        </div>
+                                    </div>
+                                </FormSection>
+                            </div>
+
+                            <div className="flex flex-col gap-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Balance snapshot</CardTitle>
+                                        <CardDescription>
+                                            Review the employee and leave-type balance before submitting.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-sm font-medium">
+                                                {selectedEmployee?.label ?? 'No employee selected'}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {selectedEmployee
+                                                    ? `Employee no. ${selectedEmployee.employee_number}`
+                                                    : 'Choose an employee to load their leave balances.'}
+                                            </span>
+                                        </div>
+
+                                        {balance ? (
+                                            <div className="rounded-lg border bg-muted/30 p-4">
+                                                <div className="flex items-center gap-2 text-sm font-medium">
+                                                    <CalendarDays className="size-4" />
+                                                    Balance for {year}
+                                                </div>
+                                                <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
+                                                    <span>
+                                                        Remaining: {numberFormatter.format(balance.remaining_days)} of {numberFormatter.format(balance.total_days)} days
+                                                    </span>
+                                                    <span>
+                                                        Used: {numberFormatter.format(balance.used_days)} days
+                                                    </span>
+                                                    {selectedType?.max_days_per_year ? (
+                                                        <span>
+                                                            Type limit: {numberFormatter.format(selectedType.max_days_per_year)} days per year
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
+                                                Select an employee and leave type to show the current leave balance.
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Request summary</CardTitle>
+                                        <CardDescription>
+                                            Quick filing checks before the request is submitted.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+                                        <div className="flex items-start gap-2">
+                                            <ShieldCheck className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                Confirm the selected employee, leave type, and date range.
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <Clock3 className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                Requested days are recalculated automatically when both dates are set.
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                {selectedType?.requires_approval
+                                                    ? 'This leave type will enter the approval queue after filing.'
+                                                    : 'This leave type follows its configured workflow after filing.'}
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter className="flex flex-col gap-3 sm:flex-row">
+                                        <Button
+                                            type="submit"
+                                            className="w-full"
+                                            disabled={form.processing}
+                                        >
+                                            <Save data-icon="inline-start" />
+                                            Submit leave request
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full"
+                                            asChild
+                                        >
+                                            <Link href="/leave">Cancel</Link>
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </AppLayout>
     );

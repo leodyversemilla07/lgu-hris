@@ -1,17 +1,36 @@
-import { Head, router } from '@inertiajs/react';
-import { Download, FileSpreadsheet, FileText, Users, ArrowRightLeft, CalendarDays, ClipboardList } from 'lucide-react';
+import { Head } from '@inertiajs/react';
+import { format } from 'date-fns';
+import {
+    ArrowRightLeft,
+    CalendarDays,
+    ClipboardList,
+    Download,
+    FileSpreadsheet,
+    FileText,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
@@ -33,313 +52,877 @@ type Props = {
     years: SelectOption[];
 };
 
+type ExportAction = {
+    label: string;
+    href: string;
+    icon: typeof FileSpreadsheet;
+};
+
+function DatePickerField({
+    value,
+    onChange,
+    placeholder,
+}: {
+    value?: Date;
+    onChange: (value?: Date) => void;
+    placeholder: string;
+}) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                >
+                    <CalendarDays data-icon="inline-start" />
+                    {value ? format(value, 'PPP') : placeholder}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                    mode="single"
+                    selected={value}
+                    onSelect={onChange}
+                    initialFocus
+                />
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 function buildUrl(base: string, params: Record<string, string | undefined>) {
     const url = new URL(base, window.location.origin);
-    Object.entries(params).forEach(([k, v]) => {
-        if (v && v !== 'all') url.searchParams.set(k, v);
+
+    Object.entries(params).forEach(([key, value]) => {
+        if (value && value !== 'all') {
+            url.searchParams.set(key, value);
+        }
     });
+
     return url.pathname + url.search;
 }
 
-function downloadUrl(path: string) {
+function downloadUrl(path: string): void {
     window.location.href = path;
 }
 
-export default function ReportsIndex({ departments, employees, years }: Props) {
+function ExportButtons({ actions }: { actions: ExportAction[] }) {
+    return (
+        <div className="flex flex-wrap gap-2">
+            {actions.map((action) => (
+                <Button
+                    key={action.label}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => downloadUrl(action.href)}
+                >
+                    <action.icon data-icon="inline-start" />
+                    {action.label}
+                </Button>
+            ))}
+        </div>
+    );
+}
+
+export default function ReportsIndex({
+    departments,
+    employees,
+    leaveTypes,
+    years,
+}: Props) {
     const [masterlistDept, setMasterlistDept] = useState('all');
     const [masterlistStatus, setMasterlistStatus] = useState('active');
-
     const [plantillaDept, setPlantillaDept] = useState('all');
-
-    const [leaveYear, setLeaveYear] = useState(String(new Date().getFullYear()));
+    const [leaveYear, setLeaveYear] = useState(
+        String(new Date().getFullYear()),
+    );
     const [leaveDept, setLeaveDept] = useState('all');
     const [leaveEmployee, setLeaveEmployee] = useState('all');
-
-    const [attendYear, setAttendYear] = useState(String(new Date().getFullYear()));
+    const [attendYear, setAttendYear] = useState(
+        String(new Date().getFullYear()),
+    );
     const [attendMonth, setAttendMonth] = useState('all');
     const [attendDept, setAttendDept] = useState('all');
-
-    const [movDateFrom, setMovDateFrom] = useState('');
-    const [movDateTo, setMovDateTo] = useState('');
+    const [movDateFrom, setMovDateFrom] = useState<Date>();
+    const [movDateTo, setMovDateTo] = useState<Date>();
     const [movDept, setMovDept] = useState('all');
     const [movEmployee, setMovEmployee] = useState('all');
-
     const [srEmployee, setSrEmployee] = useState('');
 
     const months = [
-        { value: '1', label: 'January' }, { value: '2', label: 'February' },
-        { value: '3', label: 'March' }, { value: '4', label: 'April' },
-        { value: '5', label: 'May' }, { value: '6', label: 'June' },
-        { value: '7', label: 'July' }, { value: '8', label: 'August' },
-        { value: '9', label: 'September' }, { value: '10', label: 'October' },
-        { value: '11', label: 'November' }, { value: '12', label: 'December' },
+        { value: '1', label: 'January' },
+        { value: '2', label: 'February' },
+        { value: '3', label: 'March' },
+        { value: '4', label: 'April' },
+        { value: '5', label: 'May' },
+        { value: '6', label: 'June' },
+        { value: '7', label: 'July' },
+        { value: '8', label: 'August' },
+        { value: '9', label: 'September' },
+        { value: '10', label: 'October' },
+        { value: '11', label: 'November' },
+        { value: '12', label: 'December' },
+    ];
+
+    const summaryCards = [
+        {
+            title: 'Departments',
+            value: departments.length.toLocaleString(),
+            detail: 'Active department filters available across exports',
+            hint: 'Filters',
+            icon: Users,
+        },
+        {
+            title: 'Employees',
+            value: employees.length.toLocaleString(),
+            detail: 'Current active employees available for report selection',
+            hint: 'People',
+            icon: FileText,
+        },
+        {
+            title: 'Leave types',
+            value: leaveTypes.length.toLocaleString(),
+            detail: 'Reference leave categories available in the system',
+            hint: 'Catalog',
+            icon: CalendarDays,
+        },
+        {
+            title: 'Year presets',
+            value: years.length.toLocaleString(),
+            detail: 'Available reporting years exposed to the export workspace',
+            hint: 'Periods',
+            icon: ClipboardList,
+        },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Reports" />
-            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Reports &amp; Exports</h1>
-                    <p className="mt-1 text-sm text-slate-500">Generate compliance-ready exports in Excel, CSV, or PDF.</p>
-                </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="px-4 lg:px-6">
+                            <div className="flex max-w-4xl flex-col gap-2">
+                                <Badge variant="outline" className="w-fit">
+                                    Exports
+                                </Badge>
+                                <h1 className="text-2xl font-semibold tracking-tight">
+                                    Reports
+                                </h1>
+                                <p className="text-sm text-muted-foreground">
+                                    Generate compliance-ready exports from a
+                                    single workspace. Every panel keeps the
+                                    existing export routes and query structure
+                                    while moving the page onto the shared UI
+                                    system.
+                                </p>
+                            </div>
+                        </div>
 
-                    {/* Personnel Masterlist */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900">
-                                <Users className="size-5 text-[#1e3a5f]" /> Personnel Masterlist
-                            </CardTitle>
-                            <CardDescription>Full list of employees with department and position details.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Department</label>
-                                    <Select value={masterlistDept} onValueChange={setMasterlistDept}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Departments</SelectItem>
-                                            {departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Status</label>
-                                    <Select value={masterlistStatus} onValueChange={setMasterlistStatus}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="active">Active only</SelectItem>
-                                            <SelectItem value="inactive">Inactive only</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/masterlist/excel', { department_id: masterlistDept, status: masterlistStatus }))}>
-                                    <FileSpreadsheet className="size-4" /> Excel
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/masterlist/csv', { department_id: masterlistDept, status: masterlistStatus }))}>
-                                    <Download className="size-4" /> CSV
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/masterlist/pdf', { department_id: masterlistDept, status: masterlistStatus }))}>
-                                    <FileText className="size-4" /> PDF
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
+                                    <CardHeader>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                {item.hint}
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <item.icon className="size-4" />
+                                            Snapshot
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                            {item.detail}
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
 
-                    {/* Plantilla of Personnel */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900">
-                                <ClipboardList className="size-5 text-[#1e3a5f]" /> Plantilla of Personnel
-                            </CardTitle>
-                            <CardDescription>Authorized positions with incumbents and vacancy status.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-medium text-slate-600">Department</label>
-                                <Select value={plantillaDept} onValueChange={setPlantillaDept}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Departments</SelectItem>
-                                        {departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/plantilla/excel', { department_id: plantillaDept }))}>
-                                    <FileSpreadsheet className="size-4" /> Excel
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/plantilla/csv', { department_id: plantillaDept }))}>
-                                    <Download className="size-4" /> CSV
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        <div className="grid gap-4 px-4 lg:px-6 xl:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Users />
+                                        Personnel Masterlist
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Full list of employees with department,
+                                        position, and active-status filtering.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-4 md:grid-cols-2">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Department
+                                        </div>
+                                        <Select
+                                            value={masterlistDept}
+                                            onValueChange={setMasterlistDept}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Departments
+                                                    </SelectItem>
+                                                    {departments.map(
+                                                        (department) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    department.value
+                                                                }
+                                                                value={
+                                                                    department.value
+                                                                }
+                                                            >
+                                                                {
+                                                                    department.label
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Status
+                                        </div>
+                                        <Select
+                                            value={masterlistStatus}
+                                            onValueChange={setMasterlistStatus}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All
+                                                    </SelectItem>
+                                                    <SelectItem value="active">
+                                                        Active only
+                                                    </SelectItem>
+                                                    <SelectItem value="inactive">
+                                                        Inactive only
+                                                    </SelectItem>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <ExportButtons
+                                        actions={[
+                                            {
+                                                label: 'Excel',
+                                                href: buildUrl(
+                                                    '/exports/masterlist/excel',
+                                                    {
+                                                        department_id:
+                                                            masterlistDept,
+                                                        status: masterlistStatus,
+                                                    },
+                                                ),
+                                                icon: FileSpreadsheet,
+                                            },
+                                            {
+                                                label: 'CSV',
+                                                href: buildUrl(
+                                                    '/exports/masterlist/csv',
+                                                    {
+                                                        department_id:
+                                                            masterlistDept,
+                                                        status: masterlistStatus,
+                                                    },
+                                                ),
+                                                icon: Download,
+                                            },
+                                            {
+                                                label: 'PDF',
+                                                href: buildUrl(
+                                                    '/exports/masterlist/pdf',
+                                                    {
+                                                        department_id:
+                                                            masterlistDept,
+                                                        status: masterlistStatus,
+                                                    },
+                                                ),
+                                                icon: FileText,
+                                            },
+                                        ]}
+                                    />
+                                </CardFooter>
+                            </Card>
 
-                    {/* Leave Ledger */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900">
-                                <CalendarDays className="size-5 text-[#1e3a5f]" /> Leave Ledger
-                            </CardTitle>
-                            <CardDescription>Leave requests filtered by year, department, or employee.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Year</label>
-                                    <Select value={leaveYear} onValueChange={setLeaveYear}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {years.map((y) => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Department</label>
-                                    <Select value={leaveDept} onValueChange={setLeaveDept}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Departments</SelectItem>
-                                            {departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-medium text-slate-600">Employee (optional)</label>
-                                <Select value={leaveEmployee} onValueChange={setLeaveEmployee}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Employees</SelectItem>
-                                        {employees.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/leave-ledger/excel', { year: leaveYear, department_id: leaveDept, employee_id: leaveEmployee }))}>
-                                    <FileSpreadsheet className="size-4" /> Excel
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/leave-ledger/csv', { year: leaveYear, department_id: leaveDept, employee_id: leaveEmployee }))}>
-                                    <Download className="size-4" /> CSV
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <ClipboardList />
+                                        Plantilla of Personnel
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Authorized positions with incumbents and
+                                        vacancy status.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Department
+                                        </div>
+                                        <Select
+                                            value={plantillaDept}
+                                            onValueChange={setPlantillaDept}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Departments
+                                                    </SelectItem>
+                                                    {departments.map(
+                                                        (department) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    department.value
+                                                                }
+                                                                value={
+                                                                    department.value
+                                                                }
+                                                            >
+                                                                {
+                                                                    department.label
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <ExportButtons
+                                        actions={[
+                                            {
+                                                label: 'Excel',
+                                                href: buildUrl(
+                                                    '/exports/plantilla/excel',
+                                                    {
+                                                        department_id:
+                                                            plantillaDept,
+                                                    },
+                                                ),
+                                                icon: FileSpreadsheet,
+                                            },
+                                            {
+                                                label: 'CSV',
+                                                href: buildUrl(
+                                                    '/exports/plantilla/csv',
+                                                    {
+                                                        department_id:
+                                                            plantillaDept,
+                                                    },
+                                                ),
+                                                icon: Download,
+                                            },
+                                        ]}
+                                    />
+                                </CardFooter>
+                            </Card>
 
-                    {/* Attendance Summary */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900">
-                                <CalendarDays className="size-5 text-[#1e3a5f]" /> Attendance Summary
-                            </CardTitle>
-                            <CardDescription>Monthly attendance data with present, absent, and late totals.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Year</label>
-                                    <Select value={attendYear} onValueChange={setAttendYear}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {years.map((y) => <SelectItem key={y.value} value={y.value}>{y.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Month</label>
-                                    <Select value={attendMonth} onValueChange={setAttendMonth}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Months</SelectItem>
-                                            {months.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Department</label>
-                                    <Select value={attendDept} onValueChange={setAttendDept}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            {departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/attendance/excel', { year: attendYear, month: attendMonth, department_id: attendDept }))}>
-                                <FileSpreadsheet className="size-4" /> Excel
-                            </Button>
-                        </CardContent>
-                    </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <CalendarDays />
+                                        Leave Ledger
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Leave requests filtered by year,
+                                        department, or employee.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-4 md:grid-cols-2">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Year
+                                        </div>
+                                        <Select
+                                            value={leaveYear}
+                                            onValueChange={setLeaveYear}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {years.map((year) => (
+                                                        <SelectItem
+                                                            key={year.value}
+                                                            value={year.value}
+                                                        >
+                                                            {year.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Department
+                                        </div>
+                                        <Select
+                                            value={leaveDept}
+                                            onValueChange={setLeaveDept}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Departments
+                                                    </SelectItem>
+                                                    {departments.map(
+                                                        (department) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    department.value
+                                                                }
+                                                                value={
+                                                                    department.value
+                                                                }
+                                                            >
+                                                                {
+                                                                    department.label
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2 md:col-span-2">
+                                        <div className="text-sm font-medium">
+                                            Employee
+                                        </div>
+                                        <Select
+                                            value={leaveEmployee}
+                                            onValueChange={setLeaveEmployee}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Employees
+                                                    </SelectItem>
+                                                    {employees.map(
+                                                        (employee) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    employee.value
+                                                                }
+                                                                value={
+                                                                    employee.value
+                                                                }
+                                                            >
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <ExportButtons
+                                        actions={[
+                                            {
+                                                label: 'Excel',
+                                                href: buildUrl(
+                                                    '/exports/leave-ledger/excel',
+                                                    {
+                                                        year: leaveYear,
+                                                        department_id:
+                                                            leaveDept,
+                                                        employee_id:
+                                                            leaveEmployee,
+                                                    },
+                                                ),
+                                                icon: FileSpreadsheet,
+                                            },
+                                            {
+                                                label: 'CSV',
+                                                href: buildUrl(
+                                                    '/exports/leave-ledger/csv',
+                                                    {
+                                                        year: leaveYear,
+                                                        department_id:
+                                                            leaveDept,
+                                                        employee_id:
+                                                            leaveEmployee,
+                                                    },
+                                                ),
+                                                icon: Download,
+                                            },
+                                        ]}
+                                    />
+                                </CardFooter>
+                            </Card>
 
-                    {/* Personnel Movements */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900">
-                                <ArrowRightLeft className="size-5 text-[#1e3a5f]" /> Personnel Movements
-                            </CardTitle>
-                            <CardDescription>Transfers, promotions, and separations by date range.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">From date</label>
-                                    <input type="date" value={movDateFrom} onChange={(e) => setMovDateFrom(e.target.value)}
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">To date</label>
-                                    <input type="date" value={movDateTo} onChange={(e) => setMovDateTo(e.target.value)}
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Department</label>
-                                    <Select value={movDept} onValueChange={setMovDept}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            {departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-600">Employee</label>
-                                    <Select value={movEmployee} onValueChange={setMovEmployee}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All</SelectItem>
-                                            {employees.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <Button size="sm" variant="outline" onClick={() => downloadUrl(buildUrl('/exports/movements/excel', { date_from: movDateFrom || undefined, date_to: movDateTo || undefined, department_id: movDept, employee_id: movEmployee }))}>
-                                <FileSpreadsheet className="size-4" /> Excel
-                            </Button>
-                        </CardContent>
-                    </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <CalendarDays />
+                                        Attendance Summary
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Monthly attendance exports with year,
+                                        month, and department filters.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-4 md:grid-cols-3">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Year
+                                        </div>
+                                        <Select
+                                            value={attendYear}
+                                            onValueChange={setAttendYear}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {years.map((year) => (
+                                                        <SelectItem
+                                                            key={year.value}
+                                                            value={year.value}
+                                                        >
+                                                            {year.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Month
+                                        </div>
+                                        <Select
+                                            value={attendMonth}
+                                            onValueChange={setAttendMonth}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Months
+                                                    </SelectItem>
+                                                    {months.map((month) => (
+                                                        <SelectItem
+                                                            key={month.value}
+                                                            value={month.value}
+                                                        >
+                                                            {month.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Department
+                                        </div>
+                                        <Select
+                                            value={attendDept}
+                                            onValueChange={setAttendDept}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All
+                                                    </SelectItem>
+                                                    {departments.map(
+                                                        (department) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    department.value
+                                                                }
+                                                                value={
+                                                                    department.value
+                                                                }
+                                                            >
+                                                                {
+                                                                    department.label
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <ExportButtons
+                                        actions={[
+                                            {
+                                                label: 'Excel',
+                                                href: buildUrl(
+                                                    '/exports/attendance/excel',
+                                                    {
+                                                        year: attendYear,
+                                                        month: attendMonth,
+                                                        department_id:
+                                                            attendDept,
+                                                    },
+                                                ),
+                                                icon: FileSpreadsheet,
+                                            },
+                                        ]}
+                                    />
+                                </CardFooter>
+                            </Card>
 
-                    {/* Service Record */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-slate-900">
-                                <FileText className="size-5 text-[#1e3a5f]" /> Service Record (PDF)
-                            </CardTitle>
-                            <CardDescription>Individual service record with compensation and movement history.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-1">
-                                <label className="text-xs font-medium text-slate-600">Select Employee</label>
-                                <Select value={srEmployee} onValueChange={setSrEmployee}>
-                                    <SelectTrigger><SelectValue placeholder="Choose employee…" /></SelectTrigger>
-                                    <SelectContent>
-                                        {employees.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                disabled={!srEmployee}
-                                onClick={() => srEmployee && downloadUrl(`/exports/service-record/${srEmployee}/pdf`)}
-                            >
-                                <FileText className="size-4" /> Download PDF
-                            </Button>
-                        </CardContent>
-                    </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <ArrowRightLeft />
+                                        Personnel Movements
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Transfers, promotions, and separations
+                                        by date range, department, or employee.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-4 md:grid-cols-2">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            From date
+                                        </div>
+                                        <DatePickerField
+                                            value={movDateFrom}
+                                            onChange={setMovDateFrom}
+                                            placeholder="Pick from date"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            To date
+                                        </div>
+                                        <DatePickerField
+                                            value={movDateTo}
+                                            onChange={setMovDateTo}
+                                            placeholder="Pick to date"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Department
+                                        </div>
+                                        <Select
+                                            value={movDept}
+                                            onValueChange={setMovDept}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All
+                                                    </SelectItem>
+                                                    {departments.map(
+                                                        (department) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    department.value
+                                                                }
+                                                                value={
+                                                                    department.value
+                                                                }
+                                                            >
+                                                                {
+                                                                    department.label
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Employee
+                                        </div>
+                                        <Select
+                                            value={movEmployee}
+                                            onValueChange={setMovEmployee}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All
+                                                    </SelectItem>
+                                                    {employees.map(
+                                                        (employee) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    employee.value
+                                                                }
+                                                                value={
+                                                                    employee.value
+                                                                }
+                                                            >
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <ExportButtons
+                                        actions={[
+                                            {
+                                                label: 'Excel',
+                                                href: buildUrl(
+                                                    '/exports/movements/excel',
+                                                    {
+                                                        date_from: movDateFrom
+                                                            ? format(
+                                                                  movDateFrom,
+                                                                  'yyyy-MM-dd',
+                                                              )
+                                                            : undefined,
+                                                        date_to: movDateTo
+                                                            ? format(
+                                                                  movDateTo,
+                                                                  'yyyy-MM-dd',
+                                                              )
+                                                            : undefined,
+                                                        department_id: movDept,
+                                                        employee_id:
+                                                            movEmployee,
+                                                    },
+                                                ),
+                                                icon: FileSpreadsheet,
+                                            },
+                                        ]}
+                                    />
+                                </CardFooter>
+                            </Card>
 
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <FileText />
+                                        Service Record
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Generate the individual PDF service
+                                        record with compensation and movement
+                                        history.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Select employee
+                                        </div>
+                                        <Select
+                                            value={srEmployee}
+                                            onValueChange={setSrEmployee}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Choose employee" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    {employees.map(
+                                                        (employee) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    employee.value
+                                                                }
+                                                                value={
+                                                                    employee.value
+                                                                }
+                                                            >
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={!srEmployee}
+                                        onClick={() =>
+                                            srEmployee &&
+                                            downloadUrl(
+                                                `/exports/service-record/${srEmployee}/pdf`,
+                                            )
+                                        }
+                                    >
+                                        <FileText data-icon="inline-start" />
+                                        Download PDF
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
         </AppLayout>
     );
 }
-

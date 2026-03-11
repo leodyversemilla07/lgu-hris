@@ -11,17 +11,34 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 test('hr staff can view the leave index', function () {
     $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create([
+        'first_name' => 'Maria',
+        'last_name' => 'Santos',
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->first();
+
+    LeaveRequest::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'status' => 'submitted',
+    ]);
 
     $this->actingAs($user)
         ->get(route('leave.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('leave/index')
-            ->has('leaveRequests')
+            ->has('leaveRequests', 1)
             ->has('leaveTypes')
+            ->where('leaveRequests.0.employee_id', $employee->id)
+            ->where('leaveRequests.0.employee_name', 'Santos, Maria')
+            ->where('leaveRequests.0.leave_type', $leaveType->name)
+            ->where('leaveRequests.0.status', 'submitted')
             ->where('canApprove', true)
         );
 });
@@ -38,6 +55,69 @@ test('employee can view the leave index', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('leave/index')
             ->where('canApprove', false)
+        );
+});
+
+test('leave index returns multiple requests for frontend pagination', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create();
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    LeaveRequest::factory()->count(12)->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'status' => 'submitted',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leave/index')
+            ->has('leaveRequests', 12)
+        );
+});
+
+test('hr staff can view the leave create page', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create([
+        'first_name' => 'Ana',
+        'last_name' => 'Reyes',
+        'employee_number' => 'EMP-1007',
+        'is_active' => true,
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    LeaveBalance::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'year' => now()->year,
+        'total_days' => 15,
+        'used_days' => 2,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.create', ['employee_id' => $employee->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leave/create')
+            ->has('employees.0.value')
+            ->has('employees.0.label')
+            ->has('leaveTypes.0.value')
+            ->has('leaveTypes.0.label')
+            ->has('balances')
+            ->where('year', now()->year)
+            ->where('preselectedEmployeeId', (string) $employee->id)
         );
 });
 
@@ -98,6 +178,32 @@ test('employee can view their leave request', function () {
             ->has('leaveRequest')
             ->where('leaveRequest.id', $leaveRequest->id)
             ->where('leaveRequest.status', 'submitted')
+            ->where('canApprove', false)
+            ->where('canCancel', true)
+        );
+});
+
+test('hr staff can view a leave request with approval actions', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $leaveType = LeaveType::where('code', 'VL')->first();
+    $leaveRequest = LeaveRequest::factory()->create([
+        'leave_type_id' => $leaveType->id,
+        'status' => 'submitted',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.show', $leaveRequest))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leave/show')
+            ->where('leaveRequest.id', $leaveRequest->id)
+            ->where('canApprove', true)
+            ->where('canCancel', true)
         );
 });
 
@@ -259,16 +365,24 @@ test('cannot approve an already-actioned leave request', function () {
 
 test('hr staff can view leave balances', function () {
     $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
+
+    Employee::factory()->create([
+        'is_active' => true,
+    ]);
 
     $this->actingAs($user)
         ->get(route('leave-balances.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('leave/balances')
-            ->has('rows')
+            ->has('rows.0.employee_id')
+            ->has('rows.0.leave_type_id')
+            ->has('leaveTypes.0.value')
+            ->has('leaveTypes.0.label')
             ->has('year')
         );
 });

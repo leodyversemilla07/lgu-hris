@@ -22,6 +22,11 @@ test('hr staff can view an employee profile', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('employees/show')
             ->has('employee')
+            ->has('users')
+            ->has('documents', 0)
+            ->has('documentTypes')
+            ->has('movements', 0)
+            ->where('compensation', null)
             ->where('employee.id', $employee->id)
             ->where('employee.first_name', 'Maria')
             ->where('employee.last_name', 'Santos')

@@ -11,19 +11,62 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('hr staff can view the movements index', function () {
-    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed([RoleAndPermissionSeeder::class, MovementTypeSeeder::class]);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create([
+        'first_name' => 'Maria',
+        'last_name' => 'Santos',
+        'employee_number' => 'EMP-1001',
+    ]);
+    $movementType = MovementType::query()->first();
+
+    PersonnelMovement::factory()->create([
+        'employee_id' => $employee->id,
+        'movement_type_id' => $movementType->id,
+        'recorded_by' => $user->id,
+        'order_number' => 'ORD-001-2025',
+    ]);
 
     $this->actingAs($user)
         ->get(route('personnel-movements.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('personnel-movements/index')
-            ->has('movements')
+            ->has('movements', 1)
             ->has('employees')
             ->has('movementTypes')
+            ->where('movements.0.employee_id', $employee->id)
+            ->where('movements.0.employee_name', 'Santos, Maria')
+            ->where('movements.0.employee_number', 'EMP-1001')
+            ->where('movements.0.movement_type', $movementType->name)
+            ->where('movements.0.order_number', 'ORD-001-2025')
+        );
+});
+
+test('movements index returns multiple records for frontend pagination', function () {
+    $this->seed([RoleAndPermissionSeeder::class, MovementTypeSeeder::class]);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create();
+    $movementType = MovementType::query()->first();
+
+    PersonnelMovement::factory()->count(12)->create([
+        'employee_id' => $employee->id,
+        'movement_type_id' => $movementType->id,
+        'recorded_by' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('personnel-movements.index'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('personnel-movements/index')
+            ->has('movements', 12)
         );
 });
 
@@ -44,21 +87,26 @@ test('employee role cannot access movements index', function () {
 });
 
 test('hr staff can view the create movement form', function () {
-    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed([RoleAndPermissionSeeder::class, MovementTypeSeeder::class]);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
 
+    $employee = Employee::factory()->create(['is_active' => true]);
+
     $this->actingAs($user)
-        ->get(route('personnel-movements.create'))
+        ->get(route('personnel-movements.create', ['employee_id' => $employee->id]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('personnel-movements/create')
-            ->has('employees')
-            ->has('movementTypes')
+            ->has('employees.0.value')
+            ->has('employees.0.label')
+            ->has('movementTypes.0.value')
+            ->has('movementTypes.0.label')
             ->has('departments')
             ->has('positions')
             ->has('employmentStatuses')
+            ->where('prefillEmployeeId', (string) $employee->id)
         );
 });
 
