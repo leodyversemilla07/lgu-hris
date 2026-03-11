@@ -1,5 +1,6 @@
 import {
     ArrowRightLeft,
+    Database,
     FileArchive,
     FileSpreadsheet,
     LayoutGrid,
@@ -73,6 +74,14 @@ export const hrisPrimaryNavigation: HrisModule[] = [
             'Implement roles, permissions, and audit-ready access rules.',
         icon: ShieldCheck,
         status: 'next',
+    },
+    {
+        title: 'Reference Data',
+        href: '/reference-data',
+        description:
+            'Manage lookup tables for departments, positions, leave types, and more.',
+        icon: Database,
+        status: 'ready',
     },
     {
         title: 'My Profile',

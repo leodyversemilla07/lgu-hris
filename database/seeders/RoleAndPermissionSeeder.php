@@ -28,6 +28,7 @@ class RoleAndPermissionSeeder extends Seeder
             'reports.view',
             'reports.export',
             'access-control.manage',
+            'reference-data.manage',
         ];
 
         foreach ($permissions as $permission) {

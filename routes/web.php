@@ -12,6 +12,7 @@ use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\PersonnelMovementController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -141,6 +142,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('exports/movements/excel', [ExportController::class, 'personnelMovementsExcel'])->name('exports.movements.excel');
         Route::get('exports/service-record/{employee}/pdf', [ExportController::class, 'serviceRecordPdf'])->name('exports.service-record.pdf');
     });
+
+    Route::get('reference-data', [ReferenceDataController::class, 'index'])
+        ->middleware('permission:reference-data.manage')
+        ->name('reference-data.index');
+    Route::post('reference-data', [ReferenceDataController::class, 'store'])
+        ->middleware('permission:reference-data.manage')
+        ->name('reference-data.store');
+    Route::put('reference-data/{id}', [ReferenceDataController::class, 'update'])
+        ->middleware('permission:reference-data.manage')
+        ->name('reference-data.update');
+    Route::delete('reference-data/{id}', [ReferenceDataController::class, 'destroy'])
+        ->middleware('permission:reference-data.manage')
+        ->name('reference-data.destroy');
 
     Route::get('access-control', [UserController::class, 'index'])
         ->middleware('permission:access-control.manage')
