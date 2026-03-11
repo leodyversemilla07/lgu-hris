@@ -9,6 +9,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\PersonnelMovementController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
@@ -21,6 +22,8 @@ Route::inertia('/', 'welcome', [
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('my-profile', [MyProfileController::class, 'index'])->name('my-profile.index');
 
     Route::get('employees', [EmployeeController::class, 'index'])
         ->middleware('permission:employees.view')
@@ -46,6 +49,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('employees/{employee}/restore', [EmployeeController::class, 'restore'])
         ->middleware('permission:employees.manage')
         ->name('employees.restore');
+    Route::patch('employees/{employee}/link-user', [EmployeeController::class, 'linkUser'])
+        ->middleware('permission:employees.manage')
+        ->name('employees.link-user');
 
     Route::get('documents', [DocumentController::class, 'index'])
         ->middleware('permission:documents.view')

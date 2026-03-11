@@ -50,8 +50,11 @@ type UserRow = {
     name: string;
     email: string;
     roles: string[];
+    managed_department_id: string | null;
     created_at: string;
 };
+
+type DeptOption = { value: string; label: string };
 
 type AuditRow = {
     id: number;
@@ -67,6 +70,7 @@ type AuditRow = {
 type Props = {
     users: UserRow[];
     roles: string[];
+    departments: DeptOption[];
     auditLogs: AuditRow[];
 };
 
@@ -86,9 +90,13 @@ function RoleBadge({ role }: { role: string }) {
     );
 }
 
-function EditRoleDialog({ user, roles }: { user: UserRow; roles: string[] }) {
+function EditRoleDialog({ user, roles, departments }: { user: UserRow; roles: string[]; departments: DeptOption[] }) {
     const [open, setOpen] = useState(false);
-    const form = useForm({ role: user.roles[0] ?? '' });
+    const form = useForm({
+        role: user.roles[0] ?? '',
+        managed_department_id: user.managed_department_id ?? '',
+    });
+    const isDeptHead = form.data.role === 'Department Head';
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
@@ -119,6 +127,18 @@ function EditRoleDialog({ user, roles }: { user: UserRow; roles: string[] }) {
                             </SelectContent>
                         </Select>
                     </div>
+                    {isDeptHead && (
+                        <div className="space-y-2">
+                            <Label>Managed department</Label>
+                            <Select value={form.data.managed_department_id} onValueChange={(v) => form.setData('managed_department_id', v)}>
+                                <SelectTrigger><SelectValue placeholder="Select department…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="0">— None —</SelectItem>
+                                    {departments.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                         <Button type="submit" disabled={form.processing}>Save</Button>
@@ -190,7 +210,7 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
     );
 }
 
-export default function AccessControlIndex({ users, roles, auditLogs }: Props) {
+export default function AccessControlIndex({ users, roles, departments, auditLogs }: Props) {
     function deleteUser(user: UserRow) {
         if (!confirm(`Remove ${user.name}? This cannot be undone.`)) return;
         router.delete(`/access-control/users/${user.id}`);
@@ -265,7 +285,7 @@ export default function AccessControlIndex({ users, roles, auditLogs }: Props) {
                                                 <TableCell className="text-sm text-slate-500">{user.created_at}</TableCell>
                                                 <TableCell>
                                                     <div className="flex items-center gap-1">
-                                                        <EditRoleDialog user={user} roles={roles} />
+                                                        <EditRoleDialog user={user} roles={roles} departments={departments} />
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"

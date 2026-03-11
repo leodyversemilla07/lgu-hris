@@ -29,6 +29,11 @@ class LeaveController extends Controller
             if ($employeeId) {
                 $query->where('employee_id', $employeeId);
             }
+        } elseif ($user->hasRole('Department Head') && $user->managed_department_id) {
+            $deptEmployeeIds = Employee::where('department_id', $user->managed_department_id)
+                ->where('is_active', true)
+                ->pluck('id');
+            $query->whereIn('employee_id', $deptEmployeeIds);
         }
 
         if ($statusFilter = $request->query('status')) {

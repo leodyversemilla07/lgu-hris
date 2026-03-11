@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\Department;
 use App\Models\User;
 use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,7 @@ class UserController extends Controller
 {
     public function index(): Response
     {
-        $users = User::with('roles')
+        $users = User::with(['roles', 'managedDepartment'])
             ->orderBy('name')
             ->get()
             ->map(fn (User $user): array => [
@@ -24,10 +25,14 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name')->toArray(),
+                'managed_department_id' => $user->managed_department_id ? (string) $user->managed_department_id : null,
                 'created_at' => $user->created_at?->format('Y-m-d'),
             ]);
 
         $roles = Role::orderBy('name')->pluck('name');
+
+        $departments = Department::where('is_active', true)->orderBy('name')->get(['id', 'name'])
+            ->map(fn (Department $d): array => ['value' => (string) $d->id, 'label' => $d->name]);
 
         $auditLogs = AuditLog::with('user:id,name')
             ->orderByDesc('created_at')
@@ -47,6 +52,7 @@ class UserController extends Controller
         return Inertia::render('access-control/index', [
             'users' => $users,
             'roles' => $roles,
+            'departments' => $departments,
             'auditLogs' => $auditLogs,
         ]);
     }
@@ -85,10 +91,12 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'role' => ['required', 'string', 'exists:roles,name'],
+            'managed_department_id' => ['nullable', 'integer', 'exists:departments,id'],
         ]);
 
         $oldRoles = $user->roles->pluck('name')->toArray();
         $user->syncRoles([$validated['role']]);
+        $user->update(['managed_department_id' => $validated['managed_department_id'] ?? null]);
 
         AuditService::log(
             'role_changed',

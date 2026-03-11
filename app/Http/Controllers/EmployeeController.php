@@ -12,7 +12,9 @@ use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\PersonnelMovement;
 use App\Models\Position;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -20,11 +22,17 @@ class EmployeeController extends Controller
 {
     public function index(): Response
     {
-        $employees = Employee::query()
+        $user = auth()->user();
+        $query = Employee::query()
             ->with(['department', 'position', 'employmentType', 'employmentStatus'])
             ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->get()
+            ->orderBy('first_name');
+
+        if ($user->hasRole('Department Head') && $user->managed_department_id) {
+            $query->where('department_id', $user->managed_department_id);
+        }
+
+        $employees = $query->get()
             ->map(fn (Employee $employee): array => $this->mapEmployee($employee));
 
         return Inertia::render('employees/index', [
@@ -117,6 +125,10 @@ class EmployeeController extends Controller
 
         return Inertia::render('employees/show', [
             'employee' => $this->mapEmployeeDetail($employee),
+            'users' => User::orderBy('name')->get(['id', 'name', 'email'])->map(fn (User $u): array => [
+                'value' => (string) $u->id,
+                'label' => $u->name.' ('.$u->email.')',
+            ]),
             'documents' => $employee->documents
                 ->sortByDesc('created_at')
                 ->values()
@@ -234,6 +246,29 @@ class EmployeeController extends Controller
         ]);
 
         return to_route('employees.show', $employee);
+    }
+
+    public function linkUser(Employee $employee, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+        ]);
+
+        $userId = $request->input('user_id') ?: null;
+
+        if ($userId) {
+            $conflict = Employee::where('user_id', $userId)
+                ->where('id', '!=', $employee->id)
+                ->exists();
+
+            if ($conflict) {
+                return back()->with('error', 'This user account is already linked to another employee record.');
+            }
+        }
+
+        $employee->update(['user_id' => $userId]);
+
+        return back()->with('success', $userId ? 'User account linked successfully.' : 'User account unlinked.');
     }
 
     /**

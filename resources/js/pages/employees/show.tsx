@@ -8,6 +8,7 @@ import {
     Download,
     FileArchive,
     FileText,
+    Link2,
     Lock,
     Pencil,
     Plus,
@@ -92,6 +93,8 @@ type EmployeeDetail = {
     archived_at: string | null;
 };
 
+type Option = { value: string; label: string };
+
 type DocumentRecord = {
     id: number;
     document_type: string;
@@ -134,13 +137,14 @@ type CompensationRecord = {
 
 type Props = {
     employee: EmployeeDetail;
+    users: Option[];
     documents: DocumentRecord[];
     documentTypes: DocumentTypeOption[];
     movements: MovementRecord[];
     compensation: CompensationRecord;
 };
 
-export default function EmployeeShow({ employee, documents, documentTypes, movements, compensation }: Props) {
+export default function EmployeeShow({ employee, users, documents, documentTypes, movements, compensation }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Employees', href: '/employees' },
@@ -163,6 +167,7 @@ export default function EmployeeShow({ employee, documents, documentTypes, movem
         is_confidential: false,
     });
     const deleteDocForm = useForm({});
+    const linkUserForm = useForm({ user_id: employee.user_id ? String(employee.user_id) : '' });
 
     const handleArchive = (): void => {
         archiveForm.patch(`/employees/${employee.id}/archive`);
@@ -433,6 +438,34 @@ export default function EmployeeShow({ employee, documents, documentTypes, movem
                                             />
                                         )}
                                 </dl>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-slate-200/75 bg-white/95 shadow-sm">
+                            <CardHeader>
+                                <CardTitle className="text-slate-950 flex items-center gap-2"><Link2 className="size-4" />Linked user account</CardTitle>
+                                <CardDescription>Connect this employee record to a user account for system access.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                                    <div className="flex-1 space-y-1.5">
+                                        <Label>User account</Label>
+                                        <Select value={linkUserForm.data.user_id} onValueChange={(v) => linkUserForm.setData('user_id', v)}>
+                                            <SelectTrigger><SelectValue placeholder="Select a user…" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="0">— No linked account —</SelectItem>
+                                                {users.map((u) => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button
+                                        onClick={() => linkUserForm.patch(`/employees/${employee.id}/link-user`, { data: { user_id: linkUserForm.data.user_id === '0' ? null : linkUserForm.data.user_id } })}
+                                        disabled={linkUserForm.processing}
+                                        variant="outline"
+                                    >
+                                        Save link
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

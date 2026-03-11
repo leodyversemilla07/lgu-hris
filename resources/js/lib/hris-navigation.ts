@@ -4,6 +4,7 @@ import {
     FileSpreadsheet,
     LayoutGrid,
     ShieldCheck,
+    UserCircle,
     UserRoundSearch,
     WalletCards,
 } from 'lucide-react';
@@ -72,6 +73,13 @@ export const hrisPrimaryNavigation: HrisModule[] = [
             'Implement roles, permissions, and audit-ready access rules.',
         icon: ShieldCheck,
         status: 'next',
+    },
+    {
+        title: 'My Profile',
+        href: '/my-profile',
+        description: 'View your personal employment information and leave balances.',
+        icon: UserCircle,
+        status: 'ready',
     },
 ];
 
