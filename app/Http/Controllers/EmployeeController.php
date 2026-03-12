@@ -8,11 +8,13 @@ use App\Models\Department;
 use App\Models\DocumentType;
 use App\Models\Employee;
 use App\Models\EmployeeDocument;
+use App\Models\EmployeeHistory;
 use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\PersonnelMovement;
 use App\Models\Position;
 use App\Models\User;
+use App\Models\WorkSchedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,9 +24,11 @@ class EmployeeController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('viewAny', Employee::class);
+
         $user = auth()->user();
         $query = Employee::query()
-            ->with(['department', 'position', 'employmentType', 'employmentStatus'])
+            ->with(['department', 'position', 'employmentType', 'employmentStatus', 'workSchedule'])
             ->orderBy('last_name')
             ->orderBy('first_name');
 
@@ -42,6 +46,8 @@ class EmployeeController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', Employee::class);
+
         return Inertia::render('employees/create', [
             'departments' => Department::query()
                 ->where('is_active', true)
@@ -77,11 +83,24 @@ class EmployeeController extends Controller
                     'value' => (string) $employmentStatus->id,
                     'label' => $employmentStatus->name,
                 ]),
+            'workSchedules' => WorkSchedule::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'time_in', 'time_out', 'work_hours_per_day'])
+                ->map(fn (WorkSchedule $workSchedule): array => [
+                    'value' => (string) $workSchedule->id,
+                    'label' => $workSchedule->name,
+                    'time_in' => substr($workSchedule->time_in, 0, 5),
+                    'time_out' => substr($workSchedule->time_out, 0, 5),
+                    'work_hours_per_day' => (float) $workSchedule->work_hours_per_day,
+                ]),
         ]);
     }
 
     public function store(EmployeeStoreRequest $request): RedirectResponse
     {
+        $this->authorize('create', Employee::class);
+
         Employee::query()->create([
             ...$request->validated(),
             'email' => $request->string('email')->trim()->value() ?: null,
@@ -93,13 +112,18 @@ class EmployeeController extends Controller
         return to_route('employees.index');
     }
 
-    public function show(Employee $employee): Response
+    public function show(Request $request, Employee $employee): Response
     {
+        $this->authorize('view', $employee);
+
+        $user = $request->user();
+
         $employee->load([
             'department',
             'position',
             'employmentType',
             'employmentStatus',
+            'workSchedule',
             'documents.documentType',
             'documents.uploader',
             'movements.movementType',
@@ -111,6 +135,7 @@ class EmployeeController extends Controller
             'movements.toEmploymentStatus',
             'movements.recordedBy',
             'compensations.salaryGrade',
+            'histories.recordedBy',
         ]);
 
         $documentTypes = DocumentType::query()
@@ -125,11 +150,14 @@ class EmployeeController extends Controller
 
         return Inertia::render('employees/show', [
             'employee' => $this->mapEmployeeDetail($employee),
-            'users' => User::orderBy('name')->get(['id', 'name', 'email'])->map(fn (User $u): array => [
-                'value' => (string) $u->id,
-                'label' => $u->name.' ('.$u->email.')',
-            ]),
+            'users' => $user->can('linkUser', $employee)
+                ? User::orderBy('name')->get(['id', 'name', 'email'])->map(fn (User $linkedUser): array => [
+                    'value' => (string) $linkedUser->id,
+                    'label' => $linkedUser->name.' ('.$linkedUser->email.')',
+                ])
+                : [],
             'documents' => $employee->documents
+                ->filter(fn (EmployeeDocument $document): bool => $user->can('view', $document))
                 ->sortByDesc('created_at')
                 ->values()
                 ->map(fn (EmployeeDocument $document): array => [
@@ -146,19 +174,27 @@ class EmployeeController extends Controller
             'movements' => $employee->movements
                 ->sortByDesc('effective_date')
                 ->values()
-                ->map(fn (PersonnelMovement $m): array => [
-                    'id' => $m->id,
-                    'movement_type' => $m->movementType->name,
-                    'effective_date' => $m->effective_date->format('M d, Y'),
-                    'order_number' => $m->order_number,
-                    'from_department' => $m->fromDepartment?->name,
-                    'to_department' => $m->toDepartment?->name,
-                    'from_position' => $m->fromPosition?->name,
-                    'to_position' => $m->toPosition?->name,
-                    'from_employment_status' => $m->fromEmploymentStatus?->name,
-                    'to_employment_status' => $m->toEmploymentStatus?->name,
-                    'recorded_by' => $m->recordedBy?->name,
+                ->map(fn (PersonnelMovement $movement): array => [
+                    'id' => $movement->id,
+                    'movement_type' => $movement->movementType->name,
+                    'effective_date' => $movement->effective_date->format('M d, Y'),
+                    'order_number' => $movement->order_number,
+                    'from_department' => $movement->fromDepartment?->name,
+                    'to_department' => $movement->toDepartment?->name,
+                    'from_position' => $movement->fromPosition?->name,
+                    'to_position' => $movement->toPosition?->name,
+                    'from_employment_status' => $movement->fromEmploymentStatus?->name,
+                    'to_employment_status' => $movement->toEmploymentStatus?->name,
+                    'recorded_by' => $movement->recordedBy?->name,
                 ]),
+            'history' => $employee->histories
+                ->sortByDesc(fn (EmployeeHistory $history): string => sprintf(
+                    '%s-%s',
+                    $history->effective_date?->format('Y-m-d') ?? '0000-00-00',
+                    $history->created_at->format('Y-m-d H:i:s'),
+                ))
+                ->values()
+                ->map(fn (EmployeeHistory $history): array => $this->mapHistory($history)),
             'compensation' => $employee->compensations
                 ->sortByDesc('effective_date')
                 ->first() ? [
@@ -174,7 +210,9 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee): Response
     {
-        $employee->load(['department', 'position', 'employmentType', 'employmentStatus']);
+        $this->authorize('update', $employee);
+
+        $employee->load(['department', 'position', 'employmentType', 'employmentStatus', 'workSchedule']);
 
         return Inertia::render('employees/edit', [
             'employee' => $this->mapEmployeeDetail($employee),
@@ -212,11 +250,30 @@ class EmployeeController extends Controller
                     'value' => (string) $employmentStatus->id,
                     'label' => $employmentStatus->name,
                 ]),
+            'workSchedules' => WorkSchedule::query()
+                ->where(function ($query) use ($employee): void {
+                    $query->where('is_active', true);
+
+                    if ($employee->work_schedule_id !== null) {
+                        $query->orWhere('id', $employee->work_schedule_id);
+                    }
+                })
+                ->orderBy('name')
+                ->get(['id', 'name', 'time_in', 'time_out', 'work_hours_per_day'])
+                ->map(fn (WorkSchedule $workSchedule): array => [
+                    'value' => (string) $workSchedule->id,
+                    'label' => $workSchedule->name,
+                    'time_in' => substr($workSchedule->time_in, 0, 5),
+                    'time_out' => substr($workSchedule->time_out, 0, 5),
+                    'work_hours_per_day' => (float) $workSchedule->work_hours_per_day,
+                ]),
         ]);
     }
 
     public function update(EmployeeUpdateRequest $request, Employee $employee): RedirectResponse
     {
+        $this->authorize('update', $employee);
+
         $employee->update([
             ...$request->validated(),
             'email' => $request->string('email')->trim()->value() ?: null,
@@ -230,6 +287,8 @@ class EmployeeController extends Controller
 
     public function archive(Employee $employee): RedirectResponse
     {
+        $this->authorize('archive', $employee);
+
         $employee->update([
             'is_active' => false,
             'archived_at' => now(),
@@ -240,6 +299,8 @@ class EmployeeController extends Controller
 
     public function restore(Employee $employee): RedirectResponse
     {
+        $this->authorize('restore', $employee);
+
         $employee->update([
             'is_active' => true,
             'archived_at' => null,
@@ -250,6 +311,8 @@ class EmployeeController extends Controller
 
     public function linkUser(Employee $employee, Request $request): RedirectResponse
     {
+        $this->authorize('linkUser', $employee);
+
         $request->validate([
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
@@ -321,22 +384,18 @@ class EmployeeController extends Controller
             'phone' => $employee->phone,
             'birth_date' => $employee->birth_date?->format('Y-m-d'),
             'birth_date_formatted' => $employee->birth_date?->format('M d, Y'),
-            // Address
             'address_street' => $employee->address_street,
             'address_city' => $employee->address_city,
             'address_province' => $employee->address_province,
             'address_zip' => $employee->address_zip,
-            // Government IDs
             'tin' => $employee->tin,
             'gsis_number' => $employee->gsis_number,
             'philhealth_number' => $employee->philhealth_number,
             'pagibig_number' => $employee->pagibig_number,
             'sss_number' => $employee->sss_number,
-            // Emergency contact
             'emergency_contact_name' => $employee->emergency_contact_name,
             'emergency_contact_relationship' => $employee->emergency_contact_relationship,
             'emergency_contact_phone' => $employee->emergency_contact_phone,
-            // Employment
             'hired_at' => $employee->hired_at?->format('Y-m-d'),
             'hired_at_formatted' => $employee->hired_at?->format('M d, Y'),
             'department_id' => (string) $employee->department_id,
@@ -347,6 +406,8 @@ class EmployeeController extends Controller
             'employment_type' => $employee->employmentType->name,
             'employment_status_id' => (string) $employee->employment_status_id,
             'employment_status' => $employee->employmentStatus->name,
+            'work_schedule_id' => $employee->work_schedule_id ? (string) $employee->work_schedule_id : '',
+            'work_schedule' => $employee->workSchedule?->name,
             'is_active' => $employee->is_active,
             'archived_at' => $employee->archived_at?->format('M d, Y'),
         ];
@@ -363,5 +424,50 @@ class EmployeeController extends Controller
         }
 
         return round($bytes / 1048576, 1).' MB';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function mapHistory(EmployeeHistory $history): array
+    {
+        $beforeValues = $history->before_values ?? [];
+        $afterValues = $history->after_values ?? [];
+        $labels = [
+            'department' => 'Department',
+            'position' => 'Position',
+            'employment_type' => 'Employment type',
+            'employment_status' => 'Employment status',
+            'work_schedule' => 'Work schedule',
+            'hired_at' => 'Appointment date',
+            'is_active' => 'Registry status',
+        ];
+
+        $changes = collect(array_unique([
+            ...array_keys($beforeValues),
+            ...array_keys($afterValues),
+        ]))
+            ->filter(fn (string $key): bool => array_key_exists($key, $labels))
+            ->map(fn (string $key): array => [
+                'label' => $labels[$key],
+                'from' => $beforeValues[$key] ?? null,
+                'to' => $afterValues[$key] ?? null,
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'id' => $history->id,
+            'event_type' => $history->event_type,
+            'title' => $history->title,
+            'description' => $history->description,
+            'effective_date' => $history->effective_date?->format('M d, Y'),
+            'recorded_by' => $history->recordedBy?->name,
+            'recorded_at' => $history->created_at->format('M d, Y g:i A'),
+            'changes' => $changes,
+            'source_url' => $history->source_type === PersonnelMovement::class && $history->source_id !== null
+                ? route('personnel-movements.show', $history->source_id)
+                : null,
+        ];
     }
 }

@@ -32,8 +32,8 @@ class AttendanceLogStoreRequest extends FormRequest
             'time_in' => ['nullable', 'date_format:H:i'],
             'time_out' => ['nullable', 'date_format:H:i', 'after:time_in'],
             'status' => ['required', 'in:present,absent,leave,holiday,rest_day,half_day'],
-            'minutes_late' => ['integer', 'min:0', 'max:480'],
-            'minutes_undertime' => ['integer', 'min:0', 'max:480'],
+            'minutes_late' => ['nullable', 'integer', 'min:0', 'max:480'],
+            'minutes_undertime' => ['nullable', 'integer', 'min:0', 'max:480'],
             'remarks' => ['nullable', 'string', 'max:1000'],
         ];
     }

@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\Position;
+use App\Models\WorkSchedule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -31,6 +32,7 @@ class EmployeeFactory extends Factory
             'position_id' => Position::factory()->for($department),
             'employment_type_id' => EmploymentType::factory(),
             'employment_status_id' => EmploymentStatus::factory(),
+            'work_schedule_id' => WorkSchedule::factory(),
             'is_active' => true,
             'archived_at' => null,
         ];

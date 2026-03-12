@@ -58,8 +58,10 @@ type LeaveRequestRecord = {
     start_date: string;
     end_date: string;
     days_requested: number;
-    status: 'submitted' | 'approved' | 'rejected' | 'cancelled';
-    submitted_at: string;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'cancelled';
+    saved_at: string;
+    submitted_at: string | null;
+    recorded_at: string;
 };
 
 type EmployeeOption = { value: string; label: string };
@@ -88,6 +90,7 @@ const statusConfig: Record<
         variant: 'default' | 'secondary' | 'destructive' | 'outline';
     }
 > = {
+    draft: { label: 'Draft', variant: 'secondary' },
     submitted: { label: 'Pending', variant: 'outline' },
     approved: { label: 'Approved', variant: 'default' },
     rejected: { label: 'Rejected', variant: 'destructive' },
@@ -138,7 +141,7 @@ export default function LeaveIndex({
             request.leave_type,
             request.start_date,
             request.end_date,
-            request.submitted_at,
+            request.recorded_at,
             statusConfig[request.status].label,
         ]
             .join(' ')
@@ -395,6 +398,9 @@ export default function LeaveIndex({
                                                     <SelectItem value="all">
                                                         All statuses
                                                     </SelectItem>
+                                                    <SelectItem value="draft">
+                                                        Draft
+                                                    </SelectItem>
                                                     <SelectItem value="submitted">
                                                         Pending
                                                     </SelectItem>
@@ -495,7 +501,7 @@ export default function LeaveIndex({
                                                             Status
                                                         </TableHead>
                                                         <TableHead>
-                                                            Filed
+                                                            Recorded
                                                         </TableHead>
                                                         <TableHead className="text-right">
                                                             Action
@@ -569,6 +575,9 @@ export default function LeaveIndex({
                                                                             ) : leaveRequest.status ===
                                                                               'submitted' ? (
                                                                                 <Clock3 />
+                                                                            ) : leaveRequest.status ===
+                                                                              'draft' ? (
+                                                                                <FileText />
                                                                             ) : (
                                                                                 <CalendarDays />
                                                                             )}
@@ -579,7 +588,7 @@ export default function LeaveIndex({
                                                                     </TableCell>
                                                                     <TableCell>
                                                                         {
-                                                                            leaveRequest.submitted_at
+                                                                            leaveRequest.recorded_at
                                                                         }
                                                                     </TableCell>
                                                                     <TableCell className="text-right">

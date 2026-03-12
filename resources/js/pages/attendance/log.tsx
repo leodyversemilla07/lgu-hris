@@ -1,18 +1,39 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { format, parseISO } from 'date-fns';
+import {
+    ArrowLeft,
+    CalendarDays,
+    CheckCircle2,
+    Clock3,
+    FileText,
+    Save,
+    ShieldCheck,
+} from 'lucide-react';
+import type { ReactNode } from 'react';
+import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue,
@@ -21,7 +42,15 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
-type EmployeeOption = { value: string; label: string };
+type EmployeeOption = {
+    value: string;
+    label: string;
+    work_schedule: {
+        name: string;
+        time_in: string;
+        time_out: string;
+    } | null;
+};
 
 type Props = {
     employees: EmployeeOption[];
@@ -44,247 +73,646 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Log attendance', href: '/attendance/log' },
 ];
 
+const numberFormatter = new Intl.NumberFormat();
+
+function toCalendarDate(value: string): Date | undefined {
+    return value ? parseISO(value) : undefined;
+}
+
+function DatePickerField({
+    value,
+    onChange,
+    placeholder,
+    invalid = false,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    invalid?: boolean;
+}): ReactNode {
+    const selectedDate = toCalendarDate(value);
+
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                    aria-invalid={invalid ? 'true' : 'false'}
+                >
+                    <CalendarDays data-icon="inline-start" />
+                    {selectedDate ? format(selectedDate, 'PPP') : placeholder}
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) =>
+                        onChange(date ? format(date, 'yyyy-MM-dd') : '')
+                    }
+                    initialFocus
+                />
+            </PopoverContent>
+        </Popover>
+    );
+}
+
+function FormSection({
+    title,
+    description,
+    children,
+}: {
+    title: string;
+    description: string;
+    children: ReactNode;
+}): ReactNode {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>{children}</CardContent>
+        </Card>
+    );
+}
+
+function FormField({
+    label,
+    htmlFor,
+    required = false,
+    error,
+    children,
+}: {
+    label: string;
+    htmlFor?: string;
+    required?: boolean;
+    error?: string;
+    children: ReactNode;
+}): ReactNode {
+    return (
+        <div className="flex flex-col gap-2">
+            <Label htmlFor={htmlFor}>
+                {label}
+                {required ? ' *' : null}
+            </Label>
+            {children}
+            <InputError message={error} />
+        </div>
+    );
+}
+
 export default function AttendanceLog({
     employees,
     prefillEmployeeId,
     prefillDate,
 }: Props) {
-    const { data, setData, post, processing, errors } = useForm({
+    const form = useForm({
         employee_id: prefillEmployeeId ?? '',
         log_date: prefillDate ?? new Date().toISOString().slice(0, 10),
         time_in: '08:00',
         time_out: '17:00',
         status: 'present',
-        minutes_late: '0',
-        minutes_undertime: '0',
+        minutes_late: '',
+        minutes_undertime: '',
         remarks: '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post('/attendance');
-    };
+    const selectedEmployee = employees.find(
+        (employee) => employee.value === form.data.employee_id,
+    );
+    const showTimes = ['present', 'half_day'].includes(form.data.status);
 
-    const showTimes = ['present', 'half_day'].includes(data.status);
+    const summaryCards = [
+        {
+            title: 'Employees',
+            value: numberFormatter.format(employees.length),
+            detail: 'Active employees available for manual attendance entry.',
+            icon: FileText,
+        },
+        {
+            title: 'Entry mode',
+            value: 'Manual',
+            detail: 'Use this form for one-off logging and corrections.',
+            icon: CheckCircle2,
+        },
+        {
+            title: 'Status',
+            value:
+                STATUS_OPTIONS.find(
+                    (status) => status.value === form.data.status,
+                )?.label ?? 'Present',
+            detail: showTimes
+                ? 'Time in and time out inputs stay available.'
+                : 'Time inputs are hidden for non-working-day statuses.',
+            icon: Clock3,
+        },
+        {
+            title: 'Schedule',
+            value: selectedEmployee?.work_schedule?.name ?? 'Unassigned',
+            detail: selectedEmployee?.work_schedule
+                ? `${selectedEmployee.work_schedule.time_in} - ${selectedEmployee.work_schedule.time_out}`
+                : 'Late and undertime stay manual when no schedule is assigned.',
+            icon: CalendarDays,
+        },
+    ];
+
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+        event.preventDefault();
+        form.post('/attendance');
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Log Attendance" />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
-                <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
-                    <div className="space-y-3">
-                        <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">
-                            Manual entry
-                        </Badge>
-                        <div className="space-y-2">
-                            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                                Log attendance
-                            </h1>
-                            <p className="text-sm leading-6 text-slate-600">
-                                Manually record an attendance entry for a
-                                specific employee and date.
-                            </p>
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="flex flex-col gap-4 py-4 md:gap-6 md:py-6"
+                    >
+                        <div className="px-4 lg:px-6">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex max-w-3xl flex-col gap-2">
+                                    <Badge variant="outline" className="w-fit">
+                                        Attendance
+                                    </Badge>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Log attendance
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Record a manual attendance entry for a
+                                        specific employee and date, with
+                                        schedule-aware late and undertime
+                                        defaults when available.
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
+                                    <Button asChild variant="outline">
+                                        <Link href="/attendance">
+                                            <ArrowLeft data-icon="inline-start" />
+                                            Back to monthly attendance
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        disabled={form.processing}
+                                    >
+                                        <Save data-icon="inline-start" />
+                                        Save attendance log
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </section>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-slate-950">
-                                Attendance details
-                            </CardTitle>
-                            <CardDescription>
-                                Select the employee and date, then fill in the
-                                attendance information.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="grid gap-6 sm:grid-cols-2">
-                            <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="employee_id">
-                                    Employee{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Select
-                                    value={data.employee_id}
-                                    onValueChange={(v) =>
-                                        setData('employee_id', v)
-                                    }
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
                                 >
-                                    <SelectTrigger id="employee_id">
-                                        <SelectValue placeholder="Select employee" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {employees.map((e) => (
-                                            <SelectItem
-                                                key={e.value}
-                                                value={e.value}
-                                            >
-                                                {e.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.employee_id && (
-                                    <p className="text-xs text-red-500">
-                                        {errors.employee_id}
-                                    </p>
-                                )}
-                            </div>
+                                    <CardHeader>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                Overview
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="text-sm text-muted-foreground">
+                                        {item.detail}
+                                    </CardFooter>
+                                </Card>
+                            ))}
+                        </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="log_date">
-                                    Date{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="log_date"
-                                    type="date"
-                                    value={data.log_date}
-                                    onChange={(e) =>
-                                        setData('log_date', e.target.value)
-                                    }
-                                />
-                                {errors.log_date && (
-                                    <p className="text-xs text-red-500">
-                                        {errors.log_date}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="status">
-                                    Status{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Select
-                                    value={data.status}
-                                    onValueChange={(v) =>
-                                        setData('status', v)
-                                    }
+                        <div className="grid gap-6 px-4 lg:px-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+                            <div className="flex flex-col gap-6">
+                                <FormSection
+                                    title="Attendance details"
+                                    description="Choose the employee, date, and attendance status, then encode work times or schedule adjustments when needed."
                                 >
-                                    <SelectTrigger id="status">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {STATUS_OPTIONS.map((s) => (
-                                            <SelectItem
-                                                key={s.value}
-                                                value={s.value}
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="md:col-span-2">
+                                            <FormField
+                                                label="Employee"
+                                                required
+                                                error={form.errors.employee_id}
                                             >
-                                                {s.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                                <Select
+                                                    value={form.data.employee_id}
+                                                    onValueChange={(value) =>
+                                                        form.setData(
+                                                            'employee_id',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger
+                                                        id="employee_id"
+                                                        className="w-full"
+                                                        aria-invalid={
+                                                            form.errors
+                                                                .employee_id
+                                                                ? 'true'
+                                                                : 'false'
+                                                        }
+                                                    >
+                                                        <SelectValue placeholder="Select employee" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectGroup>
+                                                            {employees.map(
+                                                                (employee) => (
+                                                                    <SelectItem
+                                                                        key={
+                                                                            employee.value
+                                                                        }
+                                                                        value={
+                                                                            employee.value
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            employee.label
+                                                                        }
+                                                                    </SelectItem>
+                                                                ),
+                                                            )}
+                                                        </SelectGroup>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormField>
+                                        </div>
 
-                            {showTimes && (
-                                <>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="time_in">
-                                            Time in
-                                        </Label>
-                                        <Input
-                                            id="time_in"
-                                            type="time"
-                                            value={data.time_in}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'time_in',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
+                                        <FormField
+                                            label="Date"
+                                            htmlFor="log_date"
+                                            required
+                                            error={form.errors.log_date}
+                                        >
+                                            <DatePickerField
+                                                value={form.data.log_date}
+                                                onChange={(value) =>
+                                                    form.setData('log_date', value)
+                                                }
+                                                placeholder="Pick attendance date"
+                                                invalid={Boolean(form.errors.log_date)}
+                                            />
+                                        </FormField>
+
+                                        <FormField
+                                            label="Status"
+                                            required
+                                            error={form.errors.status}
+                                        >
+                                            <Select
+                                                value={form.data.status}
+                                                onValueChange={(value) => {
+                                                    form.setData('status', value);
+
+                                                    if (
+                                                        ['present', 'half_day'].includes(
+                                                            value,
+                                                        )
+                                                    ) {
+                                                        form.setData(
+                                                            'time_in',
+                                                            form.data.time_in ||
+                                                                '08:00',
+                                                        );
+                                                        form.setData(
+                                                            'time_out',
+                                                            form.data
+                                                                .time_out ||
+                                                                '17:00',
+                                                        );
+
+                                                        return;
+                                                    }
+
+                                                    form.setData('time_in', '');
+                                                    form.setData('time_out', '');
+                                                    form.setData(
+                                                        'minutes_late',
+                                                        '',
+                                                    );
+                                                    form.setData(
+                                                        'minutes_undertime',
+                                                        '',
+                                                    );
+                                                }}
+                                            >
+                                                <SelectTrigger
+                                                    id="status"
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors.status
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {STATUS_OPTIONS.map(
+                                                            (status) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        status.value
+                                                                    }
+                                                                    value={
+                                                                        status.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        status.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </FormField>
+
+                                        {showTimes ? (
+                                            <>
+                                                <FormField
+                                                    label="Time in"
+                                                    htmlFor="time_in"
+                                                    error={form.errors.time_in}
+                                                >
+                                                    <Input
+                                                        id="time_in"
+                                                        type="time"
+                                                        value={form.data.time_in}
+                                                        onChange={(event) =>
+                                                            form.setData(
+                                                                'time_in',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                        aria-invalid={
+                                                            form.errors.time_in
+                                                                ? 'true'
+                                                                : 'false'
+                                                        }
+                                                    />
+                                                </FormField>
+
+                                                <FormField
+                                                    label="Time out"
+                                                    htmlFor="time_out"
+                                                    error={form.errors.time_out}
+                                                >
+                                                    <Input
+                                                        id="time_out"
+                                                        type="time"
+                                                        value={form.data.time_out}
+                                                        onChange={(event) =>
+                                                            form.setData(
+                                                                'time_out',
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                        aria-invalid={
+                                                            form.errors
+                                                                .time_out
+                                                                ? 'true'
+                                                                : 'false'
+                                                        }
+                                                    />
+                                                </FormField>
+
+                                                <div className="md:col-span-2 grid gap-4 md:grid-cols-2">
+                                                    <FormField
+                                                        label="Minutes late"
+                                                        htmlFor="minutes_late"
+                                                        error={
+                                                            form.errors
+                                                                .minutes_late
+                                                        }
+                                                    >
+                                                        <Input
+                                                            id="minutes_late"
+                                                            type="number"
+                                                            min="0"
+                                                            max="480"
+                                                            value={
+                                                                form.data
+                                                                    .minutes_late
+                                                            }
+                                                            onChange={(event) =>
+                                                                form.setData(
+                                                                    'minutes_late',
+                                                                    event
+                                                                        .target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Auto"
+                                                            aria-invalid={
+                                                                form.errors
+                                                                    .minutes_late
+                                                                    ? 'true'
+                                                                    : 'false'
+                                                            }
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Leave blank to
+                                                            calculate from the
+                                                            assigned schedule.
+                                                        </p>
+                                                    </FormField>
+
+                                                    <FormField
+                                                        label="Minutes undertime"
+                                                        htmlFor="minutes_undertime"
+                                                        error={
+                                                            form.errors
+                                                                .minutes_undertime
+                                                        }
+                                                    >
+                                                        <Input
+                                                            id="minutes_undertime"
+                                                            type="number"
+                                                            min="0"
+                                                            max="480"
+                                                            value={
+                                                                form.data
+                                                                    .minutes_undertime
+                                                            }
+                                                            onChange={(event) =>
+                                                                form.setData(
+                                                                    'minutes_undertime',
+                                                                    event
+                                                                        .target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="Auto"
+                                                            aria-invalid={
+                                                                form.errors
+                                                                    .minutes_undertime
+                                                                    ? 'true'
+                                                                    : 'false'
+                                                            }
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Leave blank to
+                                                            calculate from the
+                                                            assigned schedule.
+                                                        </p>
+                                                    </FormField>
+                                                </div>
+                                            </>
+                                        ) : null}
+
+                                        <div className="md:col-span-2">
+                                            <FormField
+                                                label="Remarks"
+                                                htmlFor="remarks"
+                                                error={form.errors.remarks}
+                                            >
+                                                <Textarea
+                                                    id="remarks"
+                                                    value={form.data.remarks}
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            'remarks',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="Optional notes for this attendance entry"
+                                                    rows={4}
+                                                />
+                                            </FormField>
+                                        </div>
                                     </div>
+                                </FormSection>
+                            </div>
+                            <div className="flex flex-col gap-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Schedule guidance</CardTitle>
+                                        <CardDescription>
+                                            Review how this entry will behave
+                                            before saving.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-sm font-medium">
+                                                {selectedEmployee?.label ??
+                                                    'No employee selected'}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {selectedEmployee?.work_schedule
+                                                    ? `Assigned schedule: ${selectedEmployee.work_schedule.name}`
+                                                    : 'Select an employee to inspect their schedule defaults.'}
+                                            </span>
+                                        </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="time_out">
-                                            Time out
-                                        </Label>
-                                        <Input
-                                            id="time_out"
-                                            type="time"
-                                            value={data.time_out}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'time_out',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        {errors.time_out && (
-                                            <p className="text-xs text-red-500">
-                                                {errors.time_out}
-                                            </p>
+                                        {selectedEmployee?.work_schedule ? (
+                                            <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+                                                <div className="flex items-center gap-2 font-medium text-foreground">
+                                                    <CalendarDays className="size-4" />
+                                                    {selectedEmployee.work_schedule.name}
+                                                </div>
+                                                <p className="mt-2">
+                                                    {selectedEmployee
+                                                        .work_schedule.time_in}{' '}
+                                                    -{' '}
+                                                    {selectedEmployee
+                                                        .work_schedule.time_out}
+                                                </p>
+                                                <p className="mt-2">
+                                                    Leaving late and undertime
+                                                    blank will use this schedule
+                                                    for auto-calculation.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
+                                                No work schedule is assigned.
+                                                Late and undertime remain zero
+                                                unless you enter them manually.
+                                            </div>
                                         )}
-                                    </div>
+                                    </CardContent>
+                                </Card>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="minutes_late">
-                                            Minutes late
-                                        </Label>
-                                        <Input
-                                            id="minutes_late"
-                                            type="number"
-                                            min="0"
-                                            max="480"
-                                            value={data.minutes_late}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'minutes_late',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="minutes_undertime">
-                                            Minutes undertime
-                                        </Label>
-                                        <Input
-                                            id="minutes_undertime"
-                                            type="number"
-                                            min="0"
-                                            max="480"
-                                            value={data.minutes_undertime}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'minutes_undertime',
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="remarks">Remarks</Label>
-                                <Textarea
-                                    id="remarks"
-                                    value={data.remarks}
-                                    onChange={(e) =>
-                                        setData('remarks', e.target.value)
-                                    }
-                                    placeholder="Optional notes…"
-                                    rows={3}
-                                />
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Before saving</CardTitle>
+                                        <CardDescription>
+                                            Quick checks before this entry is
+                                            written to the attendance log.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
+                                        <div className="flex items-start gap-2">
+                                            <ShieldCheck className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                Confirm the selected employee,
+                                                date, and attendance status.
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <Clock3 className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                For present and half-day
+                                                entries, time in and time out
+                                                remain editable.
+                                            </span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+                                            <span>
+                                                Blank late and undertime values
+                                                use the assigned work schedule
+                                                when available.
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                    <CardFooter className="flex flex-col gap-3 sm:flex-row">
+                                        <Button
+                                            type="submit"
+                                            className="w-full"
+                                            disabled={form.processing}
+                                        >
+                                            <Save data-icon="inline-start" />
+                                            Save attendance log
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full"
+                                            asChild
+                                        >
+                                            <Link href="/attendance">
+                                                Cancel
+                                            </Link>
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="flex items-center justify-end gap-3">
-                        <Button asChild variant="outline">
-                            <Link href="/attendance">Cancel</Link>
-                        </Button>
-                        <Button type="submit" disabled={processing}>
-                            {processing ? 'Saving…' : 'Save attendance log'}
-                        </Button>
-                    </div>
-                </form>
+                        </div>
+                    </form>
+                </div>
             </div>
         </AppLayout>
     );

@@ -1,6 +1,8 @@
 {
     "agents": [
-        "copilot"
+        "codex",
+        "copilot",
+        "opencode"
     ],
     "guidelines": true,
     "packages": [

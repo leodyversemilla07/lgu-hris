@@ -9,10 +9,12 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PersonnelMovementController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -60,6 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('documents/{document}/download', [DocumentController::class, 'download'])
         ->middleware('permission:documents.view')
         ->name('documents.download');
+    Route::get('documents/{document}/preview', [DocumentController::class, 'preview'])
+        ->middleware('permission:documents.view')
+        ->name('documents.preview');
     Route::delete('documents/{document}', [DocumentController::class, 'destroy'])
         ->middleware('permission:documents.manage')
         ->name('documents.destroy');
@@ -73,6 +78,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('leave', [LeaveController::class, 'store'])
         ->middleware('permission:leave.file')
         ->name('leave.store');
+    Route::post('leave/{leaveRequest}/submit', [LeaveController::class, 'submit'])
+        ->middleware('permission:leave.file')
+        ->name('leave.submit');
     Route::get('leave/{leaveRequest}', [LeaveController::class, 'show'])
         ->middleware('permission:leave.file|leave.approve')
         ->name('leave.show');
@@ -82,6 +90,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('leave/{leaveRequest}/cancel', [LeaveController::class, 'cancel'])
         ->middleware('permission:leave.file')
         ->name('leave.cancel');
+
+    Route::patch('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])
+        ->name('notifications.read');
+    Route::patch('notifications/read-all', [NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.read-all');
 
     Route::get('leave-balances', [LeaveBalanceController::class, 'index'])
         ->middleware('permission:leave.approve')
@@ -123,6 +136,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:attendance.manage')
         ->name('attendance.bulk-store');
 
+    Route::get('work-schedules', [WorkScheduleController::class, 'index'])
+        ->middleware('permission:attendance.manage')
+        ->name('work-schedules.index');
+    Route::post('work-schedules', [WorkScheduleController::class, 'store'])
+        ->middleware('permission:attendance.manage')
+        ->name('work-schedules.store');
+    Route::put('work-schedules/{workSchedule}', [WorkScheduleController::class, 'update'])
+        ->middleware('permission:attendance.manage')
+        ->name('work-schedules.update');
+    Route::delete('work-schedules/{workSchedule}', [WorkScheduleController::class, 'destroy'])
+        ->middleware('permission:attendance.manage')
+        ->name('work-schedules.destroy');
+
     Route::get('reports', [ReportController::class, 'index'])
         ->middleware('permission:reports.view|reports.export')
         ->name('reports.index');
@@ -133,10 +159,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('exports/masterlist/pdf', [ExportController::class, 'masterlistPdf'])->name('exports.masterlist.pdf');
         Route::get('exports/plantilla/excel', [ExportController::class, 'plantillaExcel'])->name('exports.plantilla.excel');
         Route::get('exports/plantilla/csv', [ExportController::class, 'plantillaCsv'])->name('exports.plantilla.csv');
+        Route::get('exports/plantilla/pdf', [ExportController::class, 'plantillaPdf'])->name('exports.plantilla.pdf');
         Route::get('exports/leave-ledger/excel', [ExportController::class, 'leaveLedgerExcel'])->name('exports.leave-ledger.excel');
         Route::get('exports/leave-ledger/csv', [ExportController::class, 'leaveLedgerCsv'])->name('exports.leave-ledger.csv');
+        Route::get('exports/leave-ledger/pdf', [ExportController::class, 'leaveLedgerPdf'])->name('exports.leave-ledger.pdf');
         Route::get('exports/attendance/excel', [ExportController::class, 'attendanceSummaryExcel'])->name('exports.attendance.excel');
+        Route::get('exports/attendance/csv', [ExportController::class, 'attendanceSummaryCsv'])->name('exports.attendance.csv');
+        Route::get('exports/attendance/pdf', [ExportController::class, 'attendanceSummaryPdf'])->name('exports.attendance.pdf');
         Route::get('exports/movements/excel', [ExportController::class, 'personnelMovementsExcel'])->name('exports.movements.excel');
+        Route::get('exports/movements/csv', [ExportController::class, 'personnelMovementsCsv'])->name('exports.movements.csv');
+        Route::get('exports/movements/pdf', [ExportController::class, 'personnelMovementsPdf'])->name('exports.movements.pdf');
+        Route::get('exports/payroll-support/excel', [ExportController::class, 'payrollSupportExcel'])->name('exports.payroll-support.excel');
+        Route::get('exports/payroll-support/csv', [ExportController::class, 'payrollSupportCsv'])->name('exports.payroll-support.csv');
+        Route::get('exports/payroll-support/pdf', [ExportController::class, 'payrollSupportPdf'])->name('exports.payroll-support.pdf');
         Route::get('exports/service-record/{employee}/pdf', [ExportController::class, 'serviceRecordPdf'])->name('exports.service-record.pdf');
     });
 

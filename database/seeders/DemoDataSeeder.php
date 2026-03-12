@@ -23,6 +23,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 
 class DemoDataSeeder extends Seeder
 {
@@ -47,14 +48,25 @@ class DemoDataSeeder extends Seeder
         $movementTypes = MovementType::query()->where('is_active', true)->get();
         $salaryGrades = SalaryGrade::query()->where('step', 1)->get()->keyBy('grade');
 
-        $adminUser = User::query()->where('email', 'hr.admin@example.com')->firstOrFail();
+        $adminUser = User::query()->firstOrCreate(
+            ['email' => 'hr.admin@example.com'],
+            [
+                'name' => 'HR Admin Seeder',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ],
+        );
         $adminUser->syncRoles(['HR Admin']);
 
         $hrDepartment = $departments->firstWhere('code', 'HRMO') ?? $departments->firstOrFail();
 
         $hrStaffUser = User::query()->firstOrCreate(
             ['email' => 'hr.staff@example.com'],
-            ['name' => 'HR Staff Seeder', 'password' => 'password'],
+            [
+                'name' => 'HR Staff Seeder',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ],
         );
         $hrStaffUser->syncRoles(['HR Staff']);
 
@@ -62,8 +74,9 @@ class DemoDataSeeder extends Seeder
             ['email' => 'department.head@example.com'],
             [
                 'name' => 'Department Head Seeder',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'managed_department_id' => $hrDepartment->id,
+                'email_verified_at' => now(),
             ],
         );
         $departmentHeadUser->managed_department_id = $hrDepartment->id;

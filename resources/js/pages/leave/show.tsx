@@ -47,16 +47,27 @@ type LeaveRequestDetail = {
     end_date: string;
     days_requested: number;
     reason: string | null;
-    status: 'submitted' | 'approved' | 'rejected' | 'cancelled';
-    submitted_at: string;
+    status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'cancelled';
+    saved_at: string;
+    submitted_at: string | null;
     actioned_by: string | null;
     actioned_at: string | null;
     remarks: string | null;
 };
 
+type ApprovalHistoryRecord = {
+    id: number;
+    action: 'submitted' | 'approved' | 'rejected' | 'cancelled';
+    remarks: string | null;
+    acted_by: string | null;
+    acted_at: string;
+};
+
 type Props = {
     leaveRequest: LeaveRequestDetail;
+    approvalHistory: ApprovalHistoryRecord[];
     canApprove: boolean;
+    canSubmit: boolean;
     canCancel: boolean;
 };
 
@@ -68,6 +79,11 @@ const statusConfig: Record<
         summary: string;
     }
 > = {
+    draft: {
+        label: 'Draft',
+        variant: 'secondary',
+        summary: 'Saved and not yet submitted for approval.',
+    },
     submitted: {
         label: 'Pending',
         variant: 'outline',
@@ -92,7 +108,9 @@ const statusConfig: Record<
 
 export default function LeaveShow({
     leaveRequest: leaveRequest,
+    approvalHistory,
     canApprove,
+    canSubmit,
     canCancel,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -105,8 +123,14 @@ export default function LeaveShow({
         'approved' | 'rejected' | null
     >(null);
     const approvalForm = useForm({ action: '', remarks: '' });
+    const submitForm = useForm({});
     const cancelForm = useForm({});
     const status = statusConfig[leaveRequest.status];
+    const isDraft = leaveRequest.status === 'draft';
+    const lifecycleLabel = isDraft ? 'Saved on' : 'Filed on';
+    const lifecycleValue = isDraft
+        ? leaveRequest.saved_at
+        : leaveRequest.submitted_at ?? leaveRequest.saved_at;
 
     const summaryCards = [
         {
@@ -128,8 +152,8 @@ export default function LeaveShow({
             icon: CalendarDays,
         },
         {
-            title: 'Filed on',
-            value: leaveRequest.submitted_at,
+            title: lifecycleLabel,
+            value: lifecycleValue,
             detail: leaveRequest.employee_number,
             icon: CheckCircle2,
         },
@@ -145,6 +169,10 @@ export default function LeaveShow({
         approvalForm.post(`/leave/${leaveRequest.id}/approve`, {
             onSuccess: () => setApprovalAction(null),
         });
+    }
+
+    function handleSubmit(): void {
+        submitForm.post(`/leave/${leaveRequest.id}/submit`);
     }
 
     function handleCancel(): void {
@@ -181,6 +209,15 @@ export default function LeaveShow({
                                             Back to leave
                                         </Link>
                                     </Button>
+                                    {canSubmit && isDraft && (
+                                        <Button
+                                            onClick={handleSubmit}
+                                            disabled={submitForm.processing}
+                                        >
+                                            <CheckCircle2 data-icon="inline-start" />
+                                            Submit draft
+                                        </Button>
+                                    )}
                                     {canApprove &&
                                         leaveRequest.status === 'submitted' && (
                                             <>
@@ -211,24 +248,25 @@ export default function LeaveShow({
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="outline">
-                                                    Cancel request
+                                                    {isDraft ? 'Discard draft' : 'Cancel request'}
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
                                                     <AlertDialogTitle>
-                                                        Cancel leave request?
+                                                        {isDraft
+                                                            ? 'Discard leave draft?'
+                                                            : 'Cancel leave request?'}
                                                     </AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        This withdraws the
-                                                        request before final
-                                                        action. This cannot be
-                                                        undone.
+                                                        {isDraft
+                                                            ? 'This removes the saved draft from active work. This cannot be undone.'
+                                                            : 'This withdraws the request before final action. This cannot be undone.'}
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>
-                                                        Keep request
+                                                        {isDraft ? 'Keep draft' : 'Keep request'}
                                                     </AlertDialogCancel>
                                                     <AlertDialogAction
                                                         onClick={handleCancel}
@@ -236,7 +274,7 @@ export default function LeaveShow({
                                                             cancelForm.processing
                                                         }
                                                     >
-                                                        Yes, cancel
+                                                        {isDraft ? 'Yes, discard' : 'Yes, cancel'}
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
@@ -394,10 +432,8 @@ export default function LeaveShow({
                                                 value={`${leaveRequest.days_requested} day${leaveRequest.days_requested !== 1 ? 's' : ''}`}
                                             />
                                             <DetailField
-                                                label="Filed on"
-                                                value={
-                                                    leaveRequest.submitted_at
-                                                }
+                                                label={lifecycleLabel}
+                                                value={lifecycleValue}
                                             />
                                             <DetailField
                                                 label="Reason"
@@ -448,6 +484,52 @@ export default function LeaveShow({
                                                 wide
                                             />
                                         </dl>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Approval history</CardTitle>
+                                        <CardDescription>
+                                            Every recorded workflow action on this leave request.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {approvalHistory.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground">
+                                                No workflow actions have been recorded yet.
+                                            </p>
+                                        ) : (
+                                            <div className="flex flex-col gap-3">
+                                                {approvalHistory.map((entry) => (
+                                                    <div
+                                                        key={entry.id}
+                                                        className="rounded-lg border px-4 py-3"
+                                                    >
+                                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                                            <div className="space-y-1">
+                                                                <div className="flex flex-wrap items-center gap-2">
+                                                                    <Badge variant="outline">
+                                                                        {entry.action.charAt(0).toUpperCase() + entry.action.slice(1)}
+                                                                    </Badge>
+                                                                    <span className="text-sm text-muted-foreground">
+                                                                        {entry.acted_at}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {entry.acted_by ?? 'System'}
+                                                                </p>
+                                                                {entry.remarks ? (
+                                                                    <p className="text-sm text-foreground">
+                                                                        {entry.remarks}
+                                                                    </p>
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </div>
@@ -504,9 +586,7 @@ export default function LeaveShow({
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
                                         <p>
-                                            Pending requests can be approved,
-                                            rejected, or cancelled based on your
-                                            available permissions.
+                                            Draft requests can be submitted or discarded, while submitted requests can still be approved, rejected, or cancelled based on your available permissions.
                                         </p>
                                         <p>
                                             Once a final action is recorded, the
@@ -561,3 +641,4 @@ function SideItem({ label, value }: { label: string; value: string }) {
         </div>
     );
 }
+

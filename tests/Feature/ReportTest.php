@@ -2,6 +2,7 @@
 
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\EmployeeCompensation;
 use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\LeaveRequest;
@@ -9,6 +10,8 @@ use App\Models\LeaveType;
 use App\Models\MovementType;
 use App\Models\PersonnelMovement;
 use App\Models\Position;
+use App\Models\ReportExport;
+use App\Models\SalaryGrade;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 
@@ -44,34 +47,70 @@ test('hr admin can view reports page', function () {
     $this->actingAs($this->hrAdmin)->get('/reports')->assertOk();
 });
 
+test('department head reports page is scoped to their managed department', function () {
+    $managedDepartment = Department::factory()->create(['name' => 'HR', 'is_active' => true]);
+    $otherDepartment = Department::factory()->create(['name' => 'Engineering', 'is_active' => true]);
+    $managedPosition = Position::factory()->create(['department_id' => $managedDepartment->id, 'is_active' => true]);
+    $otherPosition = Position::factory()->create(['department_id' => $otherDepartment->id, 'is_active' => true]);
+
+    $departmentHead = User::factory()->create([
+        'managed_department_id' => $managedDepartment->id,
+    ]);
+    $departmentHead->assignRole('Department Head');
+
+    $managedEmployee = makeReportEmployee([
+        'department_id' => $managedDepartment->id,
+        'position_id' => $managedPosition->id,
+        'first_name' => 'Alicia',
+        'last_name' => 'Rivera',
+        'employee_number' => 'EMP-HR-001',
+    ]);
+    makeReportEmployee([
+        'department_id' => $otherDepartment->id,
+        'position_id' => $otherPosition->id,
+        'first_name' => 'Berto',
+        'last_name' => 'Lopez',
+        'employee_number' => 'EMP-ENG-001',
+    ]);
+
+    $this->actingAs($departmentHead)
+        ->get('/reports')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('reports/index')
+            ->has('departments', 1)
+            ->has('employees', 1)
+            ->where('departments.0.value', (string) $managedDepartment->id)
+            ->where('employees.0.value', (string) $managedEmployee->id)
+        );
+});
+
 test('employee role is blocked from reports', function () {
     $user = User::factory()->create();
     $user->assignRole('Employee');
     $this->actingAs($user)->get('/reports')->assertForbidden();
 });
 
-// --- Dashboard KPIs ---
+// --- Dashboard Payload ---
 
-test('dashboard returns kpis with correct structure', function () {
+test('dashboard returns organization cards charts and recent records', function () {
     makeReportEmployee();
     $this->actingAs($this->hrAdmin)
         ->get('/dashboard')
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('dashboard')
-            ->has('kpis')
-            ->has('kpis.totalActive')
-            ->has('kpis.totalInactive')
-            ->has('kpis.pendingLeave')
-            ->has('kpis.approvedLeaveThisMonth')
-            ->has('kpis.totalLeaveDaysThisMonth')
-            ->has('kpis.byStatus')
-            ->has('kpis.byDepartment')
-            ->has('recentMovements')
+            ->where('dashboardType', 'organization')
+            ->has('cards', 4)
+            ->has('charts', 2)
+            ->has('charts.0.items')
+            ->has('charts.1.items')
+            ->has('recentRecords')
+            ->has('recentRecords.rows')
         );
 });
 
-test('dashboard kpi totalActive counts only active employees', function () {
+test('dashboard organization cards reflect active and inactive employee counts', function () {
     makeReportEmployee(['is_active' => true]);
     makeReportEmployee(['is_active' => true]);
     makeReportEmployee(['is_active' => false]);
@@ -79,12 +118,12 @@ test('dashboard kpi totalActive counts only active employees', function () {
     $this->actingAs($this->hrAdmin)
         ->get('/dashboard')
         ->assertInertia(fn ($page) => $page
-            ->where('kpis.totalActive', 2)
-            ->where('kpis.totalInactive', 1)
+            ->where('cards.0.value', '3')
+            ->where('cards.0.detail', '2 active entries')
         );
 });
 
-test('dashboard kpi pendingLeave counts submitted leave requests this month', function () {
+test('dashboard organization open items card counts submitted leave requests this month', function () {
     $emp = makeReportEmployee();
     $leaveType = LeaveType::factory()->create();
 
@@ -100,10 +139,10 @@ test('dashboard kpi pendingLeave counts submitted leave requests this month', fu
 
     $this->actingAs($this->hrAdmin)
         ->get('/dashboard')
-        ->assertInertia(fn ($page) => $page->where('kpis.pendingLeave', 1));
+        ->assertInertia(fn ($page) => $page->where('cards.1.value', '1'));
 });
 
-test('dashboard recentMovements is capped at 5', function () {
+test('dashboard recent records is capped at 5 movements', function () {
     $emp = makeReportEmployee();
     $movType = MovementType::factory()->create();
 
@@ -117,14 +156,20 @@ test('dashboard recentMovements is capped at 5', function () {
 
     $this->actingAs($this->hrAdmin)
         ->get('/dashboard')
-        ->assertInertia(fn ($page) => $page->has('recentMovements', 5));
+        ->assertInertia(fn ($page) => $page->has('recentRecords.rows', 5));
 });
 
 // --- Reports Page Filter Options ---
 
-test('reports page passes departments employees leaveTypes and years props', function () {
+test('reports page passes departments employees leaveTypes years and recent export props', function () {
     makeReportEmployee();
     $leaveType = LeaveType::factory()->create(['name' => 'Vacation Leave']);
+    ReportExport::factory()->create([
+        'user_id' => $this->hrAdmin->id,
+        'report_name' => 'Personnel Masterlist',
+        'export_format' => 'excel',
+        'file_name' => 'personnel-masterlist.xlsx',
+    ]);
 
     $this->actingAs($this->hrAdmin)
         ->get('/reports')
@@ -135,9 +180,12 @@ test('reports page passes departments employees leaveTypes and years props', fun
             ->has('employees')
             ->has('leaveTypes')
             ->has('years')
+            ->has('recentExports', 1)
             ->where('departments.0.label', 'Finance')
             ->where('leaveTypes.0.label', $leaveType->name)
             ->where('years.0.value', (string) now()->year)
+            ->where('recentExports.0.report_name', 'Personnel Masterlist')
+            ->where('recentExports.0.export_format', 'XLSX')
         );
 });
 
@@ -166,11 +214,25 @@ test('plantilla excel export returns xlsx', function () {
         ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 });
 
+test('plantilla pdf export returns pdf', function () {
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/plantilla/pdf')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
 test('leave ledger excel export returns xlsx', function () {
     $this->actingAs($this->hrAdmin)
         ->get('/exports/leave-ledger/excel')
         ->assertOk()
         ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+});
+
+test('leave ledger pdf export returns pdf', function () {
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/leave-ledger/pdf')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
 });
 
 test('attendance summary excel export returns xlsx', function () {
@@ -180,11 +242,95 @@ test('attendance summary excel export returns xlsx', function () {
         ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 });
 
+test('payroll support excel export returns xlsx', function () {
+    $employee = makeReportEmployee([
+        'gsis_number' => 'GSIS-001',
+        'philhealth_number' => 'PHIC-001',
+        'pagibig_number' => 'HDMF-001',
+        'sss_number' => 'SSS-001',
+    ]);
+    $salaryGrade = SalaryGrade::factory()->create([
+        'grade' => 11,
+        'step' => 1,
+    ]);
+    EmployeeCompensation::factory()->create([
+        'employee_id' => $employee->id,
+        'salary_grade_id' => $salaryGrade->id,
+    ]);
+
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/payroll-support/excel')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+});
+
+test('payroll support csv export returns csv', function () {
+    $employee = makeReportEmployee();
+    $salaryGrade = SalaryGrade::factory()->create([
+        'grade' => 11,
+        'step' => 2,
+    ]);
+    EmployeeCompensation::factory()->create([
+        'employee_id' => $employee->id,
+        'salary_grade_id' => $salaryGrade->id,
+    ]);
+
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/payroll-support/csv')
+        ->assertOk()
+        ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+});
+
+test('payroll support pdf export returns pdf', function () {
+    $employee = makeReportEmployee();
+    $salaryGrade = SalaryGrade::factory()->create([
+        'grade' => 12,
+        'step' => 1,
+    ]);
+    EmployeeCompensation::factory()->create([
+        'employee_id' => $employee->id,
+        'salary_grade_id' => $salaryGrade->id,
+    ]);
+
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/payroll-support/pdf')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
+test('attendance summary csv export returns csv', function () {
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/attendance/csv')
+        ->assertOk()
+        ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+});
+
+test('attendance summary pdf export returns pdf', function () {
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/attendance/pdf')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
 test('personnel movements excel export returns xlsx', function () {
     $this->actingAs($this->hrAdmin)
         ->get('/exports/movements/excel')
         ->assertOk()
         ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+});
+
+test('personnel movements csv export returns csv', function () {
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/movements/csv')
+        ->assertOk()
+        ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+});
+
+test('personnel movements pdf export returns pdf', function () {
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/movements/pdf')
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
 });
 
 test('masterlist export respects department filter', function () {
@@ -195,6 +341,63 @@ test('masterlist export respects department filter', function () {
     $this->actingAs($this->hrAdmin)
         ->get('/exports/masterlist/excel?department_id='.$dept2->id)
         ->assertOk();
+});
+
+test('department head with export permission cannot export another departments records', function () {
+    $managedDepartment = Department::factory()->create(['name' => 'HR', 'is_active' => true]);
+    $otherDepartment = Department::factory()->create(['name' => 'Engineering', 'is_active' => true]);
+
+    $departmentHead = User::factory()->create([
+        'managed_department_id' => $managedDepartment->id,
+    ]);
+    $departmentHead->assignRole('Department Head');
+    $departmentHead->givePermissionTo('reports.export');
+
+    $this->actingAs($departmentHead)
+        ->get('/exports/masterlist/excel?department_id='.$otherDepartment->id)
+        ->assertForbidden();
+});
+
+test('department head with export permission can export service record within managed department', function () {
+    $department = Department::factory()->create(['name' => 'HR', 'is_active' => true]);
+    $position = Position::factory()->create(['department_id' => $department->id, 'is_active' => true]);
+
+    $departmentHead = User::factory()->create([
+        'managed_department_id' => $department->id,
+    ]);
+    $departmentHead->assignRole('Department Head');
+    $departmentHead->givePermissionTo('reports.export');
+
+    $employee = makeReportEmployee([
+        'department_id' => $department->id,
+        'position_id' => $position->id,
+    ]);
+
+    $this->actingAs($departmentHead)
+        ->get("/exports/service-record/{$employee->id}/pdf")
+        ->assertOk()
+        ->assertHeader('content-type', 'application/pdf');
+});
+
+test('department head with export permission cannot export service record outside managed department', function () {
+    $managedDepartment = Department::factory()->create(['name' => 'HR', 'is_active' => true]);
+    $otherDepartment = Department::factory()->create(['name' => 'Engineering', 'is_active' => true]);
+    $otherPosition = Position::factory()->create(['department_id' => $otherDepartment->id, 'is_active' => true]);
+
+    $departmentHead = User::factory()->create([
+        'managed_department_id' => $managedDepartment->id,
+    ]);
+    $departmentHead->assignRole('Department Head');
+    $departmentHead->givePermissionTo('reports.export');
+
+    $employee = makeReportEmployee([
+        'department_id' => $otherDepartment->id,
+        'position_id' => $otherPosition->id,
+    ]);
+
+    $this->actingAs($departmentHead)
+        ->get("/exports/service-record/{$employee->id}/pdf")
+        ->assertForbidden();
 });
 
 test('export routes block employee role', function () {
@@ -227,4 +430,36 @@ test('service record pdf returns 404 for invalid employee', function () {
     $this->actingAs($this->hrAdmin)
         ->get('/exports/service-record/999999/pdf')
         ->assertNotFound();
+});
+
+test('masterlist excel export records report export history', function () {
+    makeReportEmployee();
+
+    $this->actingAs($this->hrAdmin)
+        ->get('/exports/masterlist/excel?status=active')
+        ->assertOk();
+
+    $this->assertDatabaseHas('report_exports', [
+        'user_id' => $this->hrAdmin->id,
+        'report_key' => 'personnel_masterlist',
+        'report_name' => 'Personnel Masterlist',
+        'export_format' => 'excel',
+        'file_name' => 'personnel-masterlist.xlsx',
+    ]);
+});
+
+test('service record pdf export records employee scoped export history', function () {
+    $employee = makeReportEmployee();
+
+    $this->actingAs($this->hrAdmin)
+        ->get("/exports/service-record/{$employee->id}/pdf")
+        ->assertOk();
+
+    $this->assertDatabaseHas('report_exports', [
+        'user_id' => $this->hrAdmin->id,
+        'report_key' => 'service_record',
+        'report_name' => 'Service Record',
+        'export_format' => 'pdf',
+        'employee_id' => $employee->id,
+    ]);
 });

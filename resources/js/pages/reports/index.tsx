@@ -8,6 +8,7 @@ import {
     FileSpreadsheet,
     FileText,
     Users,
+    Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -45,11 +46,23 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type SelectOption = { value: string; label: string };
 
+type RecentExportRecord = {
+    id: number;
+    report_name: string;
+    export_format: string;
+    file_name: string;
+    department: string | null;
+    employee: string | null;
+    exported_at: string;
+    filters: Record<string, string>;
+};
+
 type Props = {
     departments: SelectOption[];
     employees: SelectOption[];
     leaveTypes: SelectOption[];
     years: SelectOption[];
+    recentExports: RecentExportRecord[];
 };
 
 type ExportAction = {
@@ -131,6 +144,7 @@ export default function ReportsIndex({
     employees,
     leaveTypes,
     years,
+    recentExports,
 }: Props) {
     const [masterlistDept, setMasterlistDept] = useState('all');
     const [masterlistStatus, setMasterlistStatus] = useState('active');
@@ -140,6 +154,8 @@ export default function ReportsIndex({
     );
     const [leaveDept, setLeaveDept] = useState('all');
     const [leaveEmployee, setLeaveEmployee] = useState('all');
+    const [payrollDept, setPayrollDept] = useState('all');
+    const [payrollEmployee, setPayrollEmployee] = useState('all');
     const [attendYear, setAttendYear] = useState(
         String(new Date().getFullYear()),
     );
@@ -253,6 +269,53 @@ export default function ReportsIndex({
                                     </CardFooter>
                                 </Card>
                             ))}
+                        </div>
+
+                        <div className="px-4 lg:px-6">
+                            <Card className="shadow-xs">
+                                <CardHeader>
+                                    <CardTitle>Recent export activity</CardTitle>
+                                    <CardDescription>
+                                        The last five reports you generated from this workspace.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    {recentExports.length === 0 ? (
+                                        <div className="rounded-lg border border-dashed px-4 py-6 text-sm text-muted-foreground">
+                                            No exports recorded yet for your account.
+                                        </div>
+                                    ) : (
+                                        <div className="grid gap-3">
+                                            {recentExports.map((exportItem) => (
+                                                <div
+                                                    key={exportItem.id}
+                                                    className="flex flex-col gap-3 rounded-lg border px-4 py-3 md:flex-row md:items-start md:justify-between"
+                                                >
+                                                    <div className="space-y-1">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="text-sm font-medium text-foreground">
+                                                                {exportItem.report_name}
+                                                            </span>
+                                                            <Badge variant="outline">
+                                                                {exportItem.export_format}
+                                                            </Badge>
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {exportItem.file_name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {exportItem.employee ?? exportItem.department ?? 'Organization-wide export'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        {exportItem.exported_at}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
                         </div>
 
                         <div className="grid gap-4 px-4 lg:px-6 xl:grid-cols-2">
@@ -449,6 +512,17 @@ export default function ReportsIndex({
                                                 ),
                                                 icon: Download,
                                             },
+                                            {
+                                                label: 'PDF',
+                                                href: buildUrl(
+                                                    '/exports/plantilla/pdf',
+                                                    {
+                                                        department_id:
+                                                            plantillaDept,
+                                                    },
+                                                ),
+                                                icon: FileText,
+                                            },
                                         ]}
                                     />
                                 </CardFooter>
@@ -593,6 +667,145 @@ export default function ReportsIndex({
                                                 ),
                                                 icon: Download,
                                             },
+                                            {
+                                                label: 'PDF',
+                                                href: buildUrl(
+                                                    '/exports/leave-ledger/pdf',
+                                                    {
+                                                        year: leaveYear,
+                                                        department_id:
+                                                            leaveDept,
+                                                        employee_id:
+                                                            leaveEmployee,
+                                                    },
+                                                ),
+                                                icon: FileText,
+                                            },
+                                        ]}
+                                    />
+                                </CardFooter>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Wallet />
+                                        Payroll Support Register
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Current compensation and statutory IDs
+                                        used for payroll preparation and
+                                        compliance references.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="grid gap-4 md:grid-cols-2">
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Department
+                                        </div>
+                                        <Select
+                                            value={payrollDept}
+                                            onValueChange={setPayrollDept}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Departments
+                                                    </SelectItem>
+                                                    {departments.map(
+                                                        (department) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    department.value
+                                                                }
+                                                                value={
+                                                                    department.value
+                                                                }
+                                                            >
+                                                                {
+                                                                    department.label
+                                                                }
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className="text-sm font-medium">
+                                            Employee
+                                        </div>
+                                        <Select
+                                            value={payrollEmployee}
+                                            onValueChange={setPayrollEmployee}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectGroup>
+                                                    <SelectItem value="all">
+                                                        All Employees
+                                                    </SelectItem>
+                                                    {employees.map(
+                                                        (employee) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    employee.value
+                                                                }
+                                                                value={
+                                                                    employee.value
+                                                                }
+                                                            >
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <ExportButtons
+                                        actions={[
+                                            {
+                                                label: 'Excel',
+                                                href: buildUrl(
+                                                    '/exports/payroll-support/excel',
+                                                    {
+                                                        department_id: payrollDept,
+                                                        employee_id: payrollEmployee,
+                                                    },
+                                                ),
+                                                icon: FileSpreadsheet,
+                                            },
+                                            {
+                                                label: 'CSV',
+                                                href: buildUrl(
+                                                    '/exports/payroll-support/csv',
+                                                    {
+                                                        department_id: payrollDept,
+                                                        employee_id: payrollEmployee,
+                                                    },
+                                                ),
+                                                icon: Download,
+                                            },
+                                            {
+                                                label: 'PDF',
+                                                href: buildUrl(
+                                                    '/exports/payroll-support/pdf',
+                                                    {
+                                                        department_id: payrollDept,
+                                                        employee_id: payrollEmployee,
+                                                    },
+                                                ),
+                                                icon: FileText,
+                                            },
                                         ]}
                                     />
                                 </CardFooter>
@@ -715,6 +928,32 @@ export default function ReportsIndex({
                                                     },
                                                 ),
                                                 icon: FileSpreadsheet,
+                                            },
+                                            {
+                                                label: 'CSV',
+                                                href: buildUrl(
+                                                    '/exports/attendance/csv',
+                                                    {
+                                                        year: attendYear,
+                                                        month: attendMonth,
+                                                        department_id:
+                                                            attendDept,
+                                                    },
+                                                ),
+                                                icon: Download,
+                                            },
+                                            {
+                                                label: 'PDF',
+                                                href: buildUrl(
+                                                    '/exports/attendance/pdf',
+                                                    {
+                                                        year: attendYear,
+                                                        month: attendMonth,
+                                                        department_id:
+                                                            attendDept,
+                                                    },
+                                                ),
+                                                icon: FileText,
                                             },
                                         ]}
                                     />
@@ -850,6 +1089,54 @@ export default function ReportsIndex({
                                                     },
                                                 ),
                                                 icon: FileSpreadsheet,
+                                            },
+                                            {
+                                                label: 'CSV',
+                                                href: buildUrl(
+                                                    '/exports/movements/csv',
+                                                    {
+                                                        date_from: movDateFrom
+                                                            ? format(
+                                                                  movDateFrom,
+                                                                  'yyyy-MM-dd',
+                                                              )
+                                                            : undefined,
+                                                        date_to: movDateTo
+                                                            ? format(
+                                                                  movDateTo,
+                                                                  'yyyy-MM-dd',
+                                                              )
+                                                            : undefined,
+                                                        department_id: movDept,
+                                                        employee_id:
+                                                            movEmployee,
+                                                    },
+                                                ),
+                                                icon: Download,
+                                            },
+                                            {
+                                                label: 'PDF',
+                                                href: buildUrl(
+                                                    '/exports/movements/pdf',
+                                                    {
+                                                        date_from: movDateFrom
+                                                            ? format(
+                                                                  movDateFrom,
+                                                                  'yyyy-MM-dd',
+                                                              )
+                                                            : undefined,
+                                                        date_to: movDateTo
+                                                            ? format(
+                                                                  movDateTo,
+                                                                  'yyyy-MM-dd',
+                                                              )
+                                                            : undefined,
+                                                        department_id: movDept,
+                                                        employee_id:
+                                                            movEmployee,
+                                                    },
+                                                ),
+                                                icon: FileText,
                                             },
                                         ]}
                                     />

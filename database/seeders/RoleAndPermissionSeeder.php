@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -69,15 +68,5 @@ class RoleAndPermissionSeeder extends Seeder
             $role->syncPermissions($grantedPermissions);
         }
 
-        $adminUser = User::query()->firstOrCreate(
-            ['email' => 'hr.admin@example.com'],
-            [
-                'name' => 'HR Admin',
-                'password' => 'password',
-                'email_verified_at' => now(),
-            ],
-        );
-
-        $adminUser->syncRoles(['HR Admin']);
     }
 }

@@ -27,15 +27,34 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Define the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
-     *
      * @return array<string, mixed>
      */
     public function share(Request $request): array
     {
         $user = $request->user();
+        $notifications = $user
+            ? [
+                'unread_count' => $user->unreadNotifications()->count(),
+                'recent' => $user->notifications()
+                    ->latest()
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($notification): array => [
+                        'id' => $notification->id,
+                        'title' => (string) ($notification->data['title'] ?? 'Notification'),
+                        'message' => (string) ($notification->data['message'] ?? ''),
+                        'action_url' => $notification->data['action_url'] ?? null,
+                        'category' => (string) ($notification->data['category'] ?? 'general'),
+                        'status' => $notification->data['status'] ?? null,
+                        'read_at' => $notification->read_at?->toIso8601String(),
+                        'recorded_at' => $notification->created_at->toIso8601String(),
+                    ])
+                    ->all(),
+            ]
+            : [
+                'unread_count' => 0,
+                'recent' => [],
+            ];
 
         return [
             ...parent::share($request),
@@ -58,6 +77,7 @@ class HandleInertiaRequests extends Middleware
                     'primary_role' => $user->getRoleNames()->first(),
                 ] : null,
             ],
+            'notifications' => $notifications,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

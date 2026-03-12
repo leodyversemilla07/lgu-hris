@@ -14,6 +14,8 @@ class EmployeeCompensationController extends Controller
 {
     public function create(Employee $employee): Response
     {
+        $this->authorize('update', $employee);
+
         $salaryGrades = SalaryGrade::query()
             ->orderBy('grade')
             ->orderBy('step')
@@ -21,11 +23,11 @@ class EmployeeCompensationController extends Controller
             ->groupBy('grade')
             ->map(fn ($steps, $grade) => [
                 'grade' => $grade,
-                'steps' => $steps->map(fn (SalaryGrade $sg): array => [
-                    'value' => (string) $sg->id,
-                    'step' => $sg->step,
-                    'monthly_salary' => number_format((float) $sg->monthly_salary, 2),
-                    'monthly_salary_raw' => (float) $sg->monthly_salary,
+                'steps' => $steps->map(fn (SalaryGrade $salaryGrade): array => [
+                    'value' => (string) $salaryGrade->id,
+                    'step' => $salaryGrade->step,
+                    'monthly_salary' => number_format((float) $salaryGrade->monthly_salary, 2),
+                    'monthly_salary_raw' => (float) $salaryGrade->monthly_salary,
                 ])->values(),
             ])
             ->values();
@@ -58,6 +60,8 @@ class EmployeeCompensationController extends Controller
 
     public function store(EmployeeCompensationUpsertRequest $request, Employee $employee): RedirectResponse
     {
+        $this->authorize('update', $employee);
+
         EmployeeCompensation::query()->create([
             'employee_id' => $employee->id,
             'salary_grade_id' => $request->integer('salary_grade_id'),

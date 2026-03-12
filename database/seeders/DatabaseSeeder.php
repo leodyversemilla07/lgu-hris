@@ -18,6 +18,5 @@ class DatabaseSeeder extends Seeder
         $this->call(MovementTypeSeeder::class);
         $this->call(SalaryGradeSeeder::class);
         $this->call(WorkScheduleSeeder::class);
-        $this->call(DemoDataSeeder::class);
     }
 }

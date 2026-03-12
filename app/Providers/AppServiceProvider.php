@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Models\PersonnelMovement;
 use App\Observers\EmployeeObserver;
 use App\Observers\LeaveRequestObserver;
+use App\Observers\PersonnelMovementObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Employee::observe(EmployeeObserver::class);
         LeaveRequest::observe(LeaveRequestObserver::class);
+        PersonnelMovement::observe(PersonnelMovementObserver::class);
     }
 
     /**

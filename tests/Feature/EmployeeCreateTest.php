@@ -2,10 +2,12 @@
 
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\EmployeeHistory;
 use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\Position;
 use App\Models\User;
+use App\Models\WorkSchedule;
 use Database\Seeders\HrReferenceSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -15,6 +17,8 @@ test('hr staff can view the employee create page', function () {
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
+
+    WorkSchedule::factory()->create();
 
     $this->actingAs($user)
         ->get(route('employees.create'))
@@ -29,6 +33,8 @@ test('hr staff can view the employee create page', function () {
             ->has('employmentTypes.0.label')
             ->has('employmentStatuses.0.value')
             ->has('employmentStatuses.0.label')
+            ->has('workSchedules.0.value')
+            ->has('workSchedules.0.label')
         );
 });
 
@@ -42,6 +48,7 @@ test('hr staff can create an employee record', function () {
     $position = Position::query()->where('department_id', $department->id)->firstOrFail();
     $employmentType = EmploymentType::query()->firstOrFail();
     $employmentStatus = EmploymentStatus::query()->firstOrFail();
+    $workSchedule = WorkSchedule::factory()->create();
 
     $this->actingAs($user)
         ->post(route('employees.store'), [
@@ -58,6 +65,7 @@ test('hr staff can create an employee record', function () {
             'position_id' => $position->id,
             'employment_type_id' => $employmentType->id,
             'employment_status_id' => $employmentStatus->id,
+            'work_schedule_id' => $workSchedule->id,
             'is_active' => true,
         ])
         ->assertRedirect(route('employees.index'));
@@ -68,7 +76,18 @@ test('hr staff can create an employee record', function () {
         'last_name' => 'Cruz',
         'department_id' => $department->id,
         'position_id' => $position->id,
+        'work_schedule_id' => $workSchedule->id,
     ]);
+
+    $history = EmployeeHistory::query()
+        ->whereHas('employee', fn ($query) => $query->where('employee_number', 'EMP-2001'))
+        ->latest('id')
+        ->first();
+
+    expect($history)->not->toBeNull();
+    expect($history->event_type)->toBe('hired');
+    expect($history->after_values['department'])->toBe($department->name);
+    expect($history->after_values['work_schedule'])->toBe($workSchedule->name);
 });
 
 test('employee creation validates required fields', function () {
@@ -103,6 +122,7 @@ test('users without employee manage permission cannot create employees', functio
     $position = Position::query()->where('department_id', $department->id)->firstOrFail();
     $employmentType = EmploymentType::query()->firstOrFail();
     $employmentStatus = EmploymentStatus::query()->firstOrFail();
+    $workSchedule = WorkSchedule::factory()->create();
 
     $this->actingAs($user)
         ->post(route('employees.store'), [

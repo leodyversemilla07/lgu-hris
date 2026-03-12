@@ -46,6 +46,7 @@ class EmployeeStoreRequest extends FormRequest
             'position_id' => ['required', 'integer', Rule::exists('positions', 'id')],
             'employment_type_id' => ['required', 'integer', Rule::exists('employment_types', 'id')],
             'employment_status_id' => ['required', 'integer', Rule::exists('employment_statuses', 'id')],
+            'work_schedule_id' => ['nullable', 'integer', Rule::exists('work_schedules', 'id')],
             'is_active' => ['required', 'boolean'],
         ];
     }

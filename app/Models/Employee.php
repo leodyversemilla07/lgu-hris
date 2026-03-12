@@ -41,6 +41,7 @@ class Employee extends Model
         'position_id',
         'employment_type_id',
         'employment_status_id',
+        'work_schedule_id',
         'is_active',
         'archived_at',
     ];
@@ -80,6 +81,11 @@ class Employee extends Model
         return $this->belongsTo(EmploymentStatus::class);
     }
 
+    public function workSchedule(): BelongsTo
+    {
+        return $this->belongsTo(WorkSchedule::class);
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(EmployeeDocument::class);
@@ -113,5 +119,10 @@ class Employee extends Model
     public function compensations(): HasMany
     {
         return $this->hasMany(EmployeeCompensation::class);
+    }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(EmployeeHistory::class);
     }
 }

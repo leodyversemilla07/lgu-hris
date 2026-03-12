@@ -2,10 +2,12 @@
 
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\EmployeeHistory;
 use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\Position;
 use App\Models\User;
+use App\Models\WorkSchedule;
 use Database\Seeders\HrReferenceSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -20,12 +22,14 @@ test('hr staff can view the employee edit page', function () {
     $position = Position::query()->where('department_id', $department->id)->firstOrFail();
     $employmentType = EmploymentType::query()->firstOrFail();
     $employmentStatus = EmploymentStatus::query()->firstOrFail();
+    $workSchedule = WorkSchedule::factory()->create();
 
     $employee = Employee::factory()->create([
         'department_id' => $department->id,
         'position_id' => $position->id,
         'employment_type_id' => $employmentType->id,
         'employment_status_id' => $employmentStatus->id,
+        'work_schedule_id' => $workSchedule->id,
     ]);
 
     $this->actingAs($user)
@@ -38,6 +42,7 @@ test('hr staff can view the employee edit page', function () {
             ->has('positions')
             ->has('employmentTypes')
             ->has('employmentStatuses')
+            ->has('workSchedules')
             ->where('employee.id', $employee->id)
             ->where('employee.employee_number', $employee->employee_number)
             ->where('employee.department_id', (string) $department->id)
@@ -55,6 +60,12 @@ test('hr staff can update an employee record', function () {
     $position = Position::query()->where('department_id', $department->id)->firstOrFail();
     $employmentType = EmploymentType::query()->firstOrFail();
     $employmentStatus = EmploymentStatus::query()->firstOrFail();
+    $workSchedule = WorkSchedule::factory()->create([
+        'name' => 'Regular 8-5',
+    ]);
+    $updatedWorkSchedule = WorkSchedule::factory()->create([
+        'name' => 'Shifting Evening',
+    ]);
 
     $employee = Employee::factory()->create([
         'first_name' => 'Juan',
@@ -63,6 +74,7 @@ test('hr staff can update an employee record', function () {
         'position_id' => $position->id,
         'employment_type_id' => $employmentType->id,
         'employment_status_id' => $employmentStatus->id,
+        'work_schedule_id' => $workSchedule->id,
     ]);
 
     $this->actingAs($user)
@@ -80,6 +92,7 @@ test('hr staff can update an employee record', function () {
             'position_id' => $position->id,
             'employment_type_id' => $employmentType->id,
             'employment_status_id' => $employmentStatus->id,
+            'work_schedule_id' => $updatedWorkSchedule->id,
             'is_active' => true,
         ])
         ->assertRedirect(route('employees.show', $employee));
@@ -88,7 +101,18 @@ test('hr staff can update an employee record', function () {
         'id' => $employee->id,
         'last_name' => 'dela Cruz',
         'middle_name' => 'M.',
+        'work_schedule_id' => $updatedWorkSchedule->id,
     ]);
+
+    $history = EmployeeHistory::query()
+        ->where('employee_id', $employee->id)
+        ->where('event_type', 'profile_updated')
+        ->latest('id')
+        ->first();
+
+    expect($history)->not->toBeNull();
+    expect($history->before_values['work_schedule'])->toBe($workSchedule->name);
+    expect($history->after_values['work_schedule'])->toBe($updatedWorkSchedule->name);
 });
 
 test('employee update validates required fields', function () {
@@ -150,12 +174,14 @@ test('employee update accepts same employee number for same record', function ()
     $position = Position::query()->where('department_id', $department->id)->firstOrFail();
     $employmentType = EmploymentType::query()->firstOrFail();
     $employmentStatus = EmploymentStatus::query()->firstOrFail();
+    $workSchedule = WorkSchedule::factory()->create();
 
     $employee = Employee::factory()->create([
         'department_id' => $department->id,
         'position_id' => $position->id,
         'employment_type_id' => $employmentType->id,
         'employment_status_id' => $employmentStatus->id,
+        'work_schedule_id' => $workSchedule->id,
     ]);
 
     $this->actingAs($user)

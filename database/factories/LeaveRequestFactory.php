@@ -24,6 +24,7 @@ class LeaveRequestFactory extends Factory
             'days_requested' => fake()->randomElement([1, 2, 3, 5]),
             'reason' => fake()->sentence(),
             'status' => 'submitted',
+            'submitted_at' => now(),
             'actioned_by' => null,
             'actioned_at' => null,
             'remarks' => null,

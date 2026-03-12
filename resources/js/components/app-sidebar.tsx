@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowRightLeft,
+    CalendarDays,
     Database,
     FileArchive,
     FileSpreadsheet,
@@ -61,6 +62,12 @@ const sidebarModules: SidebarModule[] = [
         href: '/personnel-movements',
         icon: ArrowRightLeft,
         visibleForAnyPermission: ['movements.view', 'movements.manage'],
+    },
+    {
+        title: 'Attendance',
+        href: '/attendance',
+        icon: CalendarDays,
+        visibleForAnyPermission: ['attendance.view', 'attendance.manage'],
     },
     {
         title: 'Reports',

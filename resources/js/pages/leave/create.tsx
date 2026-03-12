@@ -167,7 +167,21 @@ export default function LeaveCreate({
         end_date: '',
         days_requested: '',
         reason: '',
+        status: 'submitted' as 'draft' | 'submitted',
     });
+
+    function submitAs(status: 'draft' | 'submitted'): void {
+        form.transform((data) => ({
+            ...data,
+            status,
+        })).post('/leave', {
+            onFinish: () =>
+                form.transform((data) => ({
+                    ...data,
+                    status: 'submitted',
+                })),
+        });
+    }
 
     const selectedEmployee = employees.find(
         (employee) => employee.value === form.data.employee_id,
@@ -231,7 +245,7 @@ export default function LeaveCreate({
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
-                            form.post('/leave');
+                            submitAs('submitted');
                         }}
                         className="flex flex-col gap-4 py-4 md:gap-6 md:py-6"
                     >
@@ -245,11 +259,10 @@ export default function LeaveCreate({
                                         File leave request
                                     </h1>
                                     <p className="text-sm text-muted-foreground">
-                                        Submit a leave request for {year} from
-                                        the same neutral workspace used across
-                                        the updated HRIS modules. Balances and
-                                        requested days stay visible while you
-                                        file.
+                                        Build a leave request for {year}, save
+                                        it as a draft when details are still in
+                                        progress, or submit it once the dates
+                                        and balances are ready.
                                     </p>
                                 </div>
 
@@ -259,6 +272,15 @@ export default function LeaveCreate({
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to requests
                                         </Link>
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={form.processing}
+                                        onClick={() => submitAs('draft')}
+                                    >
+                                        <Save data-icon="inline-start" />
+                                        Save draft
                                     </Button>
                                     <Button type="submit" disabled={form.processing}>
                                         <Save data-icon="inline-start" />
@@ -417,7 +439,7 @@ export default function LeaveCreate({
                                     <CardHeader>
                                         <CardTitle>Balance snapshot</CardTitle>
                                         <CardDescription>
-                                            Review the employee and leave-type balance before submitting.
+                                            Review the employee and leave-type balance before saving or submitting.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-4">
@@ -464,7 +486,7 @@ export default function LeaveCreate({
                                     <CardHeader>
                                         <CardTitle>Request summary</CardTitle>
                                         <CardDescription>
-                                            Quick filing checks before the request is submitted.
+                                            Quick checks before the request is saved as a draft or submitted.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
@@ -491,6 +513,16 @@ export default function LeaveCreate({
                                     </CardContent>
                                     <CardFooter className="flex flex-col gap-3 sm:flex-row">
                                         <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full"
+                                            disabled={form.processing}
+                                            onClick={() => submitAs('draft')}
+                                        >
+                                            <Save data-icon="inline-start" />
+                                            Save draft
+                                        </Button>
+                                        <Button
                                             type="submit"
                                             className="w-full"
                                             disabled={form.processing}
@@ -516,3 +548,6 @@ export default function LeaveCreate({
         </AppLayout>
     );
 }
+
+
+

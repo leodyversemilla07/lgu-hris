@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LeaveRequest extends Model
 {
@@ -18,17 +19,22 @@ class LeaveRequest extends Model
         'days_requested',
         'reason',
         'status',
+        'submitted_at',
         'actioned_by',
         'actioned_at',
         'remarks',
     ];
 
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'days_requested' => 'decimal:3',
-        'actioned_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'days_requested' => 'decimal:3',
+            'submitted_at' => 'datetime',
+            'actioned_at' => 'datetime',
+        ];
+    }
 
     public function employee(): BelongsTo
     {
@@ -45,6 +51,16 @@ class LeaveRequest extends Model
         return $this->belongsTo(User::class, 'actioned_by');
     }
 
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(LeaveApproval::class)->orderBy('acted_at');
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
     public function isSubmitted(): bool
     {
         return $this->status === 'submitted';
@@ -53,5 +69,10 @@ class LeaveRequest extends Model
     public function isApproved(): bool
     {
         return $this->status === 'approved';
+    }
+
+    public function canBeCancelled(): bool
+    {
+        return in_array($this->status, ['draft', 'submitted'], true);
     }
 }

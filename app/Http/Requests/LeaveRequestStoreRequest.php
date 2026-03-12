@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class LeaveRequestStoreRequest extends FormRequest
 {
@@ -20,6 +21,7 @@ class LeaveRequestStoreRequest extends FormRequest
             'end_date' => ['required', 'date', 'gte:start_date'],
             'days_requested' => ['required', 'numeric', 'min:0.5', 'max:365'],
             'reason' => ['nullable', 'string', 'max:1000'],
+            'status' => ['nullable', Rule::in(['draft', 'submitted'])],
         ];
     }
 }

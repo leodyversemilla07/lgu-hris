@@ -2,6 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import {
     ArrowRight,
     Download,
+    Eye,
     FileArchive,
     FileText,
     Lock,
@@ -74,6 +75,19 @@ import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
+type DocumentVersionRecord = {
+    id: number;
+    file_name: string;
+    file_size_formatted: string;
+    is_confidential: boolean;
+    notes: string | null;
+    uploaded_by: string;
+    uploaded_at: string;
+    version_number: number;
+    mime_type: string;
+    is_previewable: boolean;
+};
+
 type DocumentRecord = {
     id: number;
     employee_id: number;
@@ -85,9 +99,14 @@ type DocumentRecord = {
     file_size_formatted: string;
     mime_type: string;
     is_confidential: boolean;
+    is_current_version: boolean;
+    version_number: number;
+    version_count: number;
+    version_history: DocumentVersionRecord[];
     notes: string | null;
     uploaded_by: string;
     uploaded_at: string;
+    is_previewable: boolean;
 };
 
 type EmployeeOption = {
@@ -192,6 +211,10 @@ export default function DocumentsIndex({
     const employeesCovered = new Set(
         documents.map((document) => document.employee_id),
     ).size;
+    const trackedVersions = documents.reduce(
+        (total, document) => total + document.version_count,
+        0,
+    );
 
     const filteredDocuments = documents.filter((document) => {
         const matchesEmployee =
@@ -247,7 +270,7 @@ export default function DocumentsIndex({
 
     const summaryCards = [
         {
-            title: 'Total documents',
+            title: 'Current documents',
             value: numberFormatter.format(documents.length),
             detail: `${numberFormatter.format(filteredDocuments.length)} in the current view`,
             hint: 'Registry',
@@ -268,10 +291,10 @@ export default function DocumentsIndex({
             icon: Users,
         },
         {
-            title: 'Types in use',
-            value: numberFormatter.format(documentTypesInUse),
-            detail: `${numberFormatter.format(documentTypes.length)} active document categories available`,
-            hint: 'Catalog',
+            title: 'Tracked versions',
+            value: numberFormatter.format(trackedVersions),
+            detail: `${numberFormatter.format(documentTypesInUse)} document types across current records`,
+            hint: 'History',
             icon: FileArchive,
         },
     ];
@@ -317,9 +340,10 @@ export default function DocumentsIndex({
                                         Documents
                                     </h1>
                                     <p className="text-sm text-muted-foreground">
-                                        Manage uploaded employee files, filter
-                                        the registry, and keep confidential
-                                        records clearly identified.
+                                        Manage uploaded employee files, keep
+                                        confidential records clearly identified,
+                                        and preserve version history when the
+                                        same document is uploaded again.
                                     </p>
                                 </div>
 
@@ -386,9 +410,11 @@ export default function DocumentsIndex({
                                     <CardHeader>
                                         <CardTitle>Upload document</CardTitle>
                                         <CardDescription>
-                                            Attach a file to an employee record
-                                            and mark it confidential when access
-                                            should be restricted.
+                                            Attach a file to an employee record,
+                                            mark it confidential when access
+                                            should be restricted, and upload the
+                                            same type again to create a new
+                                            version automatically.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-6">
@@ -778,6 +804,14 @@ export default function DocumentsIndex({
                                                                                 document.document_type
                                                                             }
                                                                         </Badge>
+                                                                        <Badge variant="secondary">
+                                                                            v{document.version_number}
+                                                                        </Badge>
+                                                                        {document.version_count > 1 && (
+                                                                            <Badge variant="secondary">
+                                                                                {document.version_count} versions
+                                                                            </Badge>
+                                                                        )}
                                                                         {document.is_confidential && (
                                                                             <Badge variant="secondary">
                                                                                 <Lock />
@@ -786,8 +820,8 @@ export default function DocumentsIndex({
                                                                         )}
                                                                     </div>
                                                                 </TableCell>
-                                                                <TableCell className="min-w-[260px]">
-                                                                    <div className="flex flex-col gap-1">
+                                                                <TableCell className="min-w-[320px]">
+                                                                    <div className="flex flex-col gap-2">
                                                                         <div className="flex items-center gap-2 font-medium">
                                                                             <FileText className="size-4 text-muted-foreground" />
                                                                             {
@@ -799,9 +833,45 @@ export default function DocumentsIndex({
                                                                                 document.file_size_formatted
                                                                             }
                                                                             {document.notes
-                                                                                ? ` • ${document.notes}`
+                                                                                ? ` | ${document.notes}`
                                                                                 : ''}
                                                                         </div>
+                                                                        {document.version_history.length > 0 && (
+                                                                            <div className="rounded-md border bg-muted/20 p-2 text-xs">
+                                                                                <div className="font-medium text-foreground">
+                                                                                    Previous versions
+                                                                                </div>
+                                                                                <div className="mt-2 flex flex-col gap-1 text-muted-foreground">
+                                                                                    {document.version_history.map((version) => (
+                                                                                        <div
+                                                                                            key={version.id}
+                                                                                            className="inline-flex flex-wrap items-center gap-2"
+                                                                                        >
+                                                                                            {version.is_previewable && (
+                                                                                                <a
+                                                                                                    href={`/documents/${version.id}/preview`}
+                                                                                                    target="_blank"
+                                                                                                    rel="noreferrer"
+                                                                                                    className="inline-flex items-center gap-1 hover:text-foreground"
+                                                                                                >
+                                                                                                    <Eye className="size-3" />
+                                                                                                    Preview
+                                                                                                </a>
+                                                                                            )}
+                                                                                            <a
+                                                                                                href={`/documents/${version.id}/download`}
+                                                                                                className="inline-flex items-center gap-2 hover:text-foreground"
+                                                                                            >
+                                                                                                <Download className="size-3" />
+                                                                                                <span>
+                                                                                                    v{version.version_number} | {version.file_name} | {version.uploaded_at}
+                                                                                                </span>
+                                                                                            </a>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
                                                                 </TableCell>
                                                                 <TableCell>
@@ -820,6 +890,23 @@ export default function DocumentsIndex({
                                                                 </TableCell>
                                                                 <TableCell className="text-right">
                                                                     <div className="flex justify-end gap-2">
+                                                                        {document.is_previewable && (
+                                                                            <Button
+                                                                                asChild
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                            >
+                                                                                <a
+                                                                                    href={`/documents/${document.id}/preview`}
+                                                                                    target="_blank"
+                                                                                    rel="noreferrer"
+                                                                                >
+                                                                                    <Eye data-icon="inline-start" />
+                                                                                    Preview
+                                                                                </a>
+                                                                            </Button>
+                                                                        )}
+
                                                                         <Button
                                                                             asChild
                                                                             variant="ghost"

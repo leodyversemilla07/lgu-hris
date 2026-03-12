@@ -44,6 +44,9 @@ type Option = {
     value: string;
     label: string;
     department?: string;
+    time_in?: string;
+    time_out?: string;
+    work_hours_per_day?: number;
 };
 
 type EmployeeDetail = {
@@ -77,6 +80,7 @@ type EmployeeDetail = {
     position_id: string;
     employment_type_id: string;
     employment_status_id: string;
+    work_schedule_id: string;
     is_active: boolean;
 };
 
@@ -86,6 +90,7 @@ type Props = {
     positions: Option[];
     employmentTypes: Option[];
     employmentStatuses: Option[];
+    workSchedules: Option[];
 };
 
 type EmployeeFormData = {
@@ -116,6 +121,7 @@ type EmployeeFormData = {
     position_id: string;
     employment_type_id: string;
     employment_status_id: string;
+    work_schedule_id: string;
     is_active: boolean;
 };
 
@@ -229,6 +235,7 @@ export default function EditEmployee({
     positions,
     employmentTypes,
     employmentStatuses,
+    workSchedules,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
@@ -266,6 +273,7 @@ export default function EditEmployee({
         position_id: employee.position_id,
         employment_type_id: employee.employment_type_id,
         employment_status_id: employee.employment_status_id,
+        work_schedule_id: employee.work_schedule_id,
         is_active: employee.is_active,
     });
 
@@ -278,6 +286,9 @@ export default function EditEmployee({
                   )?.label === position.department,
           )
         : positions;
+    const selectedWorkSchedule = workSchedules.find(
+        (workSchedule) => workSchedule.value === form.data.work_schedule_id,
+    );
 
     const summaryCards = [
         {
@@ -292,9 +303,10 @@ export default function EditEmployee({
                 departments.length +
                     positions.length +
                     employmentTypes.length +
-                    employmentStatuses.length,
+                    employmentStatuses.length +
+                    workSchedules.length,
             ),
-            detail: 'Live department, position, type, and status lists.',
+            detail: 'Live department, position, type, status, and schedule lists.',
             icon: Building2,
         },
         {
@@ -586,6 +598,28 @@ export default function EditEmployee({
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
+                                        <FormField label="Work schedule" error={form.errors.work_schedule_id}>
+                                            <Select value={form.data.work_schedule_id || 'none'} onValueChange={(value) => form.setData('work_schedule_id', value === 'none' ? '' : value)}>
+                                                <SelectTrigger className="w-full" aria-invalid={form.errors.work_schedule_id ? 'true' : 'false'}>
+                                                    <SelectValue placeholder="Select schedule" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        <SelectItem value="none">No assigned schedule</SelectItem>
+                                                        {workSchedules.map((workSchedule) => (
+                                                            <SelectItem key={workSchedule.value} value={workSchedule.value}>
+                                                                {workSchedule.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            {selectedWorkSchedule ? (
+                                                <p className="text-xs text-muted-foreground">
+                                                    {selectedWorkSchedule.time_in} - {selectedWorkSchedule.time_out} | {selectedWorkSchedule.work_hours_per_day} hrs/day
+                                                </p>
+                                            ) : null}
+                                        </FormField>
                                     </div>
                                 </FormSection>
                             </div>
@@ -647,8 +681,8 @@ export default function EditEmployee({
                                         <div className="flex items-start gap-2">
                                             <Building2 className="mt-0.5 size-4 shrink-0" />
                                             <span>
-                                                Keep the department and position
-                                                combination aligned.
+                                                Keep the department, position,
+                                                and schedule assignment aligned.
                                             </span>
                                         </div>
                                         <div className="flex items-start gap-2">

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Employee;
 use App\Services\AuditService;
+use App\Services\EmployeeHistoryService;
 
 class EmployeeObserver
 {
@@ -19,23 +20,28 @@ class EmployeeObserver
             ]),
             "Employee {$employee->employee_number} created",
         );
+
+        EmployeeHistoryService::recordCreated($employee);
     }
 
     public function updated(Employee $employee): void
     {
-        $dirty = $employee->getDirty();
-        if (empty($dirty)) {
+        $changes = $employee->getChanges();
+
+        if ($changes === []) {
             return;
         }
 
-        $old = array_intersect_key($employee->getOriginal(), $dirty);
+        $old = array_intersect_key($employee->getPrevious(), $changes);
 
         AuditService::log(
             'updated',
             $employee,
             $old,
-            $dirty,
+            $changes,
             "Employee {$employee->employee_number} updated",
         );
+
+        EmployeeHistoryService::recordUpdated($employee);
     }
 }

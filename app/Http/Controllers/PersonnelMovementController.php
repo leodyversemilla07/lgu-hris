@@ -18,10 +18,28 @@ class PersonnelMovementController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
+
         $query = PersonnelMovement::query()
             ->with(['employee', 'movementType'])
             ->orderByDesc('effective_date')
             ->orderByDesc('id');
+
+        $employeeQuery = Employee::query()
+            ->orderBy('last_name')
+            ->orderBy('first_name');
+
+        if ($user->hasRole('Department Head')) {
+            $departmentId = $user->managed_department_id;
+
+            if ($departmentId !== null) {
+                $query->whereHas('employee', fn ($builder) => $builder->where('department_id', $departmentId));
+                $employeeQuery->where('department_id', $departmentId);
+            } else {
+                $query->whereRaw('1 = 0');
+                $employeeQuery->whereRaw('1 = 0');
+            }
+        }
 
         if ($employeeId = $request->query('employee_id')) {
             $query->where('employee_id', $employeeId);
@@ -32,24 +50,23 @@ class PersonnelMovementController extends Controller
         }
 
         $movements = $query->get()->map(
-            fn (PersonnelMovement $m): array => $this->mapMovement($m),
+            fn (PersonnelMovement $movement): array => $this->mapMovement($movement),
         );
 
-        $employees = Employee::query()
-            ->orderBy('last_name')
+        $employees = $employeeQuery
             ->get(['id', 'first_name', 'last_name'])
-            ->map(fn (Employee $e): array => [
-                'value' => (string) $e->id,
-                'label' => "{$e->last_name}, {$e->first_name}",
+            ->map(fn (Employee $employee): array => [
+                'value' => (string) $employee->id,
+                'label' => "{$employee->last_name}, {$employee->first_name}",
             ]);
 
         $movementTypes = MovementType::query()
             ->where('is_active', true)
             ->orderBy('name')
             ->get(['id', 'name'])
-            ->map(fn (MovementType $mt): array => [
-                'value' => (string) $mt->id,
-                'label' => $mt->name,
+            ->map(fn (MovementType $movementType): array => [
+                'value' => (string) $movementType->id,
+                'label' => $movementType->name,
             ]);
 
         return Inertia::render('personnel-movements/index', [
@@ -68,45 +85,45 @@ class PersonnelMovementController extends Controller
                 ->orderBy('last_name')
                 ->get(['id', 'first_name', 'last_name', 'employee_number',
                     'department_id', 'position_id', 'employment_status_id'])
-                ->map(fn (Employee $e): array => [
-                    'value' => (string) $e->id,
-                    'label' => "{$e->last_name}, {$e->first_name}",
-                    'employee_number' => $e->employee_number,
-                    'department_id' => (string) $e->department_id,
-                    'position_id' => (string) $e->position_id,
-                    'employment_status_id' => (string) $e->employment_status_id,
+                ->map(fn (Employee $employee): array => [
+                    'value' => (string) $employee->id,
+                    'label' => "{$employee->last_name}, {$employee->first_name}",
+                    'employee_number' => $employee->employee_number,
+                    'department_id' => (string) $employee->department_id,
+                    'position_id' => (string) $employee->position_id,
+                    'employment_status_id' => (string) $employee->employment_status_id,
                 ]),
             'movementTypes' => MovementType::query()
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(fn (MovementType $mt): array => [
-                    'value' => (string) $mt->id,
-                    'label' => $mt->name,
+                ->map(fn (MovementType $movementType): array => [
+                    'value' => (string) $movementType->id,
+                    'label' => $movementType->name,
                 ]),
             'departments' => Department::query()
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(fn (Department $d): array => [
-                    'value' => (string) $d->id,
-                    'label' => $d->name,
+                ->map(fn (Department $department): array => [
+                    'value' => (string) $department->id,
+                    'label' => $department->name,
                 ]),
             'positions' => Position::query()
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(fn (Position $p): array => [
-                    'value' => (string) $p->id,
-                    'label' => $p->name,
+                ->map(fn (Position $position): array => [
+                    'value' => (string) $position->id,
+                    'label' => $position->name,
                 ]),
             'employmentStatuses' => EmploymentStatus::query()
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(['id', 'name'])
-                ->map(fn (EmploymentStatus $es): array => [
-                    'value' => (string) $es->id,
-                    'label' => $es->name,
+                ->map(fn (EmploymentStatus $employmentStatus): array => [
+                    'value' => (string) $employmentStatus->id,
+                    'label' => $employmentStatus->name,
                 ]),
             'prefillEmployeeId' => $request->query('employee_id', ''),
         ]);
@@ -136,7 +153,7 @@ class PersonnelMovementController extends Controller
         return to_route('personnel-movements.show', $movement);
     }
 
-    public function show(PersonnelMovement $personnelMovement): Response
+    public function show(Request $request, PersonnelMovement $personnelMovement): Response
     {
         $personnelMovement->load([
             'employee',
@@ -150,6 +167,14 @@ class PersonnelMovementController extends Controller
             'recordedBy',
         ]);
 
+        if ($request->user()->hasRole('Department Head')) {
+            abort_unless(
+                $request->user()->managed_department_id !== null
+                && $personnelMovement->employee?->department_id === $request->user()->managed_department_id,
+                403,
+            );
+        }
+
         return Inertia::render('personnel-movements/show', [
             'movement' => $this->mapMovementDetail($personnelMovement),
         ]);
@@ -158,35 +183,35 @@ class PersonnelMovementController extends Controller
     /**
      * @return array<string, mixed>
      */
-    protected function mapMovement(PersonnelMovement $m): array
+    protected function mapMovement(PersonnelMovement $movement): array
     {
         return [
-            'id' => $m->id,
-            'employee_id' => $m->employee_id,
-            'employee_name' => "{$m->employee->last_name}, {$m->employee->first_name}",
-            'employee_number' => $m->employee->employee_number,
-            'movement_type' => $m->movementType->name,
-            'effective_date' => $m->effective_date->format('M d, Y'),
-            'order_number' => $m->order_number,
+            'id' => $movement->id,
+            'employee_id' => $movement->employee_id,
+            'employee_name' => "{$movement->employee->last_name}, {$movement->employee->first_name}",
+            'employee_number' => $movement->employee->employee_number,
+            'movement_type' => $movement->movementType->name,
+            'effective_date' => $movement->effective_date->format('M d, Y'),
+            'order_number' => $movement->order_number,
         ];
     }
 
     /**
      * @return array<string, mixed>
      */
-    protected function mapMovementDetail(PersonnelMovement $m): array
+    protected function mapMovementDetail(PersonnelMovement $movement): array
     {
-        return array_merge($this->mapMovement($m), [
-            'movement_type_id' => (string) $m->movement_type_id,
-            'from_department' => $m->fromDepartment?->name,
-            'to_department' => $m->toDepartment?->name,
-            'from_position' => $m->fromPosition?->name,
-            'to_position' => $m->toPosition?->name,
-            'from_employment_status' => $m->fromEmploymentStatus?->name,
-            'to_employment_status' => $m->toEmploymentStatus?->name,
-            'remarks' => $m->remarks,
-            'recorded_by' => $m->recordedBy?->name,
-            'recorded_at' => $m->created_at->format('M d, Y g:i A'),
+        return array_merge($this->mapMovement($movement), [
+            'movement_type_id' => (string) $movement->movement_type_id,
+            'from_department' => $movement->fromDepartment?->name,
+            'to_department' => $movement->toDepartment?->name,
+            'from_position' => $movement->fromPosition?->name,
+            'to_position' => $movement->toPosition?->name,
+            'from_employment_status' => $movement->fromEmploymentStatus?->name,
+            'to_employment_status' => $movement->toEmploymentStatus?->name,
+            'remarks' => $movement->remarks,
+            'recorded_by' => $movement->recordedBy?->name,
+            'recorded_at' => $movement->created_at->format('M d, Y g:i A'),
         ]);
     }
 }

@@ -1,15 +1,31 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { CalendarDays, Clock, Plus } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    CalendarDays,
+    Clock3,
+    FileText,
+    Plus,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
+    CardAction,
     CardContent,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from '@/components/ui/empty';
 import {
     Select,
     SelectContent,
@@ -17,8 +33,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
+import type { Auth, BreadcrumbItem } from '@/types';
 
 type Summary = {
     id: number;
@@ -55,8 +79,18 @@ type Props = {
 };
 
 const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ];
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -64,264 +98,341 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Attendance', href: '/attendance' },
 ];
 
-function fmt(minutes: number): string {
-    if (minutes === 0) return '—';
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+const numberFormatter = new Intl.NumberFormat();
+
+function formatMinutes(minutes: number): string {
+    if (minutes === 0) {
+        return '—';
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (hours > 0) {
+        return `${hours}h ${remainingMinutes}m`;
+    }
+
+    return `${remainingMinutes}m`;
 }
 
 export default function AttendanceIndex({ summaries, employees, filters }: Props) {
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const canManageAttendance = auth.user.permissions.includes('attendance.manage');
     const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+    const years = Array.from({ length: 5 }, (_, index) => currentYear - index);
 
     const [year, setYear] = useState(String(filters.year));
     const [month, setMonth] = useState(String(filters.month));
     const [employeeId, setEmployeeId] = useState(filters.employee_id);
 
-    const apply = (y: string, m: string, emp: string) => {
-        const params: Record<string, string> = { year: y, month: m };
-        if (emp && emp !== 'all') params.employee_id = emp;
-        router.get('/attendance', params, { preserveState: true, replace: true });
-    };
+    const selectedMonthLabel = MONTHS[Number.parseInt(month, 10) - 1] ?? MONTHS[0];
+    const totalPresentDays = summaries.reduce((total, summary) => total + summary.days_present, 0);
+    const totalAbsences = summaries.reduce((total, summary) => total + summary.days_absent, 0);
+    const totalLateMinutes = summaries.reduce((total, summary) => total + summary.total_late_minutes, 0);
+    const totalUndertimeMinutes = summaries.reduce((total, summary) => total + summary.total_undertime_minutes, 0);
+
+    const summaryCards = [
+        {
+            title: 'Employees in view',
+            value: numberFormatter.format(summaries.length),
+            detail: `${numberFormatter.format(employees.length)} selectable employees in this scope`,
+            hint: 'Scope',
+            icon: Users,
+        },
+        {
+            title: 'Present days',
+            value: numberFormatter.format(totalPresentDays),
+            detail: 'Accumulated present days for the selected period',
+            hint: 'Attendance',
+            icon: CalendarDays,
+        },
+        {
+            title: 'Absences flagged',
+            value: numberFormatter.format(totalAbsences),
+            detail: `${numberFormatter.format(totalUndertimeMinutes)} undertime minutes recorded`,
+            hint: 'Exceptions',
+            icon: FileText,
+        },
+        {
+            title: 'Late minutes',
+            value: totalLateMinutes === 0 ? '—' : formatMinutes(totalLateMinutes),
+            detail: 'Combined tardiness across all visible summaries',
+            hint: 'Time',
+            icon: Clock3,
+        },
+    ];
+
+    function apply(nextYear: string, nextMonth: string, nextEmployeeId: string): void {
+        const params: Record<string, string> = {
+            year: nextYear,
+            month: nextMonth,
+        };
+
+        if (nextEmployeeId && nextEmployeeId !== 'all') {
+            params.employee_id = nextEmployeeId;
+        }
+
+        router.get('/attendance', params, {
+            preserveState: true,
+            replace: true,
+        });
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Attendance" />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
-                <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="space-y-3">
-                            <Badge className="bg-[#1f4e79] text-white hover:bg-[#1f4e79]">
-                                Attendance
-                            </Badge>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-semibold tracking-tight text-slate-950">
-                                    Monthly attendance
-                                </h1>
-                                <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                                    Monthly summaries of employee attendance,
-                                    late arrivals, and undertime.
-                                </p>
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="px-4 lg:px-6">
+                            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                <div className="flex max-w-3xl flex-col gap-2">
+                                    <Badge variant="outline" className="w-fit">
+                                        Attendance
+                                    </Badge>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Monthly attendance
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Review attendance summaries, late arrivals, absences, and undertime for the selected reporting window.
+                                    </p>
+                                </div>
+
+                                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
+                                    {canManageAttendance ? (
+                                        <Button asChild variant="outline">
+                                            <Link href="/work-schedules">
+                                                <CalendarDays data-icon="inline-start" />
+                                                Manage schedules
+                                            </Link>
+                                        </Button>
+                                    ) : null}
+                                    {canManageAttendance ? (
+                                        <Button asChild>
+                                            <Link href="/attendance/log">
+                                                <Plus data-icon="inline-start" />
+                                                Log attendance
+                                            </Link>
+                                        </Button>
+                                    ) : null}
+                                </div>
                             </div>
                         </div>
-                        <Button asChild>
-                            <Link href="/attendance/log">
-                                <Plus className="size-4" />
-                                Log attendance
-                            </Link>
-                        </Button>
-                    </div>
-                </section>
 
-                <Card className="border-slate-200/75 bg-white/95 shadow-sm">
-                    <CardHeader>
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <CardTitle className="text-slate-950">
-                                    {MONTHS[parseInt(month) - 1]} {year}
-                                </CardTitle>
-                                <CardDescription className="mt-1">
-                                    {summaries.length} employee
-                                    {summaries.length !== 1 ? 's' : ''} with
-                                    attendance records
-                                </CardDescription>
-                            </div>
-                            <div className="flex flex-wrap gap-3">
-                                <Select
-                                    value={month}
-                                    onValueChange={(v) => {
-                                        setMonth(v);
-                                        apply(year, v, employeeId);
-                                    }}
-                                >
-                                    <SelectTrigger className="w-36">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {MONTHS.map((m, i) => (
-                                            <SelectItem
-                                                key={i + 1}
-                                                value={String(i + 1)}
-                                            >
-                                                {m}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select
-                                    value={year}
-                                    onValueChange={(v) => {
-                                        setYear(v);
-                                        apply(v, month, employeeId);
-                                    }}
-                                >
-                                    <SelectTrigger className="w-28">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {years.map((y) => (
-                                            <SelectItem
-                                                key={y}
-                                                value={String(y)}
-                                            >
-                                                {y}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select
-                                    value={employeeId || 'all'}
-                                    onValueChange={(v) => {
-                                        const val = v === 'all' ? '' : v;
-                                        setEmployeeId(val);
-                                        apply(year, month, val);
-                                    }}
-                                >
-                                    <SelectTrigger className="w-52">
-                                        <SelectValue placeholder="All employees" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            All employees
-                                        </SelectItem>
-                                        {employees.map((e) => (
-                                            <SelectItem
-                                                key={e.value}
-                                                value={e.value}
-                                            >
-                                                {e.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
+                            {summaryCards.map((item) => (
+                                <Card key={item.title} className="@container/card shadow-xs">
+                                    <CardHeader>
+                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                            {item.value}
+                                        </CardTitle>
+                                        <CardAction>
+                                            <Badge variant="outline">
+                                                <item.icon />
+                                                {item.hint}
+                                            </Badge>
+                                        </CardAction>
+                                    </CardHeader>
+                                    <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                                        <div className="flex items-center gap-2 font-medium">
+                                            <item.icon className="size-4" />
+                                            Snapshot
+                                        </div>
+                                        <div className="text-muted-foreground">
+                                            {item.detail}
+                                        </div>
+                                    </CardFooter>
+                                </Card>
+                            ))}
                         </div>
-                    </CardHeader>
-                    <CardContent>
-                        {summaries.length === 0 ? (
-                            <div className="flex flex-col items-center gap-3 py-12 text-slate-400">
-                                <CalendarDays className="size-10" />
-                                <p className="text-sm">
-                                    No attendance records for this period.
-                                </p>
-                                <Button asChild variant="outline" size="sm">
-                                    <Link href="/attendance/log">
-                                        Log the first attendance
-                                    </Link>
-                                </Button>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-200 text-sm">
-                                    <thead>
-                                        <tr className="text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-                                            <th className="px-3 py-3">
+
+                        <div className="px-4 lg:px-6">
+                            <Card className="shadow-xs">
+                                <CardHeader>
+                                    <CardTitle>Attendance summary</CardTitle>
+                                    <CardDescription>
+                                        Filter the current attendance view by month, year, and employee without leaving the page.
+                                    </CardDescription>
+                                    <CardAction>
+                                        <Badge variant="outline">
+                                            {selectedMonthLabel} {year}
+                                        </Badge>
+                                    </CardAction>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-6">
+                                    <div className="grid gap-3 md:grid-cols-3">
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                                Month
+                                            </p>
+                                            <Select
+                                                value={month}
+                                                onValueChange={(value) => {
+                                                    setMonth(value);
+                                                    apply(year, value, employeeId);
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {MONTHS.map((monthLabel, index) => (
+                                                        <SelectItem key={monthLabel} value={String(index + 1)}>
+                                                            {monthLabel}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                                Year
+                                            </p>
+                                            <Select
+                                                value={year}
+                                                onValueChange={(value) => {
+                                                    setYear(value);
+                                                    apply(value, month, employeeId);
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {years.map((yearOption) => (
+                                                        <SelectItem key={yearOption} value={String(yearOption)}>
+                                                            {yearOption}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                                                 Employee
-                                            </th>
-                                            <th className="px-3 py-3 text-center">
-                                                Present
-                                            </th>
-                                            <th className="px-3 py-3 text-center">
-                                                Absent
-                                            </th>
-                                            <th className="px-3 py-3 text-center">
-                                                Leave
-                                            </th>
-                                            <th className="px-3 py-3 text-center">
-                                                Holiday
-                                            </th>
-                                            <th className="px-3 py-3 text-center">
-                                                Rest
-                                            </th>
-                                            <th className="px-3 py-3">
-                                                <span className="flex items-center gap-1">
-                                                    <Clock className="size-3" />
-                                                    Late
-                                                </span>
-                                            </th>
-                                            <th className="px-3 py-3">
-                                                Undertime
-                                            </th>
-                                            <th className="px-3 py-3">
-                                                <span className="sr-only">
-                                                    Actions
-                                                </span>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {summaries.map((s) => (
-                                            <tr key={s.id} className="align-middle">
-                                                <td className="px-3 py-3">
-                                                    <div className="font-medium text-slate-900">
-                                                        {s.employee_name}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500">
-                                                        {s.employee_number}
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-3 text-center text-slate-700">
-                                                    {s.days_present}
-                                                </td>
-                                                <td className="px-3 py-3 text-center">
-                                                    <span
-                                                        className={
-                                                            s.days_absent > 0
-                                                                ? 'font-medium text-red-600'
-                                                                : 'text-slate-400'
-                                                        }
-                                                    >
-                                                        {s.days_absent}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-3 text-center text-slate-700">
-                                                    {s.days_leave}
-                                                </td>
-                                                <td className="px-3 py-3 text-center text-slate-700">
-                                                    {s.days_holiday}
-                                                </td>
-                                                <td className="px-3 py-3 text-center text-slate-400">
-                                                    {s.days_rest_day}
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <span
-                                                        className={
-                                                            s.total_late_minutes > 0
-                                                                ? 'text-amber-600'
-                                                                : 'text-slate-400'
-                                                        }
-                                                    >
-                                                        {fmt(s.total_late_minutes)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-3 text-slate-500">
-                                                    {fmt(s.total_undertime_minutes)}
-                                                </td>
-                                                <td className="px-3 py-3">
-                                                    <Button
-                                                        asChild
-                                                        variant="ghost"
-                                                        size="sm"
-                                                    >
-                                                        <Link
-                                                            href={`/attendance/log?employee_id=${s.employee_id}&date=${s.year}-${String(s.month).padStart(2, '0')}-01`}
-                                                        >
-                                                            Log
+                                            </p>
+                                            <Select
+                                                value={employeeId || 'all'}
+                                                onValueChange={(value) => {
+                                                    const nextEmployeeId = value === 'all' ? '' : value;
+                                                    setEmployeeId(nextEmployeeId);
+                                                    apply(year, month, nextEmployeeId);
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="All employees" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All employees</SelectItem>
+                                                    {employees.map((employee) => (
+                                                        <SelectItem key={employee.value} value={employee.value}>
+                                                            {employee.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+
+                                    {summaries.length === 0 ? (
+                                        <Empty>
+                                            <EmptyHeader>
+                                                <EmptyMedia variant="icon">
+                                                    <CalendarDays />
+                                                </EmptyMedia>
+                                                <EmptyTitle>No attendance records yet</EmptyTitle>
+                                                <EmptyDescription>
+                                                    There are no monthly attendance summaries for the selected period and scope.
+                                                </EmptyDescription>
+                                            </EmptyHeader>
+                                            {canManageAttendance ? (
+                                                <EmptyContent>
+                                                    <Button asChild variant="outline">
+                                                        <Link href="/attendance/log">
+                                                            Log the first attendance
                                                         </Link>
                                                     </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                                                </EmptyContent>
+                                            ) : null}
+                                        </Empty>
+                                    ) : (
+                                        <div className="overflow-hidden rounded-lg border">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Employee</TableHead>
+                                                        <TableHead className="text-center">Present</TableHead>
+                                                        <TableHead className="text-center">Absent</TableHead>
+                                                        <TableHead className="text-center">Leave</TableHead>
+                                                        <TableHead className="text-center">Holiday</TableHead>
+                                                        <TableHead className="text-center">Rest</TableHead>
+                                                        <TableHead>Late</TableHead>
+                                                        <TableHead>Undertime</TableHead>
+                                                        {canManageAttendance ? (
+                                                            <TableHead className="text-right">Action</TableHead>
+                                                        ) : null}
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {summaries.map((summary) => (
+                                                        <TableRow key={summary.id}>
+                                                            <TableCell>
+                                                                <div className="font-medium text-foreground">
+                                                                    {summary.employee_name}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {summary.employee_number}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {summary.days_present}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <span className={summary.days_absent > 0 ? 'font-medium text-destructive' : 'text-muted-foreground'}>
+                                                                    {summary.days_absent}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {summary.days_leave}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {summary.days_holiday}
+                                                            </TableCell>
+                                                            <TableCell className="text-center text-muted-foreground">
+                                                                {summary.days_rest_day}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <span className={summary.total_late_minutes > 0 ? 'text-amber-600' : 'text-muted-foreground'}>
+                                                                    {formatMinutes(summary.total_late_minutes)}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell className="text-muted-foreground">
+                                                                {formatMinutes(summary.total_undertime_minutes)}
+                                                            </TableCell>
+                                                            {canManageAttendance ? (
+                                                                <TableCell className="text-right">
+                                                                    <Button asChild variant="ghost" size="sm">
+                                                                        <Link href={`/attendance/log?employee_id=${summary.employee_id}&date=${summary.year}-${String(summary.month).padStart(2, '0')}-01`}>
+                                                                            Log
+                                                                        </Link>
+                                                                    </Button>
+                                                                </TableCell>
+                                                            ) : null}
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </div>
             </div>
         </AppLayout>
     );

@@ -2,10 +2,12 @@
 
 use App\Models\AttendanceLog;
 use App\Models\AttendanceSummary;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\EmployeeCompensation;
 use App\Models\SalaryGrade;
 use App\Models\User;
+use App\Models\WorkSchedule;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\SalaryGradeSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -24,6 +26,52 @@ test('hr staff can view the attendance index', function () {
             ->has('summaries')
             ->has('employees')
             ->has('filters')
+        );
+});
+
+test('department head sees only attendance summaries within managed department', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $managedDepartment = Department::factory()->create();
+    $otherDepartment = Department::factory()->create();
+
+    $departmentHead = User::factory()->create([
+        'managed_department_id' => $managedDepartment->id,
+    ]);
+    $departmentHead->assignRole('Department Head');
+
+    $inScopeEmployee = Employee::factory()->create([
+        'department_id' => $managedDepartment->id,
+        'first_name' => 'Maria',
+        'last_name' => 'Santos',
+    ]);
+    $outOfScopeEmployee = Employee::factory()->create([
+        'department_id' => $otherDepartment->id,
+        'first_name' => 'Jose',
+        'last_name' => 'Cruz',
+    ]);
+
+    AttendanceSummary::factory()->create([
+        'employee_id' => $inScopeEmployee->id,
+        'year' => 2025,
+        'month' => 3,
+    ]);
+    AttendanceSummary::factory()->create([
+        'employee_id' => $outOfScopeEmployee->id,
+        'year' => 2025,
+        'month' => 3,
+    ]);
+
+    $this->actingAs($departmentHead)
+        ->get(route('attendance.index', ['year' => 2025, 'month' => 3]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('attendance/index')
+            ->has('summaries', 1)
+            ->has('employees', 1)
+            ->where('summaries.0.employee_id', $inScopeEmployee->id)
+            ->where('employees.0.value', (string) $inScopeEmployee->id)
+            ->where('employees.0.label', 'Santos, Maria')
         );
 });
 
@@ -49,56 +97,96 @@ test('hr staff can view the attendance log form', function () {
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
 
+    $schedule = WorkSchedule::factory()->create([
+        'name' => 'Regular Office Hours',
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'first_name' => 'Maria',
+        'last_name' => 'Santos',
+        'work_schedule_id' => $schedule->id,
+    ]);
+
     $this->actingAs($user)
         ->get(route('attendance.create'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('attendance/log')
-            ->has('employees')
+            ->has('employees', 1)
+            ->where('employees.0.value', (string) $employee->id)
+            ->where('employees.0.work_schedule.name', 'Regular Office Hours')
         );
 });
 
-test('hr staff can log attendance for an employee', function () {
+test('department head cannot view the attendance log form', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Department Head');
+
+    $this->actingAs($user)
+        ->get(route('attendance.create'))
+        ->assertForbidden();
+});
+
+test('hr staff can log attendance for an employee using schedule defaults', function () {
     $this->seed(RoleAndPermissionSeeder::class);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
 
-    $employee = Employee::factory()->create();
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'work_schedule_id' => $schedule->id,
+    ]);
 
     $this->actingAs($user)
         ->post(route('attendance.store'), [
             'employee_id' => $employee->id,
             'log_date' => '2025-03-10',
-            'time_in' => '08:00',
-            'time_out' => '17:00',
+            'time_in' => '08:15',
+            'time_out' => '16:45',
             'status' => 'present',
-            'minutes_late' => 0,
-            'minutes_undertime' => 0,
+            'minutes_late' => '',
+            'minutes_undertime' => '',
         ])
         ->assertRedirect(route('attendance.index'));
 
     $this->assertDatabaseHas('attendance_logs', [
         'employee_id' => $employee->id,
         'status' => 'present',
+        'minutes_late' => 15,
+        'minutes_undertime' => 15,
         'recorded_by' => $user->id,
     ]);
 });
 
-test('logging attendance recomputes the monthly summary', function () {
+test('logging attendance recomputes the monthly summary from schedule-aware values', function () {
     $this->seed(RoleAndPermissionSeeder::class);
 
     $user = User::factory()->create();
     $user->assignRole('HR Staff');
 
-    $employee = Employee::factory()->create();
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'work_schedule_id' => $schedule->id,
+    ]);
 
     $this->actingAs($user)->post(route('attendance.store'), [
         'employee_id' => $employee->id,
         'log_date' => '2025-03-10',
         'status' => 'present',
-        'minutes_late' => 15,
-        'minutes_undertime' => 0,
+        'time_in' => '08:15',
+        'time_out' => '17:00',
+        'minutes_late' => '',
+        'minutes_undertime' => '',
     ]);
 
     $this->assertDatabaseHas('attendance_summaries', [
@@ -107,6 +195,40 @@ test('logging attendance recomputes the monthly summary', function () {
         'month' => 3,
         'days_present' => 1,
         'total_late_minutes' => 15,
+        'total_undertime_minutes' => 0,
+    ]);
+});
+
+test('manual late and undertime values override schedule defaults', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'work_schedule_id' => $schedule->id,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('attendance.store'), [
+            'employee_id' => $employee->id,
+            'log_date' => '2025-03-11',
+            'time_in' => '08:30',
+            'time_out' => '16:00',
+            'status' => 'present',
+            'minutes_late' => 5,
+            'minutes_undertime' => 10,
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    $this->assertDatabaseHas('attendance_logs', [
+        'employee_id' => $employee->id,
+        'minutes_late' => 5,
+        'minutes_undertime' => 10,
     ]);
 });
 
@@ -131,6 +253,92 @@ test('duplicate attendance log for same employee and date is rejected', function
             'status' => 'present',
         ])
         ->assertSessionHasErrors(['log_date']);
+});
+
+test('bulk attendance import uses assigned schedule when minute fields are omitted', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'work_schedule_id' => $schedule->id,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('attendance.bulk-store'), [
+            'rows' => [
+                [
+                    'employee_id' => $employee->id,
+                    'log_date' => '2025-03-12',
+                    'status' => 'present',
+                    'time_in' => '08:20',
+                    'time_out' => '16:50',
+                    'minutes_late' => '',
+                    'minutes_undertime' => '',
+                ],
+            ],
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    $this->assertDatabaseHas('attendance_logs', [
+        'employee_id' => $employee->id,
+        'source' => 'import',
+        'minutes_late' => 20,
+        'minutes_undertime' => 10,
+        'recorded_by' => $user->id,
+    ]);
+
+    $this->assertDatabaseHas('attendance_summaries', [
+        'employee_id' => $employee->id,
+        'year' => 2025,
+        'month' => 3,
+        'total_late_minutes' => 20,
+        'total_undertime_minutes' => 10,
+    ]);
+});
+
+test('bulk attendance import keeps manual minute values when provided', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'work_schedule_id' => $schedule->id,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('attendance.bulk-store'), [
+            'rows' => [
+                [
+                    'employee_id' => $employee->id,
+                    'log_date' => '2025-03-13',
+                    'status' => 'present',
+                    'time_in' => '08:45',
+                    'time_out' => '15:30',
+                    'minutes_late' => 7,
+                    'minutes_undertime' => 12,
+                ],
+            ],
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    $this->assertDatabaseHas('attendance_logs', [
+        'employee_id' => $employee->id,
+        'source' => 'import',
+        'minutes_late' => 7,
+        'minutes_undertime' => 12,
+        'recorded_by' => $user->id,
+    ]);
 });
 
 test('attendance index filters by year and month', function () {

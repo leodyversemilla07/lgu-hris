@@ -7,6 +7,7 @@ import {
     Download,
     FileArchive,
     FileText,
+    History,
     Link2,
     Lock,
     Pencil,
@@ -96,6 +97,7 @@ type EmployeeDetail = {
     position: string;
     employment_type: string;
     employment_status: string;
+    work_schedule: string | null;
     is_active: boolean;
     archived_at: string | null;
 };
@@ -142,12 +144,31 @@ type CompensationRecord = {
     effective_date: string;
 } | null;
 
+type HistoryChangeRecord = {
+    label: string;
+    from: string | null;
+    to: string | null;
+};
+
+type HistoryRecord = {
+    id: number;
+    event_type: string;
+    title: string;
+    description: string | null;
+    effective_date: string | null;
+    recorded_by: string | null;
+    recorded_at: string;
+    changes: HistoryChangeRecord[];
+    source_url: string | null;
+};
+
 type Props = {
     employee: EmployeeDetail;
     users: Option[];
     documents: DocumentRecord[];
     documentTypes: DocumentTypeOption[];
     movements: MovementRecord[];
+    history: HistoryRecord[];
     compensation: CompensationRecord;
 };
 
@@ -164,6 +185,7 @@ export default function EmployeeShow({
     documents,
     documentTypes,
     movements,
+    history,
     compensation,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -232,8 +254,8 @@ export default function EmployeeShow({
         },
         {
             title: 'Records',
-            value: String(documents.length + movements.length),
-            detail: `${documents.length} documents and ${movements.length} movements`,
+            value: String(documents.length + movements.length + history.length),
+            detail: `${documents.length} documents, ${movements.length} movements, and ${history.length} history entries`,
             icon: FileText,
         },
     ];
@@ -453,6 +475,10 @@ export default function EmployeeShow({
                                     <ArrowRightLeft className="size-4" />
                                     Movements
                                 </TabsTrigger>
+                                <TabsTrigger value="history" className="px-4 py-3">
+                                    <History className="size-4" />
+                                    History
+                                </TabsTrigger>
                                 <TabsTrigger
                                     value="compensation"
                                     className="px-4 py-3"
@@ -535,6 +561,7 @@ export default function EmployeeShow({
                                             </CardHeader>
                                             <CardContent className="flex flex-col gap-4">
                                                 <Field label="Current assignment" value={`${employee.position} · ${employee.department}`} />
+                                                <Field label="Work schedule" value={employee.work_schedule} />
                                                 <Field label="Start date" value={employee.hired_at_formatted} />
                                                 <Field label="Address" value={address || null} />
                                             </CardContent>
@@ -578,6 +605,7 @@ export default function EmployeeShow({
                                                     <Field label="Position" value={employee.position} />
                                                     <Field label="Employment type" value={employee.employment_type} />
                                                     <Field label="Employment status" value={employee.employment_status} />
+                                                    <Field label="Work schedule" value={employee.work_schedule} />
                                                     <Field label="Start date" value={employee.hired_at_formatted} />
                                                     {!employee.is_active && employee.archived_at ? (
                                                         <Field label="Archived on" value={employee.archived_at} />
@@ -656,6 +684,7 @@ export default function EmployeeShow({
                                         <CardContent className="flex flex-col gap-4">
                                             <Field label="Registry status" value={employeeStatus} />
                                             <Field label="Employment status" value={employee.employment_status} />
+                                            <Field label="Work schedule" value={employee.work_schedule} />
                                             <Field label="User access" value={linkedStatus} />
                                             <Field label="Documents on file" value={String(documents.length)} />
                                             <Field label="Movement records" value={String(movements.length)} />
@@ -1104,6 +1133,104 @@ export default function EmployeeShow({
                                                                     </Link>
                                                                 </Button>
                                                             </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value="history" className="mt-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Employment history</CardTitle>
+                                        <CardDescription>
+                                            Registry milestones, employment profile changes, and personnel actions for this employee.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        {history.length === 0 ? (
+                                            <Empty>
+                                                <EmptyHeader>
+                                                    <EmptyMedia variant="icon">
+                                                        <History />
+                                                    </EmptyMedia>
+                                                    <EmptyTitle>
+                                                        No employment history yet
+                                                    </EmptyTitle>
+                                                    <EmptyDescription>
+                                                        Timeline entries will appear here as the employee profile changes over time.
+                                                    </EmptyDescription>
+                                                </EmptyHeader>
+                                            </Empty>
+                                        ) : (
+                                            <div className="flex flex-col gap-3">
+                                                {history.map((entry) => (
+                                                    <Card
+                                                        key={entry.id}
+                                                        className="gap-4 py-4"
+                                                    >
+                                                        <CardContent className="flex flex-col gap-4 px-4">
+                                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                                                <div className="flex flex-col gap-2">
+                                                                    <div className="flex flex-wrap items-center gap-2">
+                                                                        <Badge variant="outline">
+                                                                            {titleCase(
+                                                                                entry.event_type.replaceAll(
+                                                                                    '_',
+                                                                                    ' ',
+                                                                                ),
+                                                                            )}
+                                                                        </Badge>
+                                                                        <span className="text-sm text-muted-foreground">
+                                                                            {entry.effective_date ??
+                                                                                entry.recorded_at}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="space-y-1">
+                                                                        <h3 className="text-sm font-medium text-foreground">
+                                                                            {entry.title}
+                                                                        </h3>
+                                                                        {entry.description ? (
+                                                                            <p className="text-sm text-muted-foreground">
+                                                                                {entry.description}
+                                                                            </p>
+                                                                        ) : null}
+                                                                        <p className="text-sm text-muted-foreground">
+                                                                            Recorded by{' '}
+                                                                            {entry.recorded_by ??
+                                                                                'System'}{' '}
+                                                                            on {entry.recorded_at}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                {entry.source_url ? (
+                                                                    <Button
+                                                                        asChild
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                    >
+                                                                        <Link href={entry.source_url}>
+                                                                            View source
+                                                                        </Link>
+                                                                    </Button>
+                                                                ) : null}
+                                                            </div>
+
+                                                            {entry.changes.length > 0 ? (
+                                                                <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 xl:grid-cols-3">
+                                                                    {entry.changes.map((change) => (
+                                                                        <MovementField
+                                                                            key={`${entry.id}-${change.label}`}
+                                                                            label={change.label}
+                                                                            from={change.from}
+                                                                            to={change.to}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            ) : null}
                                                         </CardContent>
                                                     </Card>
                                                 ))}
