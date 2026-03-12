@@ -8,6 +8,7 @@ import {
     FileText,
     Save,
     ShieldCheck,
+    Upload,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
@@ -65,6 +66,18 @@ const STATUS_OPTIONS = [
     { value: 'holiday', label: 'Holiday' },
     { value: 'rest_day', label: 'Rest Day' },
     { value: 'half_day', label: 'Half Day' },
+];
+
+const BIOMETRIC_HEADERS = [
+    'employee_number',
+    'log_date',
+    'time_in',
+    'time_out',
+    'status',
+    'device_name',
+    'remarks',
+    'minutes_late',
+    'minutes_undertime',
 ];
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -179,6 +192,13 @@ export default function AttendanceLog({
         minutes_undertime: '',
         remarks: '',
     });
+    const biometricForm = useForm<{
+        file: File | null;
+        device_name: string;
+    }>({
+        file: null,
+        device_name: '',
+    });
 
     const selectedEmployee = employees.find(
         (employee) => employee.value === form.data.employee_id,
@@ -224,6 +244,14 @@ export default function AttendanceLog({
         form.post('/attendance');
     }
 
+    function handleBiometricUpload(): void {
+        biometricForm.post('/attendance/biometric', {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => biometricForm.reset(),
+        });
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Log Attendance" />
@@ -247,7 +275,8 @@ export default function AttendanceLog({
                                         Record a manual attendance entry for a
                                         specific employee and date, with
                                         schedule-aware late and undertime
-                                        defaults when available.
+                                        defaults when available, or upload
+                                        biometric exports for bulk processing.
                                     </p>
                                 </div>
 
@@ -706,6 +735,80 @@ export default function AttendanceLog({
                                             <Link href="/attendance">
                                                 Cancel
                                             </Link>
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Biometric import</CardTitle>
+                                        <CardDescription>
+                                            Upload a CSV export from a biometric
+                                            kiosk or timekeeping device. Use
+                                            employee numbers so the system can
+                                            match punches to employee records
+                                            and recompute monthly summaries.
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex flex-col gap-4">
+                                        <FormField
+                                            label="Biometric export file"
+                                            htmlFor="biometric-file"
+                                            required
+                                            error={biometricForm.errors.file}
+                                        >
+                                            <Input
+                                                id="biometric-file"
+                                                type="file"
+                                                accept=".csv,text/csv,.txt"
+                                                onChange={(event) =>
+                                                    biometricForm.setData(
+                                                        'file',
+                                                        event.target.files?.[0] ??
+                                                            null,
+                                                    )
+                                                }
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Supported headers:{' '}
+                                                {BIOMETRIC_HEADERS.join(', ')}
+                                            </p>
+                                        </FormField>
+
+                                        <FormField
+                                            label="Default device label"
+                                            htmlFor="device_name"
+                                            error={
+                                                biometricForm.errors.device_name
+                                            }
+                                        >
+                                            <Input
+                                                id="device_name"
+                                                value={
+                                                    biometricForm.data
+                                                        .device_name
+                                                }
+                                                onChange={(event) =>
+                                                    biometricForm.setData(
+                                                        'device_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="Main biometric kiosk"
+                                            />
+                                        </FormField>
+                                    </CardContent>
+                                    <CardFooter>
+                                        <Button
+                                            type="button"
+                                            className="w-full"
+                                            disabled={
+                                                biometricForm.processing
+                                            }
+                                            onClick={handleBiometricUpload}
+                                        >
+                                            <Upload data-icon="inline-start" />
+                                            Import biometric CSV
                                         </Button>
                                     </CardFooter>
                                 </Card>

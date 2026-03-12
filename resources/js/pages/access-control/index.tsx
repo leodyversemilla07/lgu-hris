@@ -30,6 +30,17 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
     Empty,
     EmptyContent,
     EmptyDescription,
@@ -375,6 +386,45 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
     );
 }
 
+function DeleteUserDialog({ user }: { user: UserRow }) {
+    function handleDelete(): void {
+        router.delete(`/access-control/users/${user.id}`);
+    }
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                >
+                    <Trash2 data-icon="inline-start" />
+                    Delete
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete user account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Remove {user.name} from access control. This action cannot
+                        be undone.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Keep user</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        onClick={handleDelete}
+                    >
+                        Delete user
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+
 export default function AccessControlIndex({
     users,
     roles,
@@ -454,14 +504,6 @@ export default function AccessControlIndex({
             icon: History,
         },
     ];
-
-    function deleteUser(user: UserRow): void {
-        if (!confirm(`Remove ${user.name}? This cannot be undone.`)) {
-            return;
-        }
-
-        router.delete(`/access-control/users/${user.id}`);
-    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -668,19 +710,11 @@ export default function AccessControlIndex({
                                                                                         departments
                                                                                     }
                                                                                 />
-                                                                                <Button
-                                                                                    variant="ghost"
-                                                                                    size="sm"
-                                                                                    onClick={() =>
-                                                                                        deleteUser(
-                                                                                            user,
-                                                                                        )
+                                                                                <DeleteUserDialog
+                                                                                    user={
+                                                                                        user
                                                                                     }
-                                                                                    className="text-destructive hover:text-destructive"
-                                                                                >
-                                                                                    <Trash2 data-icon="inline-start" />
-                                                                                    Delete
-                                                                                </Button>
+                                                                                />
                                                                             </div>
                                                                         </TableCell>
                                                                     </TableRow>

@@ -135,6 +135,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('attendance/bulk', [AttendanceController::class, 'bulkStore'])
         ->middleware('permission:attendance.manage')
         ->name('attendance.bulk-store');
+    Route::post('attendance/biometric', [AttendanceController::class, 'biometricImport'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.biometric-import');
 
     Route::get('work-schedules', [WorkScheduleController::class, 'index'])
         ->middleware('permission:attendance.manage')

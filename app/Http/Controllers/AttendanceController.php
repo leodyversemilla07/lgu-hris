@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AttendanceBiometricImportRequest;
 use App\Http\Requests\AttendanceLogStoreRequest;
 use App\Models\AttendanceLog;
 use App\Models\AttendanceSummary;
 use App\Models\Employee;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -198,6 +201,106 @@ class AttendanceController extends Controller
         return to_route('attendance.index');
     }
 
+    public function biometricImport(AttendanceBiometricImportRequest $request): RedirectResponse
+    {
+        $rows = $this->parseBiometricRows($request->file('file')->getRealPath());
+
+        if ($rows->isEmpty()) {
+            return to_route('attendance.create')
+                ->withErrors(['file' => 'The biometric export file does not contain any data rows.']);
+        }
+
+        $employees = Employee::query()
+            ->with('workSchedule:id,time_in,time_out')
+            ->whereIn('employee_number', $rows->pluck('employee_number')->unique()->all())
+            ->get()
+            ->keyBy('employee_number');
+
+        $imported = 0;
+        $errors = [];
+        $affected = [];
+        $deviceName = $request->string('device_name')->trim()->value();
+
+        foreach ($rows as $index => $row) {
+            $employee = $employees->get($row['employee_number']);
+
+            if (! $employee instanceof Employee) {
+                $errors[] = 'Row '.($index + 2).": employee number {$row['employee_number']} was not found.";
+
+                continue;
+            }
+
+            $logDate = $this->normalizeImportedDate($row['log_date']);
+
+            if ($logDate === null) {
+                $errors[] = 'Row '.($index + 2).': log_date is missing or invalid.';
+
+                continue;
+            }
+
+            $timeIn = $this->normalizeImportedTime($row['time_in'] ?? null);
+            $timeOut = $this->normalizeImportedTime($row['time_out'] ?? null);
+            $status = $this->resolveImportedStatus($row['status'] ?? null, $timeIn, $timeOut);
+
+            if ($status === null) {
+                $errors[] = 'Row '.($index + 2).': provide a valid status or at least one punch time.';
+
+                continue;
+            }
+
+            $metrics = $this->resolveAttendanceMetrics(
+                $employee,
+                $status,
+                $timeIn,
+                $timeOut,
+                $row['minutes_late'] ?? null,
+                $row['minutes_undertime'] ?? null,
+            );
+
+            AttendanceLog::query()->updateOrCreate(
+                [
+                    'employee_id' => $employee->id,
+                    'log_date' => $logDate->toDateString(),
+                ],
+                [
+                    'time_in' => $this->normalizedTimeValue($timeIn, $status),
+                    'time_out' => $this->normalizedTimeValue($timeOut, $status),
+                    'status' => $status,
+                    'minutes_late' => $metrics['minutes_late'],
+                    'minutes_undertime' => $metrics['minutes_undertime'],
+                    'remarks' => $this->buildBiometricRemarks($deviceName, $row['device_name'] ?? null, $row['remarks'] ?? null),
+                    'source' => 'biometric',
+                    'recorded_by' => $request->user()->id,
+                ],
+            );
+
+            $affected[$employee->id][$logDate->format('Y-m')] = [
+                'year' => $logDate->year,
+                'month' => $logDate->month,
+            ];
+            $imported++;
+        }
+
+        foreach ($affected as $employeeId => $periods) {
+            foreach ($periods as $period) {
+                $this->recomputeSummary($employeeId, $period['year'], $period['month']);
+            }
+        }
+
+        if ($imported === 0) {
+            return to_route('attendance.create')
+                ->withErrors(['file' => implode(' ', array_slice($errors, 0, 3))]);
+        }
+
+        $message = "Biometric import complete: {$imported} row(s) imported.";
+
+        if (! empty($errors)) {
+            $message .= ' Skipped '.count($errors).' row(s): '.implode(' | ', array_slice($errors, 0, 3));
+        }
+
+        return to_route('attendance.index')->with('success', $message);
+    }
+
     private function recomputeSummary(int $employeeId, int $year, int $month): void
     {
         $logs = AttendanceLog::query()
@@ -218,6 +321,55 @@ class AttendanceController extends Controller
                 'total_undertime_minutes' => $logs->sum('minutes_undertime'),
             ],
         );
+    }
+
+    /**
+     * @return Collection<int, array<string, string|null>>
+     */
+    private function parseBiometricRows(string $path): Collection
+    {
+        $handle = fopen($path, 'r');
+
+        if ($handle === false) {
+            return collect();
+        }
+
+        $headers = fgetcsv($handle);
+
+        if (! is_array($headers)) {
+            fclose($handle);
+
+            return collect();
+        }
+
+        $normalizedHeaders = collect($headers)
+            ->map(fn ($header): string => strtolower(trim((string) $header)))
+            ->all();
+
+        $rows = collect();
+
+        while (($values = fgetcsv($handle)) !== false) {
+            if ($values === [null] || $values === false) {
+                continue;
+            }
+
+            $row = [];
+
+            foreach ($normalizedHeaders as $index => $header) {
+                $value = $values[$index] ?? null;
+                $row[$header] = is_string($value) ? trim($value) : $value;
+            }
+
+            if (blank($row['employee_number'] ?? null) && blank($row['log_date'] ?? null)) {
+                continue;
+            }
+
+            $rows->push($row);
+        }
+
+        fclose($handle);
+
+        return $rows;
     }
 
     /**
@@ -294,6 +446,80 @@ class AttendanceController extends Controller
         }
 
         return max((int) $value, 0);
+    }
+
+    private function normalizeImportedTime(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        foreach (['H:i', 'H:i:s', 'Y-m-d H:i', 'Y-m-d H:i:s', 'm/d/Y H:i', 'm/d/Y H:i:s'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $trimmed)->format('H:i');
+            } catch (\Throwable) {
+            }
+        }
+
+        try {
+            return Carbon::parse($trimmed)->format('H:i');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function normalizeImportedDate(?string $value): ?Carbon
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        foreach (['Y-m-d', 'm/d/Y', 'm-d-Y', 'Y/m/d'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $trimmed)->startOfDay();
+            } catch (\Throwable) {
+            }
+        }
+
+        try {
+            return Carbon::parse($trimmed)->startOfDay();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    private function resolveImportedStatus(?string $value, ?string $timeIn, ?string $timeOut): ?string
+    {
+        $normalized = is_string($value) ? strtolower(trim($value)) : null;
+
+        if (in_array($normalized, ['present', 'absent', 'leave', 'holiday', 'rest_day', 'half_day'], true)) {
+            return $normalized;
+        }
+
+        if ($timeIn !== null && $timeOut !== null) {
+            return 'present';
+        }
+
+        if ($timeIn !== null || $timeOut !== null) {
+            return 'half_day';
+        }
+
+        return null;
+    }
+
+    private function buildBiometricRemarks(?string $requestDeviceName, ?string $rowDeviceName, ?string $rowRemarks): ?string
+    {
+        $parts = collect([
+            $requestDeviceName ? "Biometric device: {$requestDeviceName}" : null,
+            $rowDeviceName ? 'Source device: '.trim($rowDeviceName) : null,
+            $rowRemarks ? trim($rowRemarks) : null,
+        ])->filter(fn ($value): bool => filled($value));
+
+        return $parts->isEmpty() ? null : $parts->implode(' | ');
     }
 
     private function timeToMinutes(?string $value): ?int

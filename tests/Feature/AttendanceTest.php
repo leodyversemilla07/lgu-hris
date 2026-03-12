@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\WorkSchedule;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Database\Seeders\SalaryGradeSeeder;
+use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('hr staff can view the attendance index', function () {
@@ -338,6 +339,103 @@ test('bulk attendance import keeps manual minute values when provided', function
         'minutes_late' => 7,
         'minutes_undertime' => 12,
         'recorded_by' => $user->id,
+    ]);
+});
+
+test('biometric import uses employee number and assigned schedule defaults', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'employee_number' => 'EMP-0001',
+        'work_schedule_id' => $schedule->id,
+    ]);
+
+    $file = UploadedFile::fake()->createWithContent(
+        'biometric.csv',
+        implode(PHP_EOL, [
+            'employee_number,log_date,time_in,time_out,device_name,remarks',
+            'EMP-0001,2025-03-14,08:12,16:50,Kiosk A,Morning import',
+        ]),
+    );
+
+    $this->actingAs($user)
+        ->post(route('attendance.biometric-import'), [
+            'file' => $file,
+            'device_name' => 'Main Hall Terminal',
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    $this->assertDatabaseHas('attendance_logs', [
+        'employee_id' => $employee->id,
+        'log_date' => '2025-03-14 00:00:00',
+        'status' => 'present',
+        'source' => 'biometric',
+        'minutes_late' => 12,
+        'minutes_undertime' => 10,
+        'recorded_by' => $user->id,
+    ]);
+
+    $this->assertDatabaseHas('attendance_summaries', [
+        'employee_id' => $employee->id,
+        'year' => 2025,
+        'month' => 3,
+        'days_present' => 1,
+        'total_late_minutes' => 12,
+        'total_undertime_minutes' => 10,
+    ]);
+});
+
+test('biometric import infers half day when only one punch time is available', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $schedule = WorkSchedule::factory()->create([
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+    $employee = Employee::factory()->create([
+        'employee_number' => 'EMP-0002',
+        'work_schedule_id' => $schedule->id,
+    ]);
+
+    $file = UploadedFile::fake()->createWithContent(
+        'biometric-half-day.csv',
+        implode(PHP_EOL, [
+            'employee_number,log_date,time_in',
+            'EMP-0002,03/15/2025,08:05',
+        ]),
+    );
+
+    $this->actingAs($user)
+        ->post(route('attendance.biometric-import'), [
+            'file' => $file,
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    $this->assertDatabaseHas('attendance_logs', [
+        'employee_id' => $employee->id,
+        'log_date' => '2025-03-15 00:00:00',
+        'status' => 'half_day',
+        'source' => 'biometric',
+        'minutes_late' => 5,
+        'minutes_undertime' => 0,
+    ]);
+
+    $this->assertDatabaseHas('attendance_summaries', [
+        'employee_id' => $employee->id,
+        'year' => 2025,
+        'month' => 3,
+        'days_present' => 1,
+        'total_late_minutes' => 5,
     ]);
 });
 
