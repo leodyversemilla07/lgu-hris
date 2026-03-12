@@ -4,7 +4,7 @@ LGU HRIS is a Laravel 12 and Inertia React application for managing core local g
 
 ## Project Status
 
-This repository is currently positioned as an open-source LGU HRIS MVP.
+This repository is positioned as an open-source core LGU HRIS application for real deployment, pilot rollout, and further LGU customization.
 
 Implemented modules include:
 
@@ -19,7 +19,7 @@ Implemented modules include:
 - user, role, permission, and record-level access control
 - audit activity and export history
 
-The application is strong enough for evaluation, pilot deployment, and further LGU customization, but each implementing LGU should still complete environment hardening, backup validation, UAT, and data migration rehearsal before production rollout.
+The application is ready for serious deployment work, but each implementing LGU should still complete environment hardening, backup validation, UAT, and data migration rehearsal in its own target environment before final go-live.
 
 ## Core Features
 
@@ -242,6 +242,12 @@ The system also records export history for traceability.
 - uploaded documents should be included in backups together with the MySQL database
 - run `php artisan hris:preflight` before production handoff
 - run `php artisan test --compact` before release changes
+
+See:
+
+- [OPERATIONS.md](OPERATIONS.md)
+- [UAT_CHECKLIST.md](UAT_CHECKLIST.md)
+- [DATA_MIGRATION.md](DATA_MIGRATION.md)
 
 ## Release Checklist
 
