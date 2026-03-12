@@ -1,11 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import {
-    CalendarDays,
-    Clock3,
-    FileText,
-    Plus,
-    Users,
-} from 'lucide-react';
+import { CalendarDays, Clock3, FileText, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -115,9 +109,14 @@ function formatMinutes(minutes: number): string {
     return `${remainingMinutes}m`;
 }
 
-export default function AttendanceIndex({ summaries, employees, filters }: Props) {
+export default function AttendanceIndex({
+    summaries,
+    employees,
+    filters,
+}: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
-    const canManageAttendance = auth.user.permissions.includes('attendance.manage');
+    const canManageAttendance =
+        auth.user.permissions.includes('attendance.manage');
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 5 }, (_, index) => currentYear - index);
 
@@ -125,11 +124,24 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
     const [month, setMonth] = useState(String(filters.month));
     const [employeeId, setEmployeeId] = useState(filters.employee_id);
 
-    const selectedMonthLabel = MONTHS[Number.parseInt(month, 10) - 1] ?? MONTHS[0];
-    const totalPresentDays = summaries.reduce((total, summary) => total + summary.days_present, 0);
-    const totalAbsences = summaries.reduce((total, summary) => total + summary.days_absent, 0);
-    const totalLateMinutes = summaries.reduce((total, summary) => total + summary.total_late_minutes, 0);
-    const totalUndertimeMinutes = summaries.reduce((total, summary) => total + summary.total_undertime_minutes, 0);
+    const selectedMonthLabel =
+        MONTHS[Number.parseInt(month, 10) - 1] ?? MONTHS[0];
+    const totalPresentDays = summaries.reduce(
+        (total, summary) => total + summary.days_present,
+        0,
+    );
+    const totalAbsences = summaries.reduce(
+        (total, summary) => total + summary.days_absent,
+        0,
+    );
+    const totalLateMinutes = summaries.reduce(
+        (total, summary) => total + summary.total_late_minutes,
+        0,
+    );
+    const totalUndertimeMinutes = summaries.reduce(
+        (total, summary) => total + summary.total_undertime_minutes,
+        0,
+    );
 
     const summaryCards = [
         {
@@ -155,14 +167,19 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
         },
         {
             title: 'Late minutes',
-            value: totalLateMinutes === 0 ? '—' : formatMinutes(totalLateMinutes),
+            value:
+                totalLateMinutes === 0 ? '—' : formatMinutes(totalLateMinutes),
             detail: 'Combined tardiness across all visible summaries',
             hint: 'Time',
             icon: Clock3,
         },
     ];
 
-    function apply(nextYear: string, nextMonth: string, nextEmployeeId: string): void {
+    function apply(
+        nextYear: string,
+        nextMonth: string,
+        nextEmployeeId: string,
+    ): void {
         const params: Record<string, string> = {
             year: nextYear,
             month: nextMonth,
@@ -195,7 +212,9 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                         Monthly attendance
                                     </h1>
                                     <p className="text-sm text-muted-foreground">
-                                        Review attendance summaries, late arrivals, absences, and undertime for the selected reporting window.
+                                        Review attendance summaries, late
+                                        arrivals, absences, and undertime for
+                                        the selected reporting window.
                                     </p>
                                 </div>
 
@@ -222,9 +241,14 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card shadow-xs">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -253,7 +277,9 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                 <CardHeader>
                                     <CardTitle>Attendance summary</CardTitle>
                                     <CardDescription>
-                                        Filter the current attendance view by month, year, and employee without leaving the page.
+                                        Filter the current attendance view by
+                                        month, year, and employee without
+                                        leaving the page.
                                     </CardDescription>
                                     <CardAction>
                                         <Badge variant="outline">
@@ -264,38 +290,53 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                 <CardContent className="flex flex-col gap-6">
                                     <div className="grid gap-3 md:grid-cols-3">
                                         <div className="space-y-2">
-                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                                 Month
                                             </p>
                                             <Select
                                                 value={month}
                                                 onValueChange={(value) => {
                                                     setMonth(value);
-                                                    apply(year, value, employeeId);
+                                                    apply(
+                                                        year,
+                                                        value,
+                                                        employeeId,
+                                                    );
                                                 }}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {MONTHS.map((monthLabel, index) => (
-                                                        <SelectItem key={monthLabel} value={String(index + 1)}>
-                                                            {monthLabel}
-                                                        </SelectItem>
-                                                    ))}
+                                                    {MONTHS.map(
+                                                        (monthLabel, index) => (
+                                                            <SelectItem
+                                                                key={monthLabel}
+                                                                value={String(
+                                                                    index + 1,
+                                                                )}
+                                                            >
+                                                                {monthLabel}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                                 Year
                                             </p>
                                             <Select
                                                 value={year}
                                                 onValueChange={(value) => {
                                                     setYear(value);
-                                                    apply(value, month, employeeId);
+                                                    apply(
+                                                        value,
+                                                        month,
+                                                        employeeId,
+                                                    );
                                                 }}
                                             >
                                                 <SelectTrigger>
@@ -303,7 +344,12 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {years.map((yearOption) => (
-                                                        <SelectItem key={yearOption} value={String(yearOption)}>
+                                                        <SelectItem
+                                                            key={yearOption}
+                                                            value={String(
+                                                                yearOption,
+                                                            )}
+                                                        >
                                                             {yearOption}
                                                         </SelectItem>
                                                     ))}
@@ -312,27 +358,47 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                         </div>
 
                                         <div className="space-y-2">
-                                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                                 Employee
                                             </p>
                                             <Select
                                                 value={employeeId || 'all'}
                                                 onValueChange={(value) => {
-                                                    const nextEmployeeId = value === 'all' ? '' : value;
-                                                    setEmployeeId(nextEmployeeId);
-                                                    apply(year, month, nextEmployeeId);
+                                                    const nextEmployeeId =
+                                                        value === 'all'
+                                                            ? ''
+                                                            : value;
+                                                    setEmployeeId(
+                                                        nextEmployeeId,
+                                                    );
+                                                    apply(
+                                                        year,
+                                                        month,
+                                                        nextEmployeeId,
+                                                    );
                                                 }}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="All employees" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">All employees</SelectItem>
-                                                    {employees.map((employee) => (
-                                                        <SelectItem key={employee.value} value={employee.value}>
-                                                            {employee.label}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <SelectItem value="all">
+                                                        All employees
+                                                    </SelectItem>
+                                                    {employees.map(
+                                                        (employee) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    employee.value
+                                                                }
+                                                                value={
+                                                                    employee.value
+                                                                }
+                                                            >
+                                                                {employee.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -344,16 +410,24 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                                 <EmptyMedia variant="icon">
                                                     <CalendarDays />
                                                 </EmptyMedia>
-                                                <EmptyTitle>No attendance records yet</EmptyTitle>
+                                                <EmptyTitle>
+                                                    No attendance records yet
+                                                </EmptyTitle>
                                                 <EmptyDescription>
-                                                    There are no monthly attendance summaries for the selected period and scope.
+                                                    There are no monthly
+                                                    attendance summaries for the
+                                                    selected period and scope.
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                             {canManageAttendance ? (
                                                 <EmptyContent>
-                                                    <Button asChild variant="outline">
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                    >
                                                         <Link href="/attendance/log">
-                                                            Log the first attendance
+                                                            Log the first
+                                                            attendance
                                                         </Link>
                                                     </Button>
                                                 </EmptyContent>
@@ -364,66 +438,126 @@ export default function AttendanceIndex({ summaries, employees, filters }: Props
                                             <Table>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Employee</TableHead>
-                                                        <TableHead className="text-center">Present</TableHead>
-                                                        <TableHead className="text-center">Absent</TableHead>
-                                                        <TableHead className="text-center">Leave</TableHead>
-                                                        <TableHead className="text-center">Holiday</TableHead>
-                                                        <TableHead className="text-center">Rest</TableHead>
-                                                        <TableHead>Late</TableHead>
-                                                        <TableHead>Undertime</TableHead>
+                                                        <TableHead>
+                                                            Employee
+                                                        </TableHead>
+                                                        <TableHead className="text-center">
+                                                            Present
+                                                        </TableHead>
+                                                        <TableHead className="text-center">
+                                                            Absent
+                                                        </TableHead>
+                                                        <TableHead className="text-center">
+                                                            Leave
+                                                        </TableHead>
+                                                        <TableHead className="text-center">
+                                                            Holiday
+                                                        </TableHead>
+                                                        <TableHead className="text-center">
+                                                            Rest
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Late
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Undertime
+                                                        </TableHead>
                                                         {canManageAttendance ? (
-                                                            <TableHead className="text-right">Action</TableHead>
+                                                            <TableHead className="text-right">
+                                                                Action
+                                                            </TableHead>
                                                         ) : null}
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {summaries.map((summary) => (
-                                                        <TableRow key={summary.id}>
-                                                            <TableCell>
-                                                                <div className="font-medium text-foreground">
-                                                                    {summary.employee_name}
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground">
-                                                                    {summary.employee_number}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="text-center">
-                                                                {summary.days_present}
-                                                            </TableCell>
-                                                            <TableCell className="text-center">
-                                                                <span className={summary.days_absent > 0 ? 'font-medium text-destructive' : 'text-muted-foreground'}>
-                                                                    {summary.days_absent}
-                                                                </span>
-                                                            </TableCell>
-                                                            <TableCell className="text-center">
-                                                                {summary.days_leave}
-                                                            </TableCell>
-                                                            <TableCell className="text-center">
-                                                                {summary.days_holiday}
-                                                            </TableCell>
-                                                            <TableCell className="text-center text-muted-foreground">
-                                                                {summary.days_rest_day}
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <span className={summary.total_late_minutes > 0 ? 'text-amber-600' : 'text-muted-foreground'}>
-                                                                    {formatMinutes(summary.total_late_minutes)}
-                                                                </span>
-                                                            </TableCell>
-                                                            <TableCell className="text-muted-foreground">
-                                                                {formatMinutes(summary.total_undertime_minutes)}
-                                                            </TableCell>
-                                                            {canManageAttendance ? (
-                                                                <TableCell className="text-right">
-                                                                    <Button asChild variant="ghost" size="sm">
-                                                                        <Link href={`/attendance/log?employee_id=${summary.employee_id}&date=${summary.year}-${String(summary.month).padStart(2, '0')}-01`}>
-                                                                            Log
-                                                                        </Link>
-                                                                    </Button>
+                                                    {summaries.map(
+                                                        (summary) => (
+                                                            <TableRow
+                                                                key={summary.id}
+                                                            >
+                                                                <TableCell>
+                                                                    <div className="font-medium text-foreground">
+                                                                        {
+                                                                            summary.employee_name
+                                                                        }
+                                                                    </div>
+                                                                    <div className="text-xs text-muted-foreground">
+                                                                        {
+                                                                            summary.employee_number
+                                                                        }
+                                                                    </div>
                                                                 </TableCell>
-                                                            ) : null}
-                                                        </TableRow>
-                                                    ))}
+                                                                <TableCell className="text-center">
+                                                                    {
+                                                                        summary.days_present
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell className="text-center">
+                                                                    <span
+                                                                        className={
+                                                                            summary.days_absent >
+                                                                            0
+                                                                                ? 'font-medium text-destructive'
+                                                                                : 'text-muted-foreground'
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            summary.days_absent
+                                                                        }
+                                                                    </span>
+                                                                </TableCell>
+                                                                <TableCell className="text-center">
+                                                                    {
+                                                                        summary.days_leave
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell className="text-center">
+                                                                    {
+                                                                        summary.days_holiday
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell className="text-center text-muted-foreground">
+                                                                    {
+                                                                        summary.days_rest_day
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <span
+                                                                        className={
+                                                                            summary.total_late_minutes >
+                                                                            0
+                                                                                ? 'text-amber-600'
+                                                                                : 'text-muted-foreground'
+                                                                        }
+                                                                    >
+                                                                        {formatMinutes(
+                                                                            summary.total_late_minutes,
+                                                                        )}
+                                                                    </span>
+                                                                </TableCell>
+                                                                <TableCell className="text-muted-foreground">
+                                                                    {formatMinutes(
+                                                                        summary.total_undertime_minutes,
+                                                                    )}
+                                                                </TableCell>
+                                                                {canManageAttendance ? (
+                                                                    <TableCell className="text-right">
+                                                                        <Button
+                                                                            asChild
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                        >
+                                                                            <Link
+                                                                                href={`/attendance/log?employee_id=${summary.employee_id}&date=${summary.year}-${String(summary.month).padStart(2, '0')}-01`}
+                                                                            >
+                                                                                Log
+                                                                            </Link>
+                                                                        </Button>
+                                                                    </TableCell>
+                                                                ) : null}
+                                                            </TableRow>
+                                                        ),
+                                                    )}
                                                 </TableBody>
                                             </Table>
                                         </div>

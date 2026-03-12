@@ -21,8 +21,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -34,6 +32,8 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardAction,
@@ -53,7 +53,6 @@ import {
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import {
     Select,
     SelectContent,
@@ -62,6 +61,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -326,10 +326,12 @@ export default function EmployeeShow({
                                     </div>
                                     <p className="text-sm text-muted-foreground">
                                         {employee.employee_number} ·{' '}
-                                        {employee.position} · {employee.department}
+                                        {employee.position} ·{' '}
+                                        {employee.department}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                        Employment type: {employee.employment_type}
+                                        Employment type:{' '}
+                                        {employee.employment_type}
                                     </p>
                                 </div>
 
@@ -341,7 +343,9 @@ export default function EmployeeShow({
                                         </Link>
                                     </Button>
                                     <Button asChild>
-                                        <Link href={`/employees/${employee.id}/edit`}>
+                                        <Link
+                                            href={`/employees/${employee.id}/edit`}
+                                        >
                                             <Pencil data-icon="inline-start" />
                                             Edit employee
                                         </Link>
@@ -362,8 +366,8 @@ export default function EmployeeShow({
                                                     <AlertDialogDescription>
                                                         This will keep{' '}
                                                         {employee.full_name} in
-                                                        the registry but mark the
-                                                        profile as archived.
+                                                        the registry but mark
+                                                        the profile as archived.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
@@ -423,7 +427,10 @@ export default function EmployeeShow({
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card"
+                                >
                                     <CardHeader>
                                         <CardDescription>
                                             {item.title}
@@ -450,7 +457,10 @@ export default function EmployeeShow({
                                 variant="line"
                                 className="h-auto w-full flex-wrap justify-start rounded-none border-b bg-transparent p-0"
                             >
-                                <TabsTrigger value="personal" className="px-4 py-3">
+                                <TabsTrigger
+                                    value="personal"
+                                    className="px-4 py-3"
+                                >
                                     <User className="size-4" />
                                     Personal
                                 </TabsTrigger>
@@ -475,7 +485,10 @@ export default function EmployeeShow({
                                     <ArrowRightLeft className="size-4" />
                                     Movements
                                 </TabsTrigger>
-                                <TabsTrigger value="history" className="px-4 py-3">
+                                <TabsTrigger
+                                    value="history"
+                                    className="px-4 py-3"
+                                >
                                     <History className="size-4" />
                                     History
                                 </TabsTrigger>
@@ -497,8 +510,8 @@ export default function EmployeeShow({
                                             </CardTitle>
                                             <CardDescription>
                                                 Identity, contact, and statutory
-                                                details attached to this employee
-                                                profile.
+                                                details attached to this
+                                                employee profile.
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="flex flex-col gap-6">
@@ -507,15 +520,54 @@ export default function EmployeeShow({
                                                 description="Core identity and contact fields used across the registry."
                                             >
                                                 <dl className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                                    <Field label="First name" value={employee.first_name} />
-                                                    <Field label="Middle name" value={employee.middle_name} />
-                                                    <Field label="Last name" value={employee.last_name} />
-                                                    <Field label="Suffix" value={employee.suffix} />
-                                                    <Field label="Birth date" value={employee.birth_date_formatted} />
-                                                    <Field label="Sex" value={titleCase(employee.sex)} />
-                                                    <Field label="Civil status" value={titleCase(employee.civil_status)} />
-                                                    <Field label="Email" value={employee.email} />
-                                                    <Field label="Phone" value={employee.phone} />
+                                                    <Field
+                                                        label="First name"
+                                                        value={
+                                                            employee.first_name
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Middle name"
+                                                        value={
+                                                            employee.middle_name
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Last name"
+                                                        value={
+                                                            employee.last_name
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Suffix"
+                                                        value={employee.suffix}
+                                                    />
+                                                    <Field
+                                                        label="Birth date"
+                                                        value={
+                                                            employee.birth_date_formatted
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Sex"
+                                                        value={titleCase(
+                                                            employee.sex,
+                                                        )}
+                                                    />
+                                                    <Field
+                                                        label="Civil status"
+                                                        value={titleCase(
+                                                            employee.civil_status,
+                                                        )}
+                                                    />
+                                                    <Field
+                                                        label="Email"
+                                                        value={employee.email}
+                                                    />
+                                                    <Field
+                                                        label="Phone"
+                                                        value={employee.phone}
+                                                    />
                                                 </dl>
                                             </Section>
 
@@ -526,10 +578,30 @@ export default function EmployeeShow({
                                                 description="Primary address used for communication and employee records."
                                             >
                                                 <dl className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                                                    <Field label="Street / Barangay" value={employee.address_street} />
-                                                    <Field label="City / Municipality" value={employee.address_city} />
-                                                    <Field label="Province" value={employee.address_province} />
-                                                    <Field label="ZIP code" value={employee.address_zip} />
+                                                    <Field
+                                                        label="Street / Barangay"
+                                                        value={
+                                                            employee.address_street
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="City / Municipality"
+                                                        value={
+                                                            employee.address_city
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Province"
+                                                        value={
+                                                            employee.address_province
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="ZIP code"
+                                                        value={
+                                                            employee.address_zip
+                                                        }
+                                                    />
                                                 </dl>
                                             </Section>
 
@@ -540,11 +612,34 @@ export default function EmployeeShow({
                                                 description="Compliance references used for payroll, benefits, and statutory reporting."
                                             >
                                                 <dl className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                                    <Field label="TIN" value={employee.tin} />
-                                                    <Field label="GSIS number" value={employee.gsis_number} />
-                                                    <Field label="PhilHealth number" value={employee.philhealth_number} />
-                                                    <Field label="Pag-IBIG number" value={employee.pagibig_number} />
-                                                    <Field label="SSS number" value={employee.sss_number} />
+                                                    <Field
+                                                        label="TIN"
+                                                        value={employee.tin}
+                                                    />
+                                                    <Field
+                                                        label="GSIS number"
+                                                        value={
+                                                            employee.gsis_number
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="PhilHealth number"
+                                                        value={
+                                                            employee.philhealth_number
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Pag-IBIG number"
+                                                        value={
+                                                            employee.pagibig_number
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="SSS number"
+                                                        value={
+                                                            employee.sss_number
+                                                        }
+                                                    />
                                                 </dl>
                                             </Section>
                                         </CardContent>
@@ -553,32 +648,67 @@ export default function EmployeeShow({
                                     <div className="flex flex-col gap-6">
                                         <Card>
                                             <CardHeader>
-                                                <CardTitle>Profile summary</CardTitle>
+                                                <CardTitle>
+                                                    Profile summary
+                                                </CardTitle>
                                                 <CardDescription>
                                                     Quick-reference details for
                                                     registry review.
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="flex flex-col gap-4">
-                                                <Field label="Current assignment" value={`${employee.position} · ${employee.department}`} />
-                                                <Field label="Work schedule" value={employee.work_schedule} />
-                                                <Field label="Start date" value={employee.hired_at_formatted} />
-                                                <Field label="Address" value={address || null} />
+                                                <Field
+                                                    label="Current assignment"
+                                                    value={`${employee.position} · ${employee.department}`}
+                                                />
+                                                <Field
+                                                    label="Work schedule"
+                                                    value={
+                                                        employee.work_schedule
+                                                    }
+                                                />
+                                                <Field
+                                                    label="Start date"
+                                                    value={
+                                                        employee.hired_at_formatted
+                                                    }
+                                                />
+                                                <Field
+                                                    label="Address"
+                                                    value={address || null}
+                                                />
                                             </CardContent>
                                         </Card>
 
                                         <Card>
                                             <CardHeader>
-                                                <CardTitle>Emergency contact</CardTitle>
+                                                <CardTitle>
+                                                    Emergency contact
+                                                </CardTitle>
                                                 <CardDescription>
                                                     Primary contact for urgent
                                                     employee matters.
                                                 </CardDescription>
                                             </CardHeader>
                                             <CardContent className="flex flex-col gap-4">
-                                                <Field label="Name" value={employee.emergency_contact_name} />
-                                                <Field label="Relationship" value={employee.emergency_contact_relationship} />
-                                                <Field label="Phone" value={employee.emergency_contact_phone} />
+                                                <Field
+                                                    label="Name"
+                                                    value={
+                                                        employee.emergency_contact_name
+                                                    }
+                                                />
+                                                <Field
+                                                    label="Relationship"
+                                                    value={
+                                                        employee.emergency_contact_relationship
+                                                    }
+                                                />
+                                                <Field
+                                                    label="Phone"
+                                                    value={
+                                                        employee.emergency_contact_phone
+                                                    }
+                                                />
                                             </CardContent>
                                         </Card>
                                     </div>
@@ -600,15 +730,56 @@ export default function EmployeeShow({
                                             </CardHeader>
                                             <CardContent>
                                                 <dl className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                                    <Field label="Employee number" value={employee.employee_number} />
-                                                    <Field label="Department" value={employee.department} />
-                                                    <Field label="Position" value={employee.position} />
-                                                    <Field label="Employment type" value={employee.employment_type} />
-                                                    <Field label="Employment status" value={employee.employment_status} />
-                                                    <Field label="Work schedule" value={employee.work_schedule} />
-                                                    <Field label="Start date" value={employee.hired_at_formatted} />
-                                                    {!employee.is_active && employee.archived_at ? (
-                                                        <Field label="Archived on" value={employee.archived_at} />
+                                                    <Field
+                                                        label="Employee number"
+                                                        value={
+                                                            employee.employee_number
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Department"
+                                                        value={
+                                                            employee.department
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Position"
+                                                        value={
+                                                            employee.position
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Employment type"
+                                                        value={
+                                                            employee.employment_type
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Employment status"
+                                                        value={
+                                                            employee.employment_status
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Work schedule"
+                                                        value={
+                                                            employee.work_schedule
+                                                        }
+                                                    />
+                                                    <Field
+                                                        label="Start date"
+                                                        value={
+                                                            employee.hired_at_formatted
+                                                        }
+                                                    />
+                                                    {!employee.is_active &&
+                                                    employee.archived_at ? (
+                                                        <Field
+                                                            label="Archived on"
+                                                            value={
+                                                                employee.archived_at
+                                                            }
+                                                        />
                                                     ) : null}
                                                 </dl>
                                             </CardContent>
@@ -630,9 +801,17 @@ export default function EmployeeShow({
                                                         User account
                                                     </Label>
                                                     <Select
-                                                        value={linkUserForm.data.user_id}
-                                                        onValueChange={(value) =>
-                                                            linkUserForm.setData('user_id', value)
+                                                        value={
+                                                            linkUserForm.data
+                                                                .user_id
+                                                        }
+                                                        onValueChange={(
+                                                            value,
+                                                        ) =>
+                                                            linkUserForm.setData(
+                                                                'user_id',
+                                                                value,
+                                                            )
                                                         }
                                                     >
                                                         <SelectTrigger
@@ -644,13 +823,25 @@ export default function EmployeeShow({
                                                         <SelectContent>
                                                             <SelectGroup>
                                                                 <SelectItem value="0">
-                                                                    No linked account
+                                                                    No linked
+                                                                    account
                                                                 </SelectItem>
-                                                                {users.map((user) => (
-                                                                    <SelectItem key={user.value} value={user.value}>
-                                                                        {user.label}
-                                                                    </SelectItem>
-                                                                ))}
+                                                                {users.map(
+                                                                    (user) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                user.value
+                                                                            }
+                                                                            value={
+                                                                                user.value
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                user.label
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
                                                             </SelectGroup>
                                                         </SelectContent>
                                                     </Select>
@@ -660,7 +851,9 @@ export default function EmployeeShow({
                                                         type="button"
                                                         variant="outline"
                                                         onClick={handleLinkUser}
-                                                        disabled={linkUserForm.processing}
+                                                        disabled={
+                                                            linkUserForm.processing
+                                                        }
                                                     >
                                                         Save link
                                                     </Button>
@@ -675,19 +868,41 @@ export default function EmployeeShow({
 
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Registry lifecycle</CardTitle>
+                                            <CardTitle>
+                                                Registry lifecycle
+                                            </CardTitle>
                                             <CardDescription>
-                                                Current standing of this employee
-                                                record in the HRIS.
+                                                Current standing of this
+                                                employee record in the HRIS.
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="flex flex-col gap-4">
-                                            <Field label="Registry status" value={employeeStatus} />
-                                            <Field label="Employment status" value={employee.employment_status} />
-                                            <Field label="Work schedule" value={employee.work_schedule} />
-                                            <Field label="User access" value={linkedStatus} />
-                                            <Field label="Documents on file" value={String(documents.length)} />
-                                            <Field label="Movement records" value={String(movements.length)} />
+                                            <Field
+                                                label="Registry status"
+                                                value={employeeStatus}
+                                            />
+                                            <Field
+                                                label="Employment status"
+                                                value={
+                                                    employee.employment_status
+                                                }
+                                            />
+                                            <Field
+                                                label="Work schedule"
+                                                value={employee.work_schedule}
+                                            />
+                                            <Field
+                                                label="User access"
+                                                value={linkedStatus}
+                                            />
+                                            <Field
+                                                label="Documents on file"
+                                                value={String(documents.length)}
+                                            />
+                                            <Field
+                                                label="Movement records"
+                                                value={String(movements.length)}
+                                            />
                                         </CardContent>
                                     </Card>
                                 </div>
@@ -697,7 +912,9 @@ export default function EmployeeShow({
                                 <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Upload document</CardTitle>
+                                            <CardTitle>
+                                                Upload document
+                                            </CardTitle>
                                             <CardDescription>
                                                 Add a supporting file to this
                                                 employee record.
@@ -779,7 +996,8 @@ export default function EmployeeShow({
                                                     onChange={(event) =>
                                                         uploadForm.setData(
                                                             'file',
-                                                            event.target.files?.[0] ??
+                                                            event.target
+                                                                .files?.[0] ??
                                                                 null,
                                                         )
                                                     }
@@ -829,7 +1047,9 @@ export default function EmployeeShow({
                                                     </EmptyContent>
                                                 </Empty>
                                                 <InputError
-                                                    message={uploadForm.errors.file}
+                                                    message={
+                                                        uploadForm.errors.file
+                                                    }
                                                 />
                                             </div>
 
@@ -839,7 +1059,9 @@ export default function EmployeeShow({
                                                 </Label>
                                                 <Input
                                                     id="doc-notes"
-                                                    value={uploadForm.data.notes}
+                                                    value={
+                                                        uploadForm.data.notes
+                                                    }
                                                     onChange={(event) =>
                                                         uploadForm.setData(
                                                             'notes',
@@ -849,7 +1071,9 @@ export default function EmployeeShow({
                                                     placeholder="Optional notes"
                                                 />
                                                 <InputError
-                                                    message={uploadForm.errors.notes}
+                                                    message={
+                                                        uploadForm.errors.notes
+                                                    }
                                                 />
                                             </div>
 
@@ -897,130 +1121,140 @@ export default function EmployeeShow({
                                                             <FileArchive />
                                                         </EmptyMedia>
                                                         <EmptyTitle>
-                                                            No documents uploaded
+                                                            No documents
+                                                            uploaded
                                                         </EmptyTitle>
                                                         <EmptyDescription>
-                                                            Add a supporting file
-                                                            from the upload panel
-                                                            to start building
-                                                            this employee&apos;s
+                                                            Add a supporting
+                                                            file from the upload
+                                                            panel to start
+                                                            building this
+                                                            employee&apos;s
                                                             records.
                                                         </EmptyDescription>
                                                     </EmptyHeader>
                                                 </Empty>
                                             ) : (
                                                 <div className="flex flex-col gap-3">
-                                                    {documents.map((document) => (
-                                                        <Card
-                                                            key={document.id}
-                                                            className="gap-4 py-4"
-                                                        >
-                                                            <CardContent className="flex flex-col gap-4 px-4 sm:flex-row sm:items-start sm:justify-between">
-                                                                <div className="flex flex-col gap-2">
-                                                                    <div className="flex flex-wrap items-center gap-2">
-                                                                        <span className="font-medium">
-                                                                            {
-                                                                                document.document_type
-                                                                            }
-                                                                        </span>
-                                                                        {document.is_confidential ? (
-                                                                            <Badge variant="secondary">
-                                                                                <Lock />
-                                                                                Confidential
-                                                                            </Badge>
-                                                                        ) : null}
-                                                                    </div>
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        {
-                                                                            document.file_name
-                                                                        }{' '}
-                                                                        ·{' '}
-                                                                        {
-                                                                            document.file_size_formatted
-                                                                        }
-                                                                    </p>
-                                                                    <p className="text-sm text-muted-foreground">
-                                                                        Uploaded{' '}
-                                                                        {
-                                                                            document.uploaded_at
-                                                                        }{' '}
-                                                                        by{' '}
-                                                                        {
-                                                                            document.uploaded_by
-                                                                        }
-                                                                    </p>
-                                                                    {document.notes ? (
+                                                    {documents.map(
+                                                        (document) => (
+                                                            <Card
+                                                                key={
+                                                                    document.id
+                                                                }
+                                                                className="gap-4 py-4"
+                                                            >
+                                                                <CardContent className="flex flex-col gap-4 px-4 sm:flex-row sm:items-start sm:justify-between">
+                                                                    <div className="flex flex-col gap-2">
+                                                                        <div className="flex flex-wrap items-center gap-2">
+                                                                            <span className="font-medium">
+                                                                                {
+                                                                                    document.document_type
+                                                                                }
+                                                                            </span>
+                                                                            {document.is_confidential ? (
+                                                                                <Badge variant="secondary">
+                                                                                    <Lock />
+                                                                                    Confidential
+                                                                                </Badge>
+                                                                            ) : null}
+                                                                        </div>
                                                                         <p className="text-sm text-muted-foreground">
                                                                             {
-                                                                                document.notes
+                                                                                document.file_name
+                                                                            }{' '}
+                                                                            ·{' '}
+                                                                            {
+                                                                                document.file_size_formatted
                                                                             }
                                                                         </p>
-                                                                    ) : null}
-                                                                </div>
-                                                                <div className="flex gap-2">
-                                                                    <Button
-                                                                        asChild
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                    >
-                                                                        <a
-                                                                            href={`/documents/${document.id}/download`}
+                                                                        <p className="text-sm text-muted-foreground">
+                                                                            Uploaded{' '}
+                                                                            {
+                                                                                document.uploaded_at
+                                                                            }{' '}
+                                                                            by{' '}
+                                                                            {
+                                                                                document.uploaded_by
+                                                                            }
+                                                                        </p>
+                                                                        {document.notes ? (
+                                                                            <p className="text-sm text-muted-foreground">
+                                                                                {
+                                                                                    document.notes
+                                                                                }
+                                                                            </p>
+                                                                        ) : null}
+                                                                    </div>
+                                                                    <div className="flex gap-2">
+                                                                        <Button
+                                                                            asChild
+                                                                            variant="outline"
+                                                                            size="sm"
                                                                         >
-                                                                            <Download data-icon="inline-start" />
-                                                                            Download
-                                                                        </a>
-                                                                    </Button>
-                                                                    <AlertDialog>
-                                                                        <AlertDialogTrigger asChild>
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                size="sm"
+                                                                            <a
+                                                                                href={`/documents/${document.id}/download`}
                                                                             >
-                                                                                <Trash2 data-icon="inline-start" />
-                                                                                Delete
-                                                                            </Button>
-                                                                        </AlertDialogTrigger>
-                                                                        <AlertDialogContent>
-                                                                            <AlertDialogHeader>
-                                                                                <AlertDialogTitle>
-                                                                                    Delete
-                                                                                    document?
-                                                                                </AlertDialogTitle>
-                                                                                <AlertDialogDescription>
-                                                                                    This will
-                                                                                    permanently
-                                                                                    remove{' '}
-                                                                                    {
-                                                                                        document.file_name
-                                                                                    }
-                                                                                    .
-                                                                                </AlertDialogDescription>
-                                                                            </AlertDialogHeader>
-                                                                            <AlertDialogFooter>
-                                                                                <AlertDialogCancel>
-                                                                                    Cancel
-                                                                                </AlertDialogCancel>
-                                                                                <AlertDialogAction
-                                                                                    variant="destructive"
-                                                                                    onClick={() =>
-                                                                                        handleDeleteDocument(
-                                                                                            document.id,
-                                                                                        )
-                                                                                    }
-                                                                                    disabled={
-                                                                                        deleteDocForm.processing
-                                                                                    }
+                                                                                <Download data-icon="inline-start" />
+                                                                                Download
+                                                                            </a>
+                                                                        </Button>
+                                                                        <AlertDialog>
+                                                                            <AlertDialogTrigger
+                                                                                asChild
+                                                                            >
+                                                                                <Button
+                                                                                    variant="outline"
+                                                                                    size="sm"
                                                                                 >
+                                                                                    <Trash2 data-icon="inline-start" />
                                                                                     Delete
-                                                                                    document
-                                                                                </AlertDialogAction>
-                                                                            </AlertDialogFooter>
-                                                                        </AlertDialogContent>
-                                                                    </AlertDialog>
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    ))}
+                                                                                </Button>
+                                                                            </AlertDialogTrigger>
+                                                                            <AlertDialogContent>
+                                                                                <AlertDialogHeader>
+                                                                                    <AlertDialogTitle>
+                                                                                        Delete
+                                                                                        document?
+                                                                                    </AlertDialogTitle>
+                                                                                    <AlertDialogDescription>
+                                                                                        This
+                                                                                        will
+                                                                                        permanently
+                                                                                        remove{' '}
+                                                                                        {
+                                                                                            document.file_name
+                                                                                        }
+
+                                                                                        .
+                                                                                    </AlertDialogDescription>
+                                                                                </AlertDialogHeader>
+                                                                                <AlertDialogFooter>
+                                                                                    <AlertDialogCancel>
+                                                                                        Cancel
+                                                                                    </AlertDialogCancel>
+                                                                                    <AlertDialogAction
+                                                                                        variant="destructive"
+                                                                                        onClick={() =>
+                                                                                            handleDeleteDocument(
+                                                                                                document.id,
+                                                                                            )
+                                                                                        }
+                                                                                        disabled={
+                                                                                            deleteDocForm.processing
+                                                                                        }
+                                                                                    >
+                                                                                        Delete
+                                                                                        document
+                                                                                    </AlertDialogAction>
+                                                                                </AlertDialogFooter>
+                                                                            </AlertDialogContent>
+                                                                        </AlertDialog>
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        ),
+                                                    )}
                                                 </div>
                                             )}
                                         </CardContent>
@@ -1099,18 +1333,30 @@ export default function EmployeeShow({
                                                                     <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
                                                                         <MovementField
                                                                             label="Position"
-                                                                            from={movement.from_position}
-                                                                            to={movement.to_position}
+                                                                            from={
+                                                                                movement.from_position
+                                                                            }
+                                                                            to={
+                                                                                movement.to_position
+                                                                            }
                                                                         />
                                                                         <MovementField
                                                                             label="Department"
-                                                                            from={movement.from_department}
-                                                                            to={movement.to_department}
+                                                                            from={
+                                                                                movement.from_department
+                                                                            }
+                                                                            to={
+                                                                                movement.to_department
+                                                                            }
                                                                         />
                                                                         <MovementField
                                                                             label="Status"
-                                                                            from={movement.from_employment_status}
-                                                                            to={movement.to_employment_status}
+                                                                            from={
+                                                                                movement.from_employment_status
+                                                                            }
+                                                                            to={
+                                                                                movement.to_employment_status
+                                                                            }
                                                                         />
                                                                     </div>
                                                                     <p className="text-sm text-muted-foreground">
@@ -1145,9 +1391,13 @@ export default function EmployeeShow({
                             <TabsContent value="history" className="mt-6">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Employment history</CardTitle>
+                                        <CardTitle>
+                                            Employment history
+                                        </CardTitle>
                                         <CardDescription>
-                                            Registry milestones, employment profile changes, and personnel actions for this employee.
+                                            Registry milestones, employment
+                                            profile changes, and personnel
+                                            actions for this employee.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
@@ -1158,10 +1408,14 @@ export default function EmployeeShow({
                                                         <History />
                                                     </EmptyMedia>
                                                     <EmptyTitle>
-                                                        No employment history yet
+                                                        No employment history
+                                                        yet
                                                     </EmptyTitle>
                                                     <EmptyDescription>
-                                                        Timeline entries will appear here as the employee profile changes over time.
+                                                        Timeline entries will
+                                                        appear here as the
+                                                        employee profile changes
+                                                        over time.
                                                     </EmptyDescription>
                                                 </EmptyHeader>
                                             </Empty>
@@ -1191,18 +1445,26 @@ export default function EmployeeShow({
                                                                     </div>
                                                                     <div className="space-y-1">
                                                                         <h3 className="text-sm font-medium text-foreground">
-                                                                            {entry.title}
+                                                                            {
+                                                                                entry.title
+                                                                            }
                                                                         </h3>
                                                                         {entry.description ? (
                                                                             <p className="text-sm text-muted-foreground">
-                                                                                {entry.description}
+                                                                                {
+                                                                                    entry.description
+                                                                                }
                                                                             </p>
                                                                         ) : null}
                                                                         <p className="text-sm text-muted-foreground">
-                                                                            Recorded by{' '}
+                                                                            Recorded
+                                                                            by{' '}
                                                                             {entry.recorded_by ??
                                                                                 'System'}{' '}
-                                                                            on {entry.recorded_at}
+                                                                            on{' '}
+                                                                            {
+                                                                                entry.recorded_at
+                                                                            }
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -1212,23 +1474,39 @@ export default function EmployeeShow({
                                                                         variant="outline"
                                                                         size="sm"
                                                                     >
-                                                                        <Link href={entry.source_url}>
-                                                                            View source
+                                                                        <Link
+                                                                            href={
+                                                                                entry.source_url
+                                                                            }
+                                                                        >
+                                                                            View
+                                                                            source
                                                                         </Link>
                                                                     </Button>
                                                                 ) : null}
                                                             </div>
 
-                                                            {entry.changes.length > 0 ? (
+                                                            {entry.changes
+                                                                .length > 0 ? (
                                                                 <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 xl:grid-cols-3">
-                                                                    {entry.changes.map((change) => (
-                                                                        <MovementField
-                                                                            key={`${entry.id}-${change.label}`}
-                                                                            label={change.label}
-                                                                            from={change.from}
-                                                                            to={change.to}
-                                                                        />
-                                                                    ))}
+                                                                    {entry.changes.map(
+                                                                        (
+                                                                            change,
+                                                                        ) => (
+                                                                            <MovementField
+                                                                                key={`${entry.id}-${change.label}`}
+                                                                                label={
+                                                                                    change.label
+                                                                                }
+                                                                                from={
+                                                                                    change.from
+                                                                                }
+                                                                                to={
+                                                                                    change.to
+                                                                                }
+                                                                            />
+                                                                        ),
+                                                                    )}
                                                                 </div>
                                                             ) : null}
                                                         </CardContent>
@@ -1248,8 +1526,8 @@ export default function EmployeeShow({
                                         </CardTitle>
                                         <CardDescription>
                                             Current salary grade and monthly
-                                            compensation figures assigned to this
-                                            employee.
+                                            compensation figures assigned to
+                                            this employee.
                                         </CardDescription>
                                         <CardAction>
                                             <Button asChild size="sm">
@@ -1305,17 +1583,27 @@ export default function EmployeeShow({
                                                 />
                                                 <MetricCard
                                                     label="Effective date"
-                                                    value={compensation.effective_date}
+                                                    value={
+                                                        compensation.effective_date
+                                                    }
                                                     detail="Current pay setup date."
                                                 />
                                                 <MetricCard
                                                     label="Allowances"
-                                                    value={formatCurrency(Number(compensation.allowances))}
+                                                    value={formatCurrency(
+                                                        Number(
+                                                            compensation.allowances,
+                                                        ),
+                                                    )}
                                                     detail="Recurring monthly allowances."
                                                 />
                                                 <MetricCard
                                                     label="Deductions"
-                                                    value={formatCurrency(Number(compensation.deductions))}
+                                                    value={formatCurrency(
+                                                        Number(
+                                                            compensation.deductions,
+                                                        ),
+                                                    )}
                                                     detail="Recurring monthly deductions."
                                                 />
                                             </div>
@@ -1360,11 +1648,15 @@ function Field({
 }) {
     return (
         <div className="flex flex-col gap-1">
-            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {label}
             </dt>
             <dd className="text-sm text-foreground">
-                {value ? value : <span className="text-muted-foreground">Not provided</span>}
+                {value ? (
+                    value
+                ) : (
+                    <span className="text-muted-foreground">Not provided</span>
+                )}
             </dd>
         </div>
     );
@@ -1404,10 +1696,12 @@ function MetricCard({
 }) {
     return (
         <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-4">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>
-            <span className="text-2xl font-semibold tracking-tight">{value}</span>
+            <span className="text-2xl font-semibold tracking-tight">
+                {value}
+            </span>
             <span className="text-sm text-muted-foreground">{detail}</span>
         </div>
     );

@@ -90,7 +90,10 @@ function ScheduleForm({
     title: string;
     description: string;
     data: WorkScheduleFormData;
-    setData: <K extends keyof WorkScheduleFormData>(key: K, value: WorkScheduleFormData[K]) => void;
+    setData: <K extends keyof WorkScheduleFormData>(
+        key: K,
+        value: WorkScheduleFormData[K],
+    ) => void;
     errors: Partial<Record<keyof WorkScheduleFormData, string>>;
 }) {
     return (
@@ -105,10 +108,16 @@ function ScheduleForm({
                     <Input
                         id="schedule-name"
                         value={data.name}
-                        onChange={(event) => setData('name', event.target.value)}
+                        onChange={(event) =>
+                            setData('name', event.target.value)
+                        }
                         placeholder="Regular Office Hours"
                     />
-                    {errors.name ? <p className="text-sm text-destructive">{errors.name}</p> : null}
+                    {errors.name ? (
+                        <p className="text-sm text-destructive">
+                            {errors.name}
+                        </p>
+                    ) : null}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="schedule-time-in">Time in</Label>
@@ -116,9 +125,15 @@ function ScheduleForm({
                         id="schedule-time-in"
                         type="time"
                         value={data.time_in}
-                        onChange={(event) => setData('time_in', event.target.value)}
+                        onChange={(event) =>
+                            setData('time_in', event.target.value)
+                        }
                     />
-                    {errors.time_in ? <p className="text-sm text-destructive">{errors.time_in}</p> : null}
+                    {errors.time_in ? (
+                        <p className="text-sm text-destructive">
+                            {errors.time_in}
+                        </p>
+                    ) : null}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="schedule-time-out">Time out</Label>
@@ -126,9 +141,15 @@ function ScheduleForm({
                         id="schedule-time-out"
                         type="time"
                         value={data.time_out}
-                        onChange={(event) => setData('time_out', event.target.value)}
+                        onChange={(event) =>
+                            setData('time_out', event.target.value)
+                        }
                     />
-                    {errors.time_out ? <p className="text-sm text-destructive">{errors.time_out}</p> : null}
+                    {errors.time_out ? (
+                        <p className="text-sm text-destructive">
+                            {errors.time_out}
+                        </p>
+                    ) : null}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="schedule-break">Break minutes</Label>
@@ -138,9 +159,15 @@ function ScheduleForm({
                         min="0"
                         max="240"
                         value={data.break_minutes}
-                        onChange={(event) => setData('break_minutes', event.target.value)}
+                        onChange={(event) =>
+                            setData('break_minutes', event.target.value)
+                        }
                     />
-                    {errors.break_minutes ? <p className="text-sm text-destructive">{errors.break_minutes}</p> : null}
+                    {errors.break_minutes ? (
+                        <p className="text-sm text-destructive">
+                            {errors.break_minutes}
+                        </p>
+                    ) : null}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="schedule-hours">Work hours per day</Label>
@@ -151,9 +178,15 @@ function ScheduleForm({
                         max="24"
                         step="0.25"
                         value={data.work_hours_per_day}
-                        onChange={(event) => setData('work_hours_per_day', event.target.value)}
+                        onChange={(event) =>
+                            setData('work_hours_per_day', event.target.value)
+                        }
                     />
-                    {errors.work_hours_per_day ? <p className="text-sm text-destructive">{errors.work_hours_per_day}</p> : null}
+                    {errors.work_hours_per_day ? (
+                        <p className="text-sm text-destructive">
+                            {errors.work_hours_per_day}
+                        </p>
+                    ) : null}
                 </div>
             </div>
         </>
@@ -204,7 +237,11 @@ function CreateScheduleDialog() {
                         errors={form.errors}
                     />
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -252,7 +289,11 @@ function EditScheduleDialog({ schedule }: { schedule: WorkSchedule }) {
                         errors={form.errors}
                     />
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -271,12 +312,20 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
         (total, schedule) => total + schedule.employees_count,
         0,
     );
-    const averageHours = activeSchedules.length > 0
-        ? activeSchedules.reduce((total, schedule) => total + schedule.work_hours_per_day, 0) / activeSchedules.length
-        : 0;
+    const averageHours =
+        activeSchedules.length > 0
+            ? activeSchedules.reduce(
+                  (total, schedule) => total + schedule.work_hours_per_day,
+                  0,
+              ) / activeSchedules.length
+            : 0;
 
     function deactivateSchedule(schedule: WorkSchedule): void {
-        if (!confirm(`Deactivate "${schedule.name}"? Existing employee assignments will be preserved.`)) {
+        if (
+            !confirm(
+                `Deactivate "${schedule.name}"? Existing employee assignments will be preserved.`,
+            )
+        ) {
             return;
         }
 
@@ -299,7 +348,9 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
                                     Work schedules
                                 </h1>
                                 <p className="max-w-2xl text-sm leading-6 text-slate-600">
-                                    Maintain the schedule templates used when assigning employees to standard office or shifting hours.
+                                    Maintain the schedule templates used when
+                                    assigning employees to standard office or
+                                    shifting hours.
                                 </p>
                             </div>
                         </div>
@@ -319,46 +370,66 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
                     <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                         <CardHeader>
                             <CardDescription>Active schedules</CardDescription>
-                            <CardTitle className="text-3xl">{activeSchedules.length}</CardTitle>
+                            <CardTitle className="text-3xl">
+                                {activeSchedules.length}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-slate-600">
-                            Schedule templates currently available in employee forms.
+                            Schedule templates currently available in employee
+                            forms.
                         </CardContent>
                     </Card>
                     <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                         <CardHeader>
-                            <CardDescription>Assigned employees</CardDescription>
-                            <CardTitle className="text-3xl">{assignedEmployees}</CardTitle>
+                            <CardDescription>
+                                Assigned employees
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {assignedEmployees}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-slate-600">
-                            Existing employee records linked to any saved schedule.
+                            Existing employee records linked to any saved
+                            schedule.
                         </CardContent>
                     </Card>
                     <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                         <CardHeader>
-                            <CardDescription>Average daily hours</CardDescription>
-                            <CardTitle className="text-3xl">{averageHours.toFixed(2)}</CardTitle>
+                            <CardDescription>
+                                Average daily hours
+                            </CardDescription>
+                            <CardTitle className="text-3xl">
+                                {averageHours.toFixed(2)}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-slate-600">
-                            Average work-hours target across active schedule templates.
+                            Average work-hours target across active schedule
+                            templates.
                         </CardContent>
                     </Card>
                     <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                         <CardHeader>
                             <CardDescription>Coverage</CardDescription>
-                            <CardTitle className="text-3xl">{activeSchedules.length > 0 ? 'Ready' : 'Setup'}</CardTitle>
+                            <CardTitle className="text-3xl">
+                                {activeSchedules.length > 0 ? 'Ready' : 'Setup'}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="text-sm text-slate-600">
-                            Employee assignment pages can use schedules as soon as templates are configured.
+                            Employee assignment pages can use schedules as soon
+                            as templates are configured.
                         </CardContent>
                     </Card>
                 </div>
 
                 <Card className="border-slate-200/75 bg-white/95 shadow-sm">
                     <CardHeader>
-                        <CardTitle className="text-slate-950">Schedule registry</CardTitle>
+                        <CardTitle className="text-slate-950">
+                            Schedule registry
+                        </CardTitle>
                         <CardDescription>
-                            Active schedules appear in employee assignment forms. Deactivated schedules stay linked to historical employee records.
+                            Active schedules appear in employee assignment
+                            forms. Deactivated schedules stay linked to
+                            historical employee records.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -371,24 +442,44 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
                                     <TableHead>Employees</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Updated</TableHead>
-                                    <TableHead className="w-28 text-right">Actions</TableHead>
+                                    <TableHead className="w-28 text-right">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {schedules.map((schedule) => (
-                                    <TableRow key={schedule.id} className={!schedule.is_active ? 'opacity-70' : ''}>
+                                    <TableRow
+                                        key={schedule.id}
+                                        className={
+                                            !schedule.is_active
+                                                ? 'opacity-70'
+                                                : ''
+                                        }
+                                    >
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
-                                                <span className="font-medium text-slate-950">{schedule.name}</span>
+                                                <span className="font-medium text-slate-950">
+                                                    {schedule.name}
+                                                </span>
                                                 <span className="text-sm text-slate-500">
-                                                    {formatTime(schedule.time_in)} to {formatTime(schedule.time_out)}
+                                                    {formatTime(
+                                                        schedule.time_in,
+                                                    )}{' '}
+                                                    to{' '}
+                                                    {formatTime(
+                                                        schedule.time_out,
+                                                    )}
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2 text-sm text-slate-600">
                                                 <Clock3 className="size-4 text-slate-400" />
-                                                {schedule.work_hours_per_day.toFixed(2)} hrs/day
+                                                {schedule.work_hours_per_day.toFixed(
+                                                    2,
+                                                )}{' '}
+                                                hrs/day
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -404,19 +495,33 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            {schedule.is_active ? <Badge>Active</Badge> : <Badge variant="secondary">Inactive</Badge>}
+                                            {schedule.is_active ? (
+                                                <Badge>Active</Badge>
+                                            ) : (
+                                                <Badge variant="secondary">
+                                                    Inactive
+                                                </Badge>
+                                            )}
                                         </TableCell>
-                                        <TableCell className="text-sm text-slate-500">{schedule.updated_at}</TableCell>
+                                        <TableCell className="text-sm text-slate-500">
+                                            {schedule.updated_at}
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex items-center justify-end gap-1">
-                                                <EditScheduleDialog schedule={schedule} />
+                                                <EditScheduleDialog
+                                                    schedule={schedule}
+                                                />
                                                 {schedule.is_active ? (
                                                     <Button
                                                         type="button"
                                                         variant="ghost"
                                                         size="sm"
                                                         className="text-muted-foreground hover:text-destructive"
-                                                        onClick={() => deactivateSchedule(schedule)}
+                                                        onClick={() =>
+                                                            deactivateSchedule(
+                                                                schedule,
+                                                            )
+                                                        }
                                                     >
                                                         <PowerOff className="size-4" />
                                                     </Button>
@@ -427,7 +532,10 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
                                 ))}
                                 {schedules.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="py-12 text-center text-sm text-slate-500">
+                                        <TableCell
+                                            colSpan={7}
+                                            className="py-12 text-center text-sm text-slate-500"
+                                        >
                                             No work schedules configured yet.
                                         </TableCell>
                                     </TableRow>

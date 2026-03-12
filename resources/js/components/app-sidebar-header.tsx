@@ -19,7 +19,8 @@ export function AppSidebarHeader({
 }: {
     breadcrumbs?: BreadcrumbItemType[];
 }) {
-    const { notifications } = usePage<{ notifications: SharedNotifications }>().props;
+    const { notifications } = usePage<{ notifications: SharedNotifications }>()
+        .props;
 
     return (
         <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-border/60 bg-background/85 px-6 backdrop-blur-sm transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
@@ -68,7 +69,7 @@ export function AppSidebarHeader({
                                 <div className="space-y-2 px-2 py-2">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="space-y-1">
-                                            <p className="text-sm font-medium leading-tight text-foreground">
+                                            <p className="text-sm leading-tight font-medium text-foreground">
                                                 {notification.title}
                                             </p>
                                             <p className="text-xs leading-relaxed text-muted-foreground">
@@ -80,7 +81,7 @@ export function AppSidebarHeader({
                                         ) : null}
                                     </div>
                                     <div className="flex items-center justify-between gap-3">
-                                        <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                        <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
                                             {notification.category}
                                         </span>
                                         <div className="flex items-center gap-3 text-xs">
@@ -96,7 +97,9 @@ export function AppSidebarHeader({
                                             ) : null}
                                             {notification.action_url ? (
                                                 <Link
-                                                    href={notification.action_url}
+                                                    href={
+                                                        notification.action_url
+                                                    }
                                                     className="font-medium text-foreground"
                                                 >
                                                     Open

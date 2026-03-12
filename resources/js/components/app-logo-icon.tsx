@@ -22,7 +22,12 @@ export default function AppLogoIcon(props: SVGAttributes<SVGSVGElement>) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
-            <path d="M20.5 35H27.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <path
+                d="M20.5 35H27.5"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+            />
         </svg>
     );
 }

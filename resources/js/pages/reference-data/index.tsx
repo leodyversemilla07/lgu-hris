@@ -36,8 +36,21 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -96,7 +109,12 @@ type DocumentType = {
     is_active: boolean;
 };
 
-type SimpleRecord = { id: number; code: string | null; name: string; is_active: boolean };
+type SimpleRecord = {
+    id: number;
+    code: string | null;
+    name: string;
+    is_active: boolean;
+};
 
 type DeptOption = { value: string; label: string };
 
@@ -127,7 +145,12 @@ function FormError({ message }: { message?: string }) {
 }
 
 function deactivate(type: string, id: number, name: string) {
-    if (!confirm(`Deactivate "${name}"? It will no longer appear in active lists.`)) return;
+    if (
+        !confirm(
+            `Deactivate "${name}"? It will no longer appear in active lists.`,
+        )
+    )
+        return;
     router.delete(`/reference-data/${id}`, { data: { type } });
 }
 
@@ -159,7 +182,9 @@ function AddDepartmentDialog() {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Department</DialogTitle>
-                    <DialogDescription>Create a new department record.</DialogDescription>
+                    <DialogDescription>
+                        Create a new department record.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid grid-cols-3 gap-4">
@@ -169,7 +194,9 @@ function AddDepartmentDialog() {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -178,14 +205,20 @@ function AddDepartmentDialog() {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                                 placeholder="e.g. FIN"
                             />
                             <FormError message={form.errors.code} />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -234,7 +267,9 @@ function EditDepartmentDialog({ dept }: { dept: Department }) {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -243,7 +278,9 @@ function EditDepartmentDialog({ dept }: { dept: Department }) {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                             <FormError message={form.errors.code} />
                         </div>
@@ -252,12 +289,18 @@ function EditDepartmentDialog({ dept }: { dept: Department }) {
                         <Checkbox
                             id={`dept-active-${dept.id}`}
                             checked={form.data.is_active}
-                            onCheckedChange={(v) => form.setData('is_active', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_active', !!v)
+                            }
                         />
                         <Label htmlFor={`dept-active-${dept.id}`}>Active</Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -276,7 +319,10 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
             <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Departments</CardTitle>
-                    <CardDescription>Organizational units for grouping employees and positions.</CardDescription>
+                    <CardDescription>
+                        Organizational units for grouping employees and
+                        positions.
+                    </CardDescription>
                 </div>
                 <AddDepartmentDialog />
             </CardHeader>
@@ -292,9 +338,16 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
                     </TableHeader>
                     <TableBody>
                         {departments.map((dept) => (
-                            <TableRow key={dept.id} className={!dept.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-muted-foreground">{dept.code ?? '—'}</TableCell>
-                                <TableCell className="font-medium">{dept.name}</TableCell>
+                            <TableRow
+                                key={dept.id}
+                                className={!dept.is_active ? 'opacity-60' : ''}
+                            >
+                                <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {dept.code ?? '—'}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {dept.name}
+                                </TableCell>
                                 <TableCell>
                                     <ActiveBadge active={dept.is_active} />
                                 </TableCell>
@@ -305,7 +358,13 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => deactivate('department', dept.id, dept.name)}
+                                                onClick={() =>
+                                                    deactivate(
+                                                        'department',
+                                                        dept.id,
+                                                        dept.name,
+                                                    )
+                                                }
                                                 className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
@@ -318,7 +377,10 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
                         ))}
                         {departments.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                                <TableCell
+                                    colSpan={4}
+                                    className="py-8 text-center text-sm text-muted-foreground"
+                                >
                                     No departments yet.
                                 </TableCell>
                             </TableRow>
@@ -336,7 +398,12 @@ function DepartmentsTab({ departments }: { departments: Department[] }) {
 
 function AddPositionDialog({ deptOptions }: { deptOptions: DeptOption[] }) {
     const [open, setOpen] = useState(false);
-    const form = useForm({ type: 'position', name: '', code: '', department_id: '' });
+    const form = useForm({
+        type: 'position',
+        name: '',
+        code: '',
+        department_id: '',
+    });
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
@@ -358,16 +425,21 @@ function AddPositionDialog({ deptOptions }: { deptOptions: DeptOption[] }) {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Position</DialogTitle>
-                    <DialogDescription>Create a new position tied to a department.</DialogDescription>
+                    <DialogDescription>
+                        Create a new position tied to a department.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">
                     <div className="space-y-2">
                         <Label>
-                            Department <span className="text-destructive">*</span>
+                            Department{' '}
+                            <span className="text-destructive">*</span>
                         </Label>
                         <Select
                             value={form.data.department_id}
-                            onValueChange={(v) => form.setData('department_id', v)}
+                            onValueChange={(v) =>
+                                form.setData('department_id', v)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select department…" />
@@ -389,7 +461,9 @@ function AddPositionDialog({ deptOptions }: { deptOptions: DeptOption[] }) {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -398,12 +472,18 @@ function AddPositionDialog({ deptOptions }: { deptOptions: DeptOption[] }) {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -416,7 +496,13 @@ function AddPositionDialog({ deptOptions }: { deptOptions: DeptOption[] }) {
     );
 }
 
-function EditPositionDialog({ position, deptOptions }: { position: Position; deptOptions: DeptOption[] }) {
+function EditPositionDialog({
+    position,
+    deptOptions,
+}: {
+    position: Position;
+    deptOptions: DeptOption[];
+}) {
     const [open, setOpen] = useState(false);
     const form = useForm({
         type: 'position',
@@ -448,11 +534,14 @@ function EditPositionDialog({ position, deptOptions }: { position: Position; dep
                 <form onSubmit={submit} className="space-y-4">
                     <div className="space-y-2">
                         <Label>
-                            Department <span className="text-destructive">*</span>
+                            Department{' '}
+                            <span className="text-destructive">*</span>
                         </Label>
                         <Select
                             value={form.data.department_id}
-                            onValueChange={(v) => form.setData('department_id', v)}
+                            onValueChange={(v) =>
+                                form.setData('department_id', v)
+                            }
                         >
                             <SelectTrigger>
                                 <SelectValue />
@@ -474,7 +563,9 @@ function EditPositionDialog({ position, deptOptions }: { position: Position; dep
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -483,7 +574,9 @@ function EditPositionDialog({ position, deptOptions }: { position: Position; dep
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
@@ -491,12 +584,20 @@ function EditPositionDialog({ position, deptOptions }: { position: Position; dep
                         <Checkbox
                             id={`pos-active-${position.id}`}
                             checked={form.data.is_active}
-                            onCheckedChange={(v) => form.setData('is_active', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_active', !!v)
+                            }
                         />
-                        <Label htmlFor={`pos-active-${position.id}`}>Active</Label>
+                        <Label htmlFor={`pos-active-${position.id}`}>
+                            Active
+                        </Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -509,19 +610,30 @@ function EditPositionDialog({ position, deptOptions }: { position: Position; dep
     );
 }
 
-function PositionsTab({ positions, departments }: { positions: Position[]; departments: Department[] }) {
+function PositionsTab({
+    positions,
+    departments,
+}: {
+    positions: Position[];
+    departments: Department[];
+}) {
     const activeDeptOptions: DeptOption[] = departments
         .filter((d) => d.is_active)
         .map((d) => ({ value: String(d.id), label: d.name }));
 
-    const allDeptOptions: DeptOption[] = departments.map((d) => ({ value: String(d.id), label: d.name }));
+    const allDeptOptions: DeptOption[] = departments.map((d) => ({
+        value: String(d.id),
+        label: d.name,
+    }));
 
     return (
         <Card>
             <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Positions</CardTitle>
-                    <CardDescription>Job positions linked to departments.</CardDescription>
+                    <CardDescription>
+                        Job positions linked to departments.
+                    </CardDescription>
                 </div>
                 <AddPositionDialog deptOptions={activeDeptOptions} />
             </CardHeader>
@@ -538,21 +650,39 @@ function PositionsTab({ positions, departments }: { positions: Position[]; depar
                     </TableHeader>
                     <TableBody>
                         {positions.map((pos) => (
-                            <TableRow key={pos.id} className={!pos.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-muted-foreground">{pos.code ?? '—'}</TableCell>
-                                <TableCell className="font-medium">{pos.name}</TableCell>
-                                <TableCell className="text-sm text-muted-foreground">{pos.department_name}</TableCell>
+                            <TableRow
+                                key={pos.id}
+                                className={!pos.is_active ? 'opacity-60' : ''}
+                            >
+                                <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {pos.code ?? '—'}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {pos.name}
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground">
+                                    {pos.department_name}
+                                </TableCell>
                                 <TableCell>
                                     <ActiveBadge active={pos.is_active} />
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-1">
-                                        <EditPositionDialog position={pos} deptOptions={allDeptOptions} />
+                                        <EditPositionDialog
+                                            position={pos}
+                                            deptOptions={allDeptOptions}
+                                        />
                                         {pos.is_active && (
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => deactivate('position', pos.id, pos.name)}
+                                                onClick={() =>
+                                                    deactivate(
+                                                        'position',
+                                                        pos.id,
+                                                        pos.name,
+                                                    )
+                                                }
                                                 className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
@@ -565,7 +695,10 @@ function PositionsTab({ positions, departments }: { positions: Position[]; depar
                         ))}
                         {positions.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                                <TableCell
+                                    colSpan={5}
+                                    className="py-8 text-center text-sm text-muted-foreground"
+                                >
                                     No positions yet.
                                 </TableCell>
                             </TableRow>
@@ -623,7 +756,9 @@ function AddSimpleDialog({
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -632,12 +767,18 @@ function AddSimpleDialog({
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -694,7 +835,9 @@ function EditSimpleDialog({
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -703,7 +846,9 @@ function EditSimpleDialog({
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
@@ -711,12 +856,20 @@ function EditSimpleDialog({
                         <Checkbox
                             id={`simple-active-${type}-${record.id}`}
                             checked={form.data.is_active}
-                            onCheckedChange={(v) => form.setData('is_active', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_active', !!v)
+                            }
                         />
-                        <Label htmlFor={`simple-active-${type}-${record.id}`}>Active</Label>
+                        <Label htmlFor={`simple-active-${type}-${record.id}`}>
+                            Active
+                        </Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -767,9 +920,16 @@ function SimpleRefTab({
                     </TableHeader>
                     <TableBody>
                         {records.map((rec) => (
-                            <TableRow key={rec.id} className={!rec.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-muted-foreground">{rec.code ?? '—'}</TableCell>
-                                <TableCell className="font-medium">{rec.name}</TableCell>
+                            <TableRow
+                                key={rec.id}
+                                className={!rec.is_active ? 'opacity-60' : ''}
+                            >
+                                <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {rec.code ?? '—'}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {rec.name}
+                                </TableCell>
                                 <TableCell>
                                     <ActiveBadge active={rec.is_active} />
                                 </TableCell>
@@ -784,7 +944,13 @@ function SimpleRefTab({
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => deactivate(type, rec.id, rec.name)}
+                                                onClick={() =>
+                                                    deactivate(
+                                                        type,
+                                                        rec.id,
+                                                        rec.name,
+                                                    )
+                                                }
                                                 className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
@@ -797,7 +963,10 @@ function SimpleRefTab({
                         ))}
                         {records.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="py-8 text-center text-sm text-muted-foreground">
+                                <TableCell
+                                    colSpan={4}
+                                    className="py-8 text-center text-sm text-muted-foreground"
+                                >
                                     No records yet.
                                 </TableCell>
                             </TableRow>
@@ -843,7 +1012,9 @@ function AddLeaveTypeDialog() {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Leave Type</DialogTitle>
-                    <DialogDescription>Define a new leave category.</DialogDescription>
+                    <DialogDescription>
+                        Define a new leave category.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid grid-cols-3 gap-4">
@@ -853,7 +1024,9 @@ function AddLeaveTypeDialog() {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -862,20 +1035,28 @@ function AddLeaveTypeDialog() {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                                 placeholder="e.g. VL"
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
                         <Label>
-                            Max Days per Year <span className="text-destructive">*</span>
+                            Max Days per Year{' '}
+                            <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             type="number"
                             min={0}
                             value={form.data.max_days_per_year}
-                            onChange={(e) => form.setData('max_days_per_year', parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                                form.setData(
+                                    'max_days_per_year',
+                                    parseInt(e.target.value) || 0,
+                                )
+                            }
                         />
                         <FormError message={form.errors.max_days_per_year} />
                     </div>
@@ -883,12 +1064,20 @@ function AddLeaveTypeDialog() {
                         <Checkbox
                             id="add-lt-approval"
                             checked={form.data.requires_approval}
-                            onCheckedChange={(v) => form.setData('requires_approval', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('requires_approval', !!v)
+                            }
                         />
-                        <Label htmlFor="add-lt-approval">Requires Approval</Label>
+                        <Label htmlFor="add-lt-approval">
+                            Requires Approval
+                        </Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -939,7 +1128,9 @@ function EditLeaveTypeDialog({ lt }: { lt: LeaveType }) {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -948,7 +1139,9 @@ function EditLeaveTypeDialog({ lt }: { lt: LeaveType }) {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
@@ -958,27 +1151,42 @@ function EditLeaveTypeDialog({ lt }: { lt: LeaveType }) {
                             type="number"
                             min={0}
                             value={form.data.max_days_per_year}
-                            onChange={(e) => form.setData('max_days_per_year', parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                                form.setData(
+                                    'max_days_per_year',
+                                    parseInt(e.target.value) || 0,
+                                )
+                            }
                         />
                     </div>
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id={`lt-approval-${lt.id}`}
                             checked={form.data.requires_approval}
-                            onCheckedChange={(v) => form.setData('requires_approval', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('requires_approval', !!v)
+                            }
                         />
-                        <Label htmlFor={`lt-approval-${lt.id}`}>Requires Approval</Label>
+                        <Label htmlFor={`lt-approval-${lt.id}`}>
+                            Requires Approval
+                        </Label>
                     </div>
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id={`lt-active-${lt.id}`}
                             checked={form.data.is_active}
-                            onCheckedChange={(v) => form.setData('is_active', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_active', !!v)
+                            }
                         />
                         <Label htmlFor={`lt-active-${lt.id}`}>Active</Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -997,7 +1205,9 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
             <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Leave Types</CardTitle>
-                    <CardDescription>Categories of leave with maximum day allowances.</CardDescription>
+                    <CardDescription>
+                        Categories of leave with maximum day allowances.
+                    </CardDescription>
                 </div>
                 <AddLeaveTypeDialog />
             </CardHeader>
@@ -1015,17 +1225,31 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                     </TableHeader>
                     <TableBody>
                         {leaveTypes.map((lt) => (
-                            <TableRow key={lt.id} className={!lt.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-muted-foreground">{lt.code ?? '—'}</TableCell>
-                                <TableCell className="font-medium">{lt.name}</TableCell>
-                                <TableCell className="text-sm">{lt.max_days_per_year}</TableCell>
+                            <TableRow
+                                key={lt.id}
+                                className={!lt.is_active ? 'opacity-60' : ''}
+                            >
+                                <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {lt.code ?? '—'}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {lt.name}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                    {lt.max_days_per_year}
+                                </TableCell>
                                 <TableCell>
                                     {lt.requires_approval ? (
-                                        <Badge variant="outline" className="text-xs">
+                                        <Badge
+                                            variant="outline"
+                                            className="text-xs"
+                                        >
                                             Required
                                         </Badge>
                                     ) : (
-                                        <span className="text-xs text-muted-foreground">Not required</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            Not required
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell>
@@ -1038,7 +1262,13 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => deactivate('leave_type', lt.id, lt.name)}
+                                                onClick={() =>
+                                                    deactivate(
+                                                        'leave_type',
+                                                        lt.id,
+                                                        lt.name,
+                                                    )
+                                                }
                                                 className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
@@ -1051,7 +1281,10 @@ function LeaveTypesTab({ leaveTypes }: { leaveTypes: LeaveType[] }) {
                         ))}
                         {leaveTypes.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                                <TableCell
+                                    colSpan={6}
+                                    className="py-8 text-center text-sm text-muted-foreground"
+                                >
                                     No leave types yet.
                                 </TableCell>
                             </TableRow>
@@ -1096,7 +1329,9 @@ function AddDocumentTypeDialog() {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Add Document Type</DialogTitle>
-                    <DialogDescription>Define a new HR document category.</DialogDescription>
+                    <DialogDescription>
+                        Define a new HR document category.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="space-y-4">
                     <div className="grid grid-cols-3 gap-4">
@@ -1106,7 +1341,9 @@ function AddDocumentTypeDialog() {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -1115,7 +1352,9 @@ function AddDocumentTypeDialog() {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
@@ -1123,12 +1362,20 @@ function AddDocumentTypeDialog() {
                         <Checkbox
                             id="add-dt-confidential"
                             checked={form.data.is_confidential}
-                            onCheckedChange={(v) => form.setData('is_confidential', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_confidential', !!v)
+                            }
                         />
-                        <Label htmlFor="add-dt-confidential">Confidential</Label>
+                        <Label htmlFor="add-dt-confidential">
+                            Confidential
+                        </Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -1178,7 +1425,9 @@ function EditDocumentTypeDialog({ dt }: { dt: DocumentType }) {
                             </Label>
                             <Input
                                 value={form.data.name}
-                                onChange={(e) => form.setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('name', e.target.value)
+                                }
                                 required
                             />
                             <FormError message={form.errors.name} />
@@ -1187,7 +1436,9 @@ function EditDocumentTypeDialog({ dt }: { dt: DocumentType }) {
                             <Label>Code</Label>
                             <Input
                                 value={form.data.code}
-                                onChange={(e) => form.setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    form.setData('code', e.target.value)
+                                }
                             />
                         </div>
                     </div>
@@ -1195,20 +1446,30 @@ function EditDocumentTypeDialog({ dt }: { dt: DocumentType }) {
                         <Checkbox
                             id={`dt-confidential-${dt.id}`}
                             checked={form.data.is_confidential}
-                            onCheckedChange={(v) => form.setData('is_confidential', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_confidential', !!v)
+                            }
                         />
-                        <Label htmlFor={`dt-confidential-${dt.id}`}>Confidential</Label>
+                        <Label htmlFor={`dt-confidential-${dt.id}`}>
+                            Confidential
+                        </Label>
                     </div>
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id={`dt-active-${dt.id}`}
                             checked={form.data.is_active}
-                            onCheckedChange={(v) => form.setData('is_active', !!v)}
+                            onCheckedChange={(v) =>
+                                form.setData('is_active', !!v)
+                            }
                         />
                         <Label htmlFor={`dt-active-${dt.id}`}>Active</Label>
                     </div>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={form.processing}>
@@ -1221,13 +1482,19 @@ function EditDocumentTypeDialog({ dt }: { dt: DocumentType }) {
     );
 }
 
-function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) {
+function DocumentTypesTab({
+    documentTypes,
+}: {
+    documentTypes: DocumentType[];
+}) {
     return (
         <Card>
             <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <CardTitle>Document Types</CardTitle>
-                    <CardDescription>Categories used to classify HR documents.</CardDescription>
+                    <CardDescription>
+                        Categories used to classify HR documents.
+                    </CardDescription>
                 </div>
                 <AddDocumentTypeDialog />
             </CardHeader>
@@ -1244,16 +1511,28 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                     </TableHeader>
                     <TableBody>
                         {documentTypes.map((dt) => (
-                            <TableRow key={dt.id} className={!dt.is_active ? 'opacity-60' : ''}>
-                                <TableCell className="font-mono text-xs text-muted-foreground">{dt.code ?? '—'}</TableCell>
-                                <TableCell className="font-medium">{dt.name}</TableCell>
+                            <TableRow
+                                key={dt.id}
+                                className={!dt.is_active ? 'opacity-60' : ''}
+                            >
+                                <TableCell className="font-mono text-xs text-muted-foreground">
+                                    {dt.code ?? '—'}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    {dt.name}
+                                </TableCell>
                                 <TableCell>
                                     {dt.is_confidential ? (
-                                        <Badge variant="outline" className="border-amber-300 text-xs text-amber-700">
+                                        <Badge
+                                            variant="outline"
+                                            className="border-amber-300 text-xs text-amber-700"
+                                        >
                                             Confidential
                                         </Badge>
                                     ) : (
-                                        <span className="text-xs text-muted-foreground">Public</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            Public
+                                        </span>
                                     )}
                                 </TableCell>
                                 <TableCell>
@@ -1266,7 +1545,13 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => deactivate('document_type', dt.id, dt.name)}
+                                                onClick={() =>
+                                                    deactivate(
+                                                        'document_type',
+                                                        dt.id,
+                                                        dt.name,
+                                                    )
+                                                }
                                                 className="text-muted-foreground hover:text-destructive"
                                                 title="Deactivate"
                                             >
@@ -1279,7 +1564,10 @@ function DocumentTypesTab({ documentTypes }: { documentTypes: DocumentType[] }) 
                         ))}
                         {documentTypes.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
+                                <TableCell
+                                    colSpan={5}
+                                    className="py-8 text-center text-sm text-muted-foreground"
+                                >
                                     No document types yet.
                                 </TableCell>
                             </TableRow>
@@ -1343,7 +1631,9 @@ export default function ReferenceDataIndex({
         },
         {
             title: 'Policy references',
-            value: numberFormatter.format(leaveTypes.length + documentTypes.length),
+            value: numberFormatter.format(
+                leaveTypes.length + documentTypes.length,
+            ),
             detail: `${numberFormatter.format(leaveTypes.length)} leave types and ${numberFormatter.format(documentTypes.length)} document types`,
             hint: 'Rules',
             icon: FileText,
@@ -1379,7 +1669,9 @@ export default function ReferenceDataIndex({
                                     className="@container/card shadow-xs"
                                 >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -1408,7 +1700,9 @@ export default function ReferenceDataIndex({
                                 <Card>
                                     <CardHeader className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-1">
-                                            <CardTitle>Reference workspace</CardTitle>
+                                            <CardTitle>
+                                                Reference workspace
+                                            </CardTitle>
                                             <CardDescription>
                                                 Review and update each catalog
                                                 from one consistent admin

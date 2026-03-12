@@ -8,7 +8,8 @@ import {
     Save,
     Wallet,
 } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -192,10 +193,12 @@ function MetricCard({
 }): ReactNode {
     return (
         <div className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-4">
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {label}
             </span>
-            <span className="text-2xl font-semibold tracking-tight">{value}</span>
+            <span className="text-2xl font-semibold tracking-tight">
+                {value}
+            </span>
             <span className="text-sm text-muted-foreground">{detail}</span>
         </div>
     );
@@ -319,12 +322,17 @@ export default function EmployeeCompensation({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href={`/employees/${employee.id}`}>
+                                        <Link
+                                            href={`/employees/${employee.id}`}
+                                        >
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to employee
                                         </Link>
                                     </Button>
-                                    <Button type="submit" disabled={form.processing}>
+                                    <Button
+                                        type="submit"
+                                        disabled={form.processing}
+                                    >
                                         <Save data-icon="inline-start" />
                                         {form.processing
                                             ? 'Saving...'
@@ -336,7 +344,10 @@ export default function EmployeeCompensation({
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card"
+                                >
                                     <CardHeader>
                                         <CardDescription>
                                             {item.title}
@@ -365,7 +376,10 @@ export default function EmployeeCompensation({
                                     description="Choose the grade and step that defines the employee's base monthly salary."
                                 >
                                     <div className="grid gap-4 md:grid-cols-2">
-                                        <FormField label="Salary grade" required>
+                                        <FormField
+                                            label="Salary grade"
+                                            required
+                                        >
                                             <Select
                                                 value={selectedGrade}
                                                 onValueChange={(value) => {
@@ -409,7 +423,9 @@ export default function EmployeeCompensation({
                                             error={form.errors.salary_grade_id}
                                         >
                                             <Select
-                                                value={form.data.salary_grade_id}
+                                                value={
+                                                    form.data.salary_grade_id
+                                                }
                                                 onValueChange={(value) =>
                                                     form.setData(
                                                         'salary_grade_id',
@@ -436,9 +452,8 @@ export default function EmployeeCompensation({
                                                                     }
                                                                 >
                                                                     Step{' '}
-                                                                    {step.step} -
-                                                                    {' '}
-                                                                    ₱
+                                                                    {step.step}{' '}
+                                                                    - ₱
                                                                     {
                                                                         step.monthly_salary
                                                                     }
@@ -536,7 +551,10 @@ export default function EmployeeCompensation({
                                         </div>
 
                                         <div className="md:col-span-2">
-                                            <FormField label="Notes" htmlFor="notes">
+                                            <FormField
+                                                label="Notes"
+                                                htmlFor="notes"
+                                            >
                                                 <Textarea
                                                     id="notes"
                                                     value={form.data.notes}
@@ -588,7 +606,9 @@ export default function EmployeeCompensation({
                                                 />
                                                 <MetricCard
                                                     label="Effective date"
-                                                    value={current.effective_date}
+                                                    value={
+                                                        current.effective_date
+                                                    }
                                                     detail="Start date of the latest compensation record."
                                                 />
                                             </>
@@ -654,7 +674,9 @@ export default function EmployeeCompensation({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href={`/employees/${employee.id}`}>
+                                            <Link
+                                                href={`/employees/${employee.id}`}
+                                            >
                                                 Cancel
                                             </Link>
                                         </Button>

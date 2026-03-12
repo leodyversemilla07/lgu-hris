@@ -9,10 +9,12 @@ import {
     Save,
     ShieldCheck,
 } from 'lucide-react';
-import { type ReactNode, useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
+import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Card,
     CardAction,
@@ -22,7 +24,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -191,21 +192,27 @@ export default function LeaveCreate({
     );
     const balance =
         form.data.employee_id && form.data.leave_type_id
-            ? balances[form.data.employee_id]?.[form.data.leave_type_id] ?? null
+            ? (balances[form.data.employee_id]?.[form.data.leave_type_id] ??
+              null)
             : null;
 
-    useEffect(() => {
-        if (form.data.start_date && form.data.end_date) {
-            const start = new Date(form.data.start_date);
-            const end = new Date(form.data.end_date);
+    const syncRequestedDays = useEffectEvent(
+        (startDate: string, endDate: string): void => {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
 
             if (end >= start) {
                 const diffMs = end.getTime() - start.getTime();
-                const diffDays =
-                    Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+                const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
 
                 form.setData('days_requested', String(diffDays));
             }
+        },
+    );
+
+    useEffect(() => {
+        if (form.data.start_date && form.data.end_date) {
+            syncRequestedDays(form.data.start_date, form.data.end_date);
         }
     }, [form.data.end_date, form.data.start_date]);
 
@@ -230,7 +237,9 @@ export default function LeaveCreate({
         },
         {
             title: 'Approval path',
-            value: selectedType?.requires_approval ? 'Approval required' : 'Auto processed',
+            value: selectedType?.requires_approval
+                ? 'Approval required'
+                : 'Auto processed',
             detail: 'Driven by the selected leave type and its workflow rules.',
             icon: Clock3,
         },
@@ -282,7 +291,10 @@ export default function LeaveCreate({
                                         <Save data-icon="inline-start" />
                                         Save draft
                                     </Button>
-                                    <Button type="submit" disabled={form.processing}>
+                                    <Button
+                                        type="submit"
+                                        disabled={form.processing}
+                                    >
                                         <Save data-icon="inline-start" />
                                         Submit leave request
                                     </Button>
@@ -292,9 +304,14 @@ export default function LeaveCreate({
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card shadow-xs">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -321,13 +338,22 @@ export default function LeaveCreate({
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="flex flex-col gap-2">
                                             <Label>
-                                                Employee <span className="text-destructive">*</span>
+                                                Employee{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Select
                                                 value={form.data.employee_id}
                                                 onValueChange={(value) => {
-                                                    form.setData('employee_id', value);
-                                                    form.setData('leave_type_id', '');
+                                                    form.setData(
+                                                        'employee_id',
+                                                        value,
+                                                    );
+                                                    form.setData(
+                                                        'leave_type_id',
+                                                        '',
+                                                    );
                                                 }}
                                             >
                                                 <SelectTrigger className="w-full">
@@ -335,25 +361,46 @@ export default function LeaveCreate({
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {employees.map((employee) => (
-                                                            <SelectItem key={employee.value} value={employee.value}>
-                                                                {employee.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {employees.map(
+                                                            (employee) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        employee.value
+                                                                    }
+                                                                    value={
+                                                                        employee.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        employee.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
-                                            <InputError message={form.errors.employee_id} />
+                                            <InputError
+                                                message={
+                                                    form.errors.employee_id
+                                                }
+                                            />
                                         </div>
 
                                         <div className="flex flex-col gap-2">
                                             <Label>
-                                                Leave type <span className="text-destructive">*</span>
+                                                Leave type{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Select
                                                 value={form.data.leave_type_id}
                                                 onValueChange={(value) =>
-                                                    form.setData('leave_type_id', value)
+                                                    form.setData(
+                                                        'leave_type_id',
+                                                        value,
+                                                    )
                                                 }
                                             >
                                                 <SelectTrigger className="w-full">
@@ -361,47 +408,87 @@ export default function LeaveCreate({
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {leaveTypes.map((type) => (
-                                                            <SelectItem key={type.value} value={type.value}>
-                                                                {type.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {leaveTypes.map(
+                                                            (type) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        type.value
+                                                                    }
+                                                                    value={
+                                                                        type.value
+                                                                    }
+                                                                >
+                                                                    {type.label}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
-                                            <InputError message={form.errors.leave_type_id} />
+                                            <InputError
+                                                message={
+                                                    form.errors.leave_type_id
+                                                }
+                                            />
                                         </div>
 
                                         <div className="flex flex-col gap-2">
                                             <Label>
-                                                Start date <span className="text-destructive">*</span>
+                                                Start date{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <DatePickerField
                                                 value={form.data.start_date}
-                                                onChange={(value) => form.setData('start_date', value)}
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'start_date',
+                                                        value,
+                                                    )
+                                                }
                                                 placeholder="Pick start date"
-                                                invalid={Boolean(form.errors.start_date)}
+                                                invalid={Boolean(
+                                                    form.errors.start_date,
+                                                )}
                                             />
-                                            <InputError message={form.errors.start_date} />
+                                            <InputError
+                                                message={form.errors.start_date}
+                                            />
                                         </div>
 
                                         <div className="flex flex-col gap-2">
                                             <Label>
-                                                End date <span className="text-destructive">*</span>
+                                                End date{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <DatePickerField
                                                 value={form.data.end_date}
-                                                onChange={(value) => form.setData('end_date', value)}
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'end_date',
+                                                        value,
+                                                    )
+                                                }
                                                 placeholder="Pick end date"
-                                                invalid={Boolean(form.errors.end_date)}
+                                                invalid={Boolean(
+                                                    form.errors.end_date,
+                                                )}
                                                 minDate={form.data.start_date}
                                             />
-                                            <InputError message={form.errors.end_date} />
+                                            <InputError
+                                                message={form.errors.end_date}
+                                            />
                                         </div>
 
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="days_requested">
-                                                Days requested <span className="text-destructive">*</span>
+                                                Days requested{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Input
                                                 id="days_requested"
@@ -410,25 +497,39 @@ export default function LeaveCreate({
                                                 step="0.5"
                                                 value={form.data.days_requested}
                                                 onChange={(event) =>
-                                                    form.setData('days_requested', event.target.value)
+                                                    form.setData(
+                                                        'days_requested',
+                                                        event.target.value,
+                                                    )
                                                 }
                                                 placeholder="Auto-calculated"
                                             />
-                                            <InputError message={form.errors.days_requested} />
+                                            <InputError
+                                                message={
+                                                    form.errors.days_requested
+                                                }
+                                            />
                                         </div>
 
                                         <div className="flex flex-col gap-2 md:col-span-2">
-                                            <Label htmlFor="reason">Reason</Label>
+                                            <Label htmlFor="reason">
+                                                Reason
+                                            </Label>
                                             <Textarea
                                                 id="reason"
                                                 value={form.data.reason}
                                                 onChange={(event) =>
-                                                    form.setData('reason', event.target.value)
+                                                    form.setData(
+                                                        'reason',
+                                                        event.target.value,
+                                                    )
                                                 }
                                                 placeholder="Optional reason for the leave request"
                                                 rows={4}
                                             />
-                                            <InputError message={form.errors.reason} />
+                                            <InputError
+                                                message={form.errors.reason}
+                                            />
                                         </div>
                                     </div>
                                 </FormSection>
@@ -439,13 +540,15 @@ export default function LeaveCreate({
                                     <CardHeader>
                                         <CardTitle>Balance snapshot</CardTitle>
                                         <CardDescription>
-                                            Review the employee and leave-type balance before saving or submitting.
+                                            Review the employee and leave-type
+                                            balance before saving or submitting.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-sm font-medium">
-                                                {selectedEmployee?.label ?? 'No employee selected'}
+                                                {selectedEmployee?.label ??
+                                                    'No employee selected'}
                                             </span>
                                             <span className="text-sm text-muted-foreground">
                                                 {selectedEmployee
@@ -462,21 +565,39 @@ export default function LeaveCreate({
                                                 </div>
                                                 <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
                                                     <span>
-                                                        Remaining: {numberFormatter.format(balance.remaining_days)} of {numberFormatter.format(balance.total_days)} days
+                                                        Remaining:{' '}
+                                                        {numberFormatter.format(
+                                                            balance.remaining_days,
+                                                        )}{' '}
+                                                        of{' '}
+                                                        {numberFormatter.format(
+                                                            balance.total_days,
+                                                        )}{' '}
+                                                        days
                                                     </span>
                                                     <span>
-                                                        Used: {numberFormatter.format(balance.used_days)} days
+                                                        Used:{' '}
+                                                        {numberFormatter.format(
+                                                            balance.used_days,
+                                                        )}{' '}
+                                                        days
                                                     </span>
                                                     {selectedType?.max_days_per_year ? (
                                                         <span>
-                                                            Type limit: {numberFormatter.format(selectedType.max_days_per_year)} days per year
+                                                            Type limit:{' '}
+                                                            {numberFormatter.format(
+                                                                selectedType.max_days_per_year,
+                                                            )}{' '}
+                                                            days per year
                                                         </span>
                                                     ) : null}
                                                 </div>
                                             </div>
                                         ) : (
                                             <div className="rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground">
-                                                Select an employee and leave type to show the current leave balance.
+                                                Select an employee and leave
+                                                type to show the current leave
+                                                balance.
                                             </div>
                                         )}
                                     </CardContent>
@@ -486,20 +607,24 @@ export default function LeaveCreate({
                                     <CardHeader>
                                         <CardTitle>Request summary</CardTitle>
                                         <CardDescription>
-                                            Quick checks before the request is saved as a draft or submitted.
+                                            Quick checks before the request is
+                                            saved as a draft or submitted.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
                                         <div className="flex items-start gap-2">
                                             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
                                             <span>
-                                                Confirm the selected employee, leave type, and date range.
+                                                Confirm the selected employee,
+                                                leave type, and date range.
                                             </span>
                                         </div>
                                         <div className="flex items-start gap-2">
                                             <Clock3 className="mt-0.5 size-4 shrink-0" />
                                             <span>
-                                                Requested days are recalculated automatically when both dates are set.
+                                                Requested days are recalculated
+                                                automatically when both dates
+                                                are set.
                                             </span>
                                         </div>
                                         <div className="flex items-start gap-2">
@@ -548,6 +673,3 @@ export default function LeaveCreate({
         </AppLayout>
     );
 }
-
-
-

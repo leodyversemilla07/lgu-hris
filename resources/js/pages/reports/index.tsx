@@ -13,6 +13,7 @@ import {
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Card,
     CardAction,
@@ -22,7 +23,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import {
     Popover,
     PopoverContent,
@@ -274,15 +274,19 @@ export default function ReportsIndex({
                         <div className="px-4 lg:px-6">
                             <Card className="shadow-xs">
                                 <CardHeader>
-                                    <CardTitle>Recent export activity</CardTitle>
+                                    <CardTitle>
+                                        Recent export activity
+                                    </CardTitle>
                                     <CardDescription>
-                                        The last five reports you generated from this workspace.
+                                        The last five reports you generated from
+                                        this workspace.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {recentExports.length === 0 ? (
                                         <div className="rounded-lg border border-dashed px-4 py-6 text-sm text-muted-foreground">
-                                            No exports recorded yet for your account.
+                                            No exports recorded yet for your
+                                            account.
                                         </div>
                                     ) : (
                                         <div className="grid gap-3">
@@ -294,17 +298,25 @@ export default function ReportsIndex({
                                                     <div className="space-y-1">
                                                         <div className="flex flex-wrap items-center gap-2">
                                                             <span className="text-sm font-medium text-foreground">
-                                                                {exportItem.report_name}
+                                                                {
+                                                                    exportItem.report_name
+                                                                }
                                                             </span>
                                                             <Badge variant="outline">
-                                                                {exportItem.export_format}
+                                                                {
+                                                                    exportItem.export_format
+                                                                }
                                                             </Badge>
                                                         </div>
                                                         <p className="text-sm text-muted-foreground">
-                                                            {exportItem.file_name}
+                                                            {
+                                                                exportItem.file_name
+                                                            }
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {exportItem.employee ?? exportItem.department ?? 'Organization-wide export'}
+                                                            {exportItem.employee ??
+                                                                exportItem.department ??
+                                                                'Organization-wide export'}
                                                         </p>
                                                     </div>
                                                     <div className="text-sm text-muted-foreground">
@@ -778,8 +790,10 @@ export default function ReportsIndex({
                                                 href: buildUrl(
                                                     '/exports/payroll-support/excel',
                                                     {
-                                                        department_id: payrollDept,
-                                                        employee_id: payrollEmployee,
+                                                        department_id:
+                                                            payrollDept,
+                                                        employee_id:
+                                                            payrollEmployee,
                                                     },
                                                 ),
                                                 icon: FileSpreadsheet,
@@ -789,8 +803,10 @@ export default function ReportsIndex({
                                                 href: buildUrl(
                                                     '/exports/payroll-support/csv',
                                                     {
-                                                        department_id: payrollDept,
-                                                        employee_id: payrollEmployee,
+                                                        department_id:
+                                                            payrollDept,
+                                                        employee_id:
+                                                            payrollEmployee,
                                                     },
                                                 ),
                                                 icon: Download,
@@ -800,8 +816,10 @@ export default function ReportsIndex({
                                                 href: buildUrl(
                                                     '/exports/payroll-support/pdf',
                                                     {
-                                                        department_id: payrollDept,
-                                                        employee_id: payrollEmployee,
+                                                        department_id:
+                                                            payrollDept,
+                                                        employee_id:
+                                                            payrollEmployee,
                                                     },
                                                 ),
                                                 icon: FileText,

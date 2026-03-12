@@ -12,7 +12,8 @@ import {
     Upload,
     Users,
 } from 'lucide-react';
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useState } from 'react';
+import InputError from '@/components/input-error';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -71,7 +72,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -246,10 +246,6 @@ export default function DocumentsIndex({
         return searchableText.includes(normalizedQuery);
     });
 
-    useEffect(() => {
-        setPage(1);
-    }, [normalizedQuery, employeeFilter, typeFilter]);
-
     const totalPages = Math.max(
         1,
         Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE),
@@ -317,6 +313,7 @@ export default function DocumentsIndex({
         setQuery('');
         setEmployeeFilter('all');
         setTypeFilter('all');
+        setPage(1);
     }
 
     function goToPage(nextPage: number): void {
@@ -685,9 +682,12 @@ export default function DocumentsIndex({
                                             <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 value={query}
-                                                onChange={(event) =>
-                                                    setQuery(event.target.value)
-                                                }
+                                                onChange={(event) => {
+                                                    setPage(1);
+                                                    setQuery(
+                                                        event.target.value,
+                                                    );
+                                                }}
                                                 placeholder="Search employee, file name, uploader, or note"
                                                 aria-label="Search documents"
                                                 className="pl-9"
@@ -696,7 +696,10 @@ export default function DocumentsIndex({
 
                                         <Select
                                             value={employeeFilter}
-                                            onValueChange={setEmployeeFilter}
+                                            onValueChange={(value) => {
+                                                setPage(1);
+                                                setEmployeeFilter(value);
+                                            }}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="All employees" />
@@ -726,7 +729,10 @@ export default function DocumentsIndex({
 
                                         <Select
                                             value={typeFilter}
-                                            onValueChange={setTypeFilter}
+                                            onValueChange={(value) => {
+                                                setPage(1);
+                                                setTypeFilter(value);
+                                            }}
                                         >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="All types" />
@@ -805,11 +811,18 @@ export default function DocumentsIndex({
                                                                             }
                                                                         </Badge>
                                                                         <Badge variant="secondary">
-                                                                            v{document.version_number}
+                                                                            v
+                                                                            {
+                                                                                document.version_number
+                                                                            }
                                                                         </Badge>
-                                                                        {document.version_count > 1 && (
+                                                                        {document.version_count >
+                                                                            1 && (
                                                                             <Badge variant="secondary">
-                                                                                {document.version_count} versions
+                                                                                {
+                                                                                    document.version_count
+                                                                                }{' '}
+                                                                                versions
                                                                             </Badge>
                                                                         )}
                                                                         {document.is_confidential && (
@@ -836,39 +849,60 @@ export default function DocumentsIndex({
                                                                                 ? ` | ${document.notes}`
                                                                                 : ''}
                                                                         </div>
-                                                                        {document.version_history.length > 0 && (
+                                                                        {document
+                                                                            .version_history
+                                                                            .length >
+                                                                            0 && (
                                                                             <div className="rounded-md border bg-muted/20 p-2 text-xs">
                                                                                 <div className="font-medium text-foreground">
-                                                                                    Previous versions
+                                                                                    Previous
+                                                                                    versions
                                                                                 </div>
                                                                                 <div className="mt-2 flex flex-col gap-1 text-muted-foreground">
-                                                                                    {document.version_history.map((version) => (
-                                                                                        <div
-                                                                                            key={version.id}
-                                                                                            className="inline-flex flex-wrap items-center gap-2"
-                                                                                        >
-                                                                                            {version.is_previewable && (
-                                                                                                <a
-                                                                                                    href={`/documents/${version.id}/preview`}
-                                                                                                    target="_blank"
-                                                                                                    rel="noreferrer"
-                                                                                                    className="inline-flex items-center gap-1 hover:text-foreground"
-                                                                                                >
-                                                                                                    <Eye className="size-3" />
-                                                                                                    Preview
-                                                                                                </a>
-                                                                                            )}
-                                                                                            <a
-                                                                                                href={`/documents/${version.id}/download`}
-                                                                                                className="inline-flex items-center gap-2 hover:text-foreground"
+                                                                                    {document.version_history.map(
+                                                                                        (
+                                                                                            version,
+                                                                                        ) => (
+                                                                                            <div
+                                                                                                key={
+                                                                                                    version.id
+                                                                                                }
+                                                                                                className="inline-flex flex-wrap items-center gap-2"
                                                                                             >
-                                                                                                <Download className="size-3" />
-                                                                                                <span>
-                                                                                                    v{version.version_number} | {version.file_name} | {version.uploaded_at}
-                                                                                                </span>
-                                                                                            </a>
-                                                                                        </div>
-                                                                                    ))}
+                                                                                                {version.is_previewable && (
+                                                                                                    <a
+                                                                                                        href={`/documents/${version.id}/preview`}
+                                                                                                        target="_blank"
+                                                                                                        rel="noreferrer"
+                                                                                                        className="inline-flex items-center gap-1 hover:text-foreground"
+                                                                                                    >
+                                                                                                        <Eye className="size-3" />
+                                                                                                        Preview
+                                                                                                    </a>
+                                                                                                )}
+                                                                                                <a
+                                                                                                    href={`/documents/${version.id}/download`}
+                                                                                                    className="inline-flex items-center gap-2 hover:text-foreground"
+                                                                                                >
+                                                                                                    <Download className="size-3" />
+                                                                                                    <span>
+                                                                                                        v
+                                                                                                        {
+                                                                                                            version.version_number
+                                                                                                        }{' '}
+                                                                                                        |{' '}
+                                                                                                        {
+                                                                                                            version.file_name
+                                                                                                        }{' '}
+                                                                                                        |{' '}
+                                                                                                        {
+                                                                                                            version.uploaded_at
+                                                                                                        }
+                                                                                                    </span>
+                                                                                                </a>
+                                                                                            </div>
+                                                                                        ),
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                         )}
@@ -1078,7 +1112,9 @@ export default function DocumentsIndex({
                                                         <PaginationItem>
                                                             <PaginationPrevious
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
                                                                     goToPage(
                                                                         currentPage -
@@ -1100,43 +1136,40 @@ export default function DocumentsIndex({
                                                         {paginationItems(
                                                             currentPage,
                                                             totalPages,
-                                                        ).map(
-                                                            (
-                                                                item,
-                                                                index,
-                                                            ) => (
-                                                                <PaginationItem
-                                                                    key={`${item}-${index}`}
-                                                                >
-                                                                    {item ===
-                                                                    'ellipsis' ? (
-                                                                        <PaginationEllipsis />
-                                                                    ) : (
-                                                                        <PaginationLink
-                                                                            href="#"
-                                                                            isActive={
-                                                                                item ===
-                                                                                currentPage
-                                                                            }
-                                                                            onClick={(event) => {
-                                                                                event.preventDefault();
-                                                                                goToPage(
-                                                                                    item,
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            {
-                                                                                item
-                                                                            }
-                                                                        </PaginationLink>
-                                                                    )}
-                                                                </PaginationItem>
-                                                            ),
-                                                        )}
+                                                        ).map((item, index) => (
+                                                            <PaginationItem
+                                                                key={`${item}-${index}`}
+                                                            >
+                                                                {item ===
+                                                                'ellipsis' ? (
+                                                                    <PaginationEllipsis />
+                                                                ) : (
+                                                                    <PaginationLink
+                                                                        href="#"
+                                                                        isActive={
+                                                                            item ===
+                                                                            currentPage
+                                                                        }
+                                                                        onClick={(
+                                                                            event,
+                                                                        ) => {
+                                                                            event.preventDefault();
+                                                                            goToPage(
+                                                                                item,
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        {item}
+                                                                    </PaginationLink>
+                                                                )}
+                                                            </PaginationItem>
+                                                        ))}
                                                         <PaginationItem>
                                                             <PaginationNext
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
                                                                     goToPage(
                                                                         currentPage +

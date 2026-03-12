@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Card,
     CardAction,
@@ -23,7 +24,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -339,7 +339,9 @@ export default function AttendanceLog({
                                                 error={form.errors.employee_id}
                                             >
                                                 <Select
-                                                    value={form.data.employee_id}
+                                                    value={
+                                                        form.data.employee_id
+                                                    }
                                                     onValueChange={(value) =>
                                                         form.setData(
                                                             'employee_id',
@@ -392,10 +394,15 @@ export default function AttendanceLog({
                                             <DatePickerField
                                                 value={form.data.log_date}
                                                 onChange={(value) =>
-                                                    form.setData('log_date', value)
+                                                    form.setData(
+                                                        'log_date',
+                                                        value,
+                                                    )
                                                 }
                                                 placeholder="Pick attendance date"
-                                                invalid={Boolean(form.errors.log_date)}
+                                                invalid={Boolean(
+                                                    form.errors.log_date,
+                                                )}
                                             />
                                         </FormField>
 
@@ -407,12 +414,16 @@ export default function AttendanceLog({
                                             <Select
                                                 value={form.data.status}
                                                 onValueChange={(value) => {
-                                                    form.setData('status', value);
+                                                    form.setData(
+                                                        'status',
+                                                        value,
+                                                    );
 
                                                     if (
-                                                        ['present', 'half_day'].includes(
-                                                            value,
-                                                        )
+                                                        [
+                                                            'present',
+                                                            'half_day',
+                                                        ].includes(value)
                                                     ) {
                                                         form.setData(
                                                             'time_in',
@@ -430,7 +441,10 @@ export default function AttendanceLog({
                                                     }
 
                                                     form.setData('time_in', '');
-                                                    form.setData('time_out', '');
+                                                    form.setData(
+                                                        'time_out',
+                                                        '',
+                                                    );
                                                     form.setData(
                                                         'minutes_late',
                                                         '',
@@ -485,7 +499,9 @@ export default function AttendanceLog({
                                                     <Input
                                                         id="time_in"
                                                         type="time"
-                                                        value={form.data.time_in}
+                                                        value={
+                                                            form.data.time_in
+                                                        }
                                                         onChange={(event) =>
                                                             form.setData(
                                                                 'time_in',
@@ -509,7 +525,9 @@ export default function AttendanceLog({
                                                     <Input
                                                         id="time_out"
                                                         type="time"
-                                                        value={form.data.time_out}
+                                                        value={
+                                                            form.data.time_out
+                                                        }
                                                         onChange={(event) =>
                                                             form.setData(
                                                                 'time_out',
@@ -518,15 +536,14 @@ export default function AttendanceLog({
                                                             )
                                                         }
                                                         aria-invalid={
-                                                            form.errors
-                                                                .time_out
+                                                            form.errors.time_out
                                                                 ? 'true'
                                                                 : 'false'
                                                         }
                                                     />
                                                 </FormField>
 
-                                                <div className="md:col-span-2 grid gap-4 md:grid-cols-2">
+                                                <div className="grid gap-4 md:col-span-2 md:grid-cols-2">
                                                     <FormField
                                                         label="Minutes late"
                                                         htmlFor="minutes_late"
@@ -547,8 +564,7 @@ export default function AttendanceLog({
                                                             onChange={(event) =>
                                                                 form.setData(
                                                                     'minutes_late',
-                                                                    event
-                                                                        .target
+                                                                    event.target
                                                                         .value,
                                                                 )
                                                             }
@@ -587,8 +603,7 @@ export default function AttendanceLog({
                                                             onChange={(event) =>
                                                                 form.setData(
                                                                     'minutes_undertime',
-                                                                    event
-                                                                        .target
+                                                                    event.target
                                                                         .value,
                                                                 )
                                                             }
@@ -659,14 +674,23 @@ export default function AttendanceLog({
                                             <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-2 font-medium text-foreground">
                                                     <CalendarDays className="size-4" />
-                                                    {selectedEmployee.work_schedule.name}
+                                                    {
+                                                        selectedEmployee
+                                                            .work_schedule.name
+                                                    }
                                                 </div>
                                                 <p className="mt-2">
-                                                    {selectedEmployee
-                                                        .work_schedule.time_in}{' '}
+                                                    {
+                                                        selectedEmployee
+                                                            .work_schedule
+                                                            .time_in
+                                                    }{' '}
                                                     -{' '}
-                                                    {selectedEmployee
-                                                        .work_schedule.time_out}
+                                                    {
+                                                        selectedEmployee
+                                                            .work_schedule
+                                                            .time_out
+                                                    }
                                                 </p>
                                                 <p className="mt-2">
                                                     Leaving late and undertime
@@ -764,8 +788,8 @@ export default function AttendanceLog({
                                                 onChange={(event) =>
                                                     biometricForm.setData(
                                                         'file',
-                                                        event.target.files?.[0] ??
-                                                            null,
+                                                        event.target
+                                                            .files?.[0] ?? null,
                                                     )
                                                 }
                                             />
@@ -802,9 +826,7 @@ export default function AttendanceLog({
                                         <Button
                                             type="button"
                                             className="w-full"
-                                            disabled={
-                                                biometricForm.processing
-                                            }
+                                            disabled={biometricForm.processing}
                                             onClick={handleBiometricUpload}
                                         >
                                             <Upload data-icon="inline-start" />

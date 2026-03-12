@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Card,
     CardAction,
@@ -21,7 +22,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -325,7 +325,10 @@ export default function CreateEmployee({
                                             Back to registry
                                         </Link>
                                     </Button>
-                                    <Button type="submit" disabled={form.processing}>
+                                    <Button
+                                        type="submit"
+                                        disabled={form.processing}
+                                    >
                                         <Save data-icon="inline-start" />
                                         Save employee
                                     </Button>
@@ -367,68 +370,247 @@ export default function CreateEmployee({
                                     description="Identity, civil profile, and direct contact details used across records and reports."
                                 >
                                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                        <FormField label="Employee number" htmlFor="employee_number" required error={form.errors.employee_number}>
-                                            <Input id="employee_number" value={form.data.employee_number} onChange={(event) => form.setData('employee_number', event.target.value)} placeholder="EMP-1002" aria-invalid={form.errors.employee_number ? 'true' : 'false'} />
+                                        <FormField
+                                            label="Employee number"
+                                            htmlFor="employee_number"
+                                            required
+                                            error={form.errors.employee_number}
+                                        >
+                                            <Input
+                                                id="employee_number"
+                                                value={
+                                                    form.data.employee_number
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'employee_number',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="EMP-1002"
+                                                aria-invalid={
+                                                    form.errors.employee_number
+                                                        ? 'true'
+                                                        : 'false'
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="First name" htmlFor="first_name" required error={form.errors.first_name}>
-                                            <Input id="first_name" value={form.data.first_name} onChange={(event) => form.setData('first_name', event.target.value)} aria-invalid={form.errors.first_name ? 'true' : 'false'} />
+                                        <FormField
+                                            label="First name"
+                                            htmlFor="first_name"
+                                            required
+                                            error={form.errors.first_name}
+                                        >
+                                            <Input
+                                                id="first_name"
+                                                value={form.data.first_name}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'first_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                aria-invalid={
+                                                    form.errors.first_name
+                                                        ? 'true'
+                                                        : 'false'
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Middle name" htmlFor="middle_name" error={form.errors.middle_name}>
-                                            <Input id="middle_name" value={form.data.middle_name} onChange={(event) => form.setData('middle_name', event.target.value)} />
+                                        <FormField
+                                            label="Middle name"
+                                            htmlFor="middle_name"
+                                            error={form.errors.middle_name}
+                                        >
+                                            <Input
+                                                id="middle_name"
+                                                value={form.data.middle_name}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'middle_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Last name" htmlFor="last_name" required error={form.errors.last_name}>
-                                            <Input id="last_name" value={form.data.last_name} onChange={(event) => form.setData('last_name', event.target.value)} aria-invalid={form.errors.last_name ? 'true' : 'false'} />
+                                        <FormField
+                                            label="Last name"
+                                            htmlFor="last_name"
+                                            required
+                                            error={form.errors.last_name}
+                                        >
+                                            <Input
+                                                id="last_name"
+                                                value={form.data.last_name}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'last_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                aria-invalid={
+                                                    form.errors.last_name
+                                                        ? 'true'
+                                                        : 'false'
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Suffix" htmlFor="suffix" error={form.errors.suffix}>
-                                            <Input id="suffix" value={form.data.suffix} onChange={(event) => form.setData('suffix', event.target.value)} placeholder="Jr., Sr., III" />
+                                        <FormField
+                                            label="Suffix"
+                                            htmlFor="suffix"
+                                            error={form.errors.suffix}
+                                        >
+                                            <Input
+                                                id="suffix"
+                                                value={form.data.suffix}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'suffix',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="Jr., Sr., III"
+                                            />
                                         </FormField>
-                                        <FormField label="Birth date" htmlFor="birth_date" error={form.errors.birth_date}>
+                                        <FormField
+                                            label="Birth date"
+                                            htmlFor="birth_date"
+                                            error={form.errors.birth_date}
+                                        >
                                             <DatePickerField
                                                 value={form.data.birth_date}
                                                 onChange={(value) =>
-                                                    form.setData('birth_date', value)
+                                                    form.setData(
+                                                        'birth_date',
+                                                        value,
+                                                    )
                                                 }
                                                 placeholder="Pick birth date"
-                                                invalid={Boolean(form.errors.birth_date)}
+                                                invalid={Boolean(
+                                                    form.errors.birth_date,
+                                                )}
                                             />
                                         </FormField>
-                                        <FormField label="Sex" error={form.errors.sex}>
-                                            <Select value={form.data.sex} onValueChange={(value) => form.setData('sex', value)}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.sex ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Sex"
+                                            error={form.errors.sex}
+                                        >
+                                            <Select
+                                                value={form.data.sex}
+                                                onValueChange={(value) =>
+                                                    form.setData('sex', value)
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors.sex
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select sex" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {SEX_OPTIONS.map((option) => (
-                                                            <SelectItem key={option.value} value={option.value}>
-                                                                {option.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {SEX_OPTIONS.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    value={
+                                                                        option.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Civil status" error={form.errors.civil_status}>
-                                            <Select value={form.data.civil_status} onValueChange={(value) => form.setData('civil_status', value)}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.civil_status ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Civil status"
+                                            error={form.errors.civil_status}
+                                        >
+                                            <Select
+                                                value={form.data.civil_status}
+                                                onValueChange={(value) =>
+                                                    form.setData(
+                                                        'civil_status',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors.civil_status
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select civil status" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {CIVIL_STATUS_OPTIONS.map((option) => (
-                                                            <SelectItem key={option.value} value={option.value}>
-                                                                {option.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {CIVIL_STATUS_OPTIONS.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        option.value
+                                                                    }
+                                                                    value={
+                                                                        option.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Email" htmlFor="email" error={form.errors.email}>
-                                            <Input id="email" type="email" value={form.data.email} onChange={(event) => form.setData('email', event.target.value)} />
+                                        <FormField
+                                            label="Email"
+                                            htmlFor="email"
+                                            error={form.errors.email}
+                                        >
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                value={form.data.email}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'email',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Phone" htmlFor="phone" error={form.errors.phone}>
-                                            <Input id="phone" value={form.data.phone} onChange={(event) => form.setData('phone', event.target.value)} placeholder="09XX-XXX-XXXX" />
+                                        <FormField
+                                            label="Phone"
+                                            htmlFor="phone"
+                                            error={form.errors.phone}
+                                        >
+                                            <Input
+                                                id="phone"
+                                                value={form.data.phone}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'phone',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="09XX-XXX-XXXX"
+                                            />
                                         </FormField>
                                     </div>
                                 </FormSection>
@@ -439,18 +621,78 @@ export default function CreateEmployee({
                                 >
                                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                                         <div className="md:col-span-2 xl:col-span-4">
-                                            <FormField label="Street / Barangay" htmlFor="address_street" error={form.errors.address_street}>
-                                                <Input id="address_street" value={form.data.address_street} onChange={(event) => form.setData('address_street', event.target.value)} placeholder="123 Rizal St., Brgy. San Juan" />
+                                            <FormField
+                                                label="Street / Barangay"
+                                                htmlFor="address_street"
+                                                error={
+                                                    form.errors.address_street
+                                                }
+                                            >
+                                                <Input
+                                                    id="address_street"
+                                                    value={
+                                                        form.data.address_street
+                                                    }
+                                                    onChange={(event) =>
+                                                        form.setData(
+                                                            'address_street',
+                                                            event.target.value,
+                                                        )
+                                                    }
+                                                    placeholder="123 Rizal St., Brgy. San Juan"
+                                                />
                                             </FormField>
                                         </div>
-                                        <FormField label="City / Municipality" htmlFor="address_city" error={form.errors.address_city}>
-                                            <Input id="address_city" value={form.data.address_city} onChange={(event) => form.setData('address_city', event.target.value)} />
+                                        <FormField
+                                            label="City / Municipality"
+                                            htmlFor="address_city"
+                                            error={form.errors.address_city}
+                                        >
+                                            <Input
+                                                id="address_city"
+                                                value={form.data.address_city}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'address_city',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Province" htmlFor="address_province" error={form.errors.address_province}>
-                                            <Input id="address_province" value={form.data.address_province} onChange={(event) => form.setData('address_province', event.target.value)} />
+                                        <FormField
+                                            label="Province"
+                                            htmlFor="address_province"
+                                            error={form.errors.address_province}
+                                        >
+                                            <Input
+                                                id="address_province"
+                                                value={
+                                                    form.data.address_province
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'address_province',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="ZIP code" htmlFor="address_zip" error={form.errors.address_zip}>
-                                            <Input id="address_zip" value={form.data.address_zip} onChange={(event) => form.setData('address_zip', event.target.value)} placeholder="0000" />
+                                        <FormField
+                                            label="ZIP code"
+                                            htmlFor="address_zip"
+                                            error={form.errors.address_zip}
+                                        >
+                                            <Input
+                                                id="address_zip"
+                                                value={form.data.address_zip}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'address_zip',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="0000"
+                                            />
                                         </FormField>
                                     </div>
                                 </FormSection>
@@ -460,20 +702,90 @@ export default function CreateEmployee({
                                     description="Statutory identifiers used for payroll, benefits, and compliance references."
                                 >
                                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                        <FormField label="TIN" htmlFor="tin" error={form.errors.tin}>
-                                            <Input id="tin" value={form.data.tin} onChange={(event) => form.setData('tin', event.target.value)} placeholder="000-000-000-000" />
+                                        <FormField
+                                            label="TIN"
+                                            htmlFor="tin"
+                                            error={form.errors.tin}
+                                        >
+                                            <Input
+                                                id="tin"
+                                                value={form.data.tin}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'tin',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="000-000-000-000"
+                                            />
                                         </FormField>
-                                        <FormField label="GSIS number" htmlFor="gsis_number" error={form.errors.gsis_number}>
-                                            <Input id="gsis_number" value={form.data.gsis_number} onChange={(event) => form.setData('gsis_number', event.target.value)} />
+                                        <FormField
+                                            label="GSIS number"
+                                            htmlFor="gsis_number"
+                                            error={form.errors.gsis_number}
+                                        >
+                                            <Input
+                                                id="gsis_number"
+                                                value={form.data.gsis_number}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'gsis_number',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="PhilHealth number" htmlFor="philhealth_number" error={form.errors.philhealth_number}>
-                                            <Input id="philhealth_number" value={form.data.philhealth_number} onChange={(event) => form.setData('philhealth_number', event.target.value)} />
+                                        <FormField
+                                            label="PhilHealth number"
+                                            htmlFor="philhealth_number"
+                                            error={
+                                                form.errors.philhealth_number
+                                            }
+                                        >
+                                            <Input
+                                                id="philhealth_number"
+                                                value={
+                                                    form.data.philhealth_number
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'philhealth_number',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Pag-IBIG number" htmlFor="pagibig_number" error={form.errors.pagibig_number}>
-                                            <Input id="pagibig_number" value={form.data.pagibig_number} onChange={(event) => form.setData('pagibig_number', event.target.value)} />
+                                        <FormField
+                                            label="Pag-IBIG number"
+                                            htmlFor="pagibig_number"
+                                            error={form.errors.pagibig_number}
+                                        >
+                                            <Input
+                                                id="pagibig_number"
+                                                value={form.data.pagibig_number}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'pagibig_number',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="SSS number" htmlFor="sss_number" error={form.errors.sss_number}>
-                                            <Input id="sss_number" value={form.data.sss_number} onChange={(event) => form.setData('sss_number', event.target.value)} />
+                                        <FormField
+                                            label="SSS number"
+                                            htmlFor="sss_number"
+                                            error={form.errors.sss_number}
+                                        >
+                                            <Input
+                                                id="sss_number"
+                                                value={form.data.sss_number}
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'sss_number',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
                                     </div>
                                 </FormSection>
@@ -483,14 +795,73 @@ export default function CreateEmployee({
                                     description="Primary contact person and relationship for urgent employee situations."
                                 >
                                     <div className="grid gap-4 md:grid-cols-3">
-                                        <FormField label="Name" htmlFor="emergency_contact_name" error={form.errors.emergency_contact_name}>
-                                            <Input id="emergency_contact_name" value={form.data.emergency_contact_name} onChange={(event) => form.setData('emergency_contact_name', event.target.value)} />
+                                        <FormField
+                                            label="Name"
+                                            htmlFor="emergency_contact_name"
+                                            error={
+                                                form.errors
+                                                    .emergency_contact_name
+                                            }
+                                        >
+                                            <Input
+                                                id="emergency_contact_name"
+                                                value={
+                                                    form.data
+                                                        .emergency_contact_name
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'emergency_contact_name',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
                                         </FormField>
-                                        <FormField label="Relationship" htmlFor="emergency_contact_relationship" error={form.errors.emergency_contact_relationship}>
-                                            <Input id="emergency_contact_relationship" value={form.data.emergency_contact_relationship} onChange={(event) => form.setData('emergency_contact_relationship', event.target.value)} placeholder="Spouse, Parent, Sibling" />
+                                        <FormField
+                                            label="Relationship"
+                                            htmlFor="emergency_contact_relationship"
+                                            error={
+                                                form.errors
+                                                    .emergency_contact_relationship
+                                            }
+                                        >
+                                            <Input
+                                                id="emergency_contact_relationship"
+                                                value={
+                                                    form.data
+                                                        .emergency_contact_relationship
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'emergency_contact_relationship',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="Spouse, Parent, Sibling"
+                                            />
                                         </FormField>
-                                        <FormField label="Phone" htmlFor="emergency_contact_phone" error={form.errors.emergency_contact_phone}>
-                                            <Input id="emergency_contact_phone" value={form.data.emergency_contact_phone} onChange={(event) => form.setData('emergency_contact_phone', event.target.value)} placeholder="09XX-XXX-XXXX" />
+                                        <FormField
+                                            label="Phone"
+                                            htmlFor="emergency_contact_phone"
+                                            error={
+                                                form.errors
+                                                    .emergency_contact_phone
+                                            }
+                                        >
+                                            <Input
+                                                id="emergency_contact_phone"
+                                                value={
+                                                    form.data
+                                                        .emergency_contact_phone
+                                                }
+                                                onChange={(event) =>
+                                                    form.setData(
+                                                        'emergency_contact_phone',
+                                                        event.target.value,
+                                                    )
+                                                }
+                                                placeholder="09XX-XXX-XXXX"
+                                            />
                                         </FormField>
                                     </div>
                                 </FormSection>
@@ -500,99 +871,298 @@ export default function CreateEmployee({
                                     description="Assignment, employment classification, and start date used by the registry and downstream modules."
                                 >
                                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                                        <FormField label="Start date" htmlFor="hired_at" required error={form.errors.hired_at}>
+                                        <FormField
+                                            label="Start date"
+                                            htmlFor="hired_at"
+                                            required
+                                            error={form.errors.hired_at}
+                                        >
                                             <DatePickerField
                                                 value={form.data.hired_at}
                                                 onChange={(value) =>
-                                                    form.setData('hired_at', value)
+                                                    form.setData(
+                                                        'hired_at',
+                                                        value,
+                                                    )
                                                 }
                                                 placeholder="Pick start date"
-                                                invalid={Boolean(form.errors.hired_at)}
+                                                invalid={Boolean(
+                                                    form.errors.hired_at,
+                                                )}
                                             />
                                         </FormField>
-                                        <FormField label="Department" required error={form.errors.department_id}>
-                                            <Select value={form.data.department_id} onValueChange={(value) => { form.setData('department_id', value); form.setData('position_id', ''); }}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.department_id ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Department"
+                                            required
+                                            error={form.errors.department_id}
+                                        >
+                                            <Select
+                                                value={form.data.department_id}
+                                                onValueChange={(value) => {
+                                                    form.setData(
+                                                        'department_id',
+                                                        value,
+                                                    );
+                                                    form.setData(
+                                                        'position_id',
+                                                        '',
+                                                    );
+                                                }}
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors
+                                                            .department_id
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select department" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {departments.map((department) => (
-                                                            <SelectItem key={department.value} value={department.value}>
-                                                                {department.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {departments.map(
+                                                            (department) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        department.value
+                                                                    }
+                                                                    value={
+                                                                        department.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        department.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Position" required error={form.errors.position_id}>
-                                            <Select value={form.data.position_id} onValueChange={(value) => form.setData('position_id', value)}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.position_id ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Position"
+                                            required
+                                            error={form.errors.position_id}
+                                        >
+                                            <Select
+                                                value={form.data.position_id}
+                                                onValueChange={(value) =>
+                                                    form.setData(
+                                                        'position_id',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors.position_id
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select position" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {filteredPositions.map((position) => (
-                                                            <SelectItem key={position.value} value={position.value}>
-                                                                {position.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {filteredPositions.map(
+                                                            (position) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        position.value
+                                                                    }
+                                                                    value={
+                                                                        position.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        position.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Employment type" required error={form.errors.employment_type_id}>
-                                            <Select value={form.data.employment_type_id} onValueChange={(value) => form.setData('employment_type_id', value)}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.employment_type_id ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Employment type"
+                                            required
+                                            error={
+                                                form.errors.employment_type_id
+                                            }
+                                        >
+                                            <Select
+                                                value={
+                                                    form.data.employment_type_id
+                                                }
+                                                onValueChange={(value) =>
+                                                    form.setData(
+                                                        'employment_type_id',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors
+                                                            .employment_type_id
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select type" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {employmentTypes.map((employmentType) => (
-                                                            <SelectItem key={employmentType.value} value={employmentType.value}>
-                                                                {employmentType.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {employmentTypes.map(
+                                                            (
+                                                                employmentType,
+                                                            ) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        employmentType.value
+                                                                    }
+                                                                    value={
+                                                                        employmentType.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        employmentType.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Employment status" required error={form.errors.employment_status_id}>
-                                            <Select value={form.data.employment_status_id} onValueChange={(value) => form.setData('employment_status_id', value)}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.employment_status_id ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Employment status"
+                                            required
+                                            error={
+                                                form.errors.employment_status_id
+                                            }
+                                        >
+                                            <Select
+                                                value={
+                                                    form.data
+                                                        .employment_status_id
+                                                }
+                                                onValueChange={(value) =>
+                                                    form.setData(
+                                                        'employment_status_id',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors
+                                                            .employment_status_id
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select status" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {employmentStatuses.map((employmentStatus) => (
-                                                            <SelectItem key={employmentStatus.value} value={employmentStatus.value}>
-                                                                {employmentStatus.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {employmentStatuses.map(
+                                                            (
+                                                                employmentStatus,
+                                                            ) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        employmentStatus.value
+                                                                    }
+                                                                    value={
+                                                                        employmentStatus.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        employmentStatus.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                         </FormField>
-                                        <FormField label="Work schedule" error={form.errors.work_schedule_id}>
-                                            <Select value={form.data.work_schedule_id || 'none'} onValueChange={(value) => form.setData('work_schedule_id', value === 'none' ? '' : value)}>
-                                                <SelectTrigger className="w-full" aria-invalid={form.errors.work_schedule_id ? 'true' : 'false'}>
+                                        <FormField
+                                            label="Work schedule"
+                                            error={form.errors.work_schedule_id}
+                                        >
+                                            <Select
+                                                value={
+                                                    form.data
+                                                        .work_schedule_id ||
+                                                    'none'
+                                                }
+                                                onValueChange={(value) =>
+                                                    form.setData(
+                                                        'work_schedule_id',
+                                                        value === 'none'
+                                                            ? ''
+                                                            : value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className="w-full"
+                                                    aria-invalid={
+                                                        form.errors
+                                                            .work_schedule_id
+                                                            ? 'true'
+                                                            : 'false'
+                                                    }
+                                                >
                                                     <SelectValue placeholder="Select schedule" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        <SelectItem value="none">No assigned schedule</SelectItem>
-                                                        {workSchedules.map((workSchedule) => (
-                                                            <SelectItem key={workSchedule.value} value={workSchedule.value}>
-                                                                {workSchedule.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        <SelectItem value="none">
+                                                            No assigned schedule
+                                                        </SelectItem>
+                                                        {workSchedules.map(
+                                                            (workSchedule) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        workSchedule.value
+                                                                    }
+                                                                    value={
+                                                                        workSchedule.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        workSchedule.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                             {selectedWorkSchedule ? (
                                                 <p className="text-xs text-muted-foreground">
-                                                    {selectedWorkSchedule.time_in} - {selectedWorkSchedule.time_out} | {selectedWorkSchedule.work_hours_per_day} hrs/day
+                                                    {
+                                                        selectedWorkSchedule.time_in
+                                                    }{' '}
+                                                    -{' '}
+                                                    {
+                                                        selectedWorkSchedule.time_out
+                                                    }{' '}
+                                                    |{' '}
+                                                    {
+                                                        selectedWorkSchedule.work_hours_per_day
+                                                    }{' '}
+                                                    hrs/day
                                                 </p>
                                             ) : null}
                                         </FormField>
@@ -671,7 +1241,8 @@ export default function CreateEmployee({
                                             <Building2 className="mt-0.5 size-4 shrink-0" />
                                             <span>
                                                 Choose a department, matching
-                                                position, and schedule when needed.
+                                                position, and schedule when
+                                                needed.
                                             </span>
                                         </div>
                                         <div className="flex items-start gap-2">

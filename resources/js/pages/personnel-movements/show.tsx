@@ -1,12 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -46,12 +41,12 @@ function Row({
 }) {
     return (
         <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
-            <span className="min-w-48 text-xs font-medium uppercase tracking-wide text-slate-500">
+            <span className="min-w-48 text-xs font-medium tracking-wide text-slate-500 uppercase">
                 {label}
             </span>
             <span className="text-sm text-slate-900">
                 {value ?? (
-                    <span className="italic text-slate-400">Not specified</span>
+                    <span className="text-slate-400 italic">Not specified</span>
                 )}
             </span>
         </div>
@@ -70,15 +65,15 @@ function ArrowRow({
     if (!from && !to) return null;
     return (
         <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-4">
-            <span className="min-w-48 text-xs font-medium uppercase tracking-wide text-slate-500">
+            <span className="min-w-48 text-xs font-medium tracking-wide text-slate-500 uppercase">
                 {label}
             </span>
             <span className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-slate-500 italic">
-                    {from ?? 'N/A'}
-                </span>
+                <span className="text-slate-500 italic">{from ?? 'N/A'}</span>
                 <span className="text-slate-400">→</span>
-                <span className="font-medium text-slate-900">{to ?? 'N/A'}</span>
+                <span className="font-medium text-slate-900">
+                    {to ?? 'N/A'}
+                </span>
             </span>
         </div>
     );
@@ -112,7 +107,9 @@ export default function PersonnelMovementsShow({ movement }: Props) {
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link href={`/employees/${movement.employee_id}`}>
+                                <Link
+                                    href={`/employees/${movement.employee_id}`}
+                                >
                                     View employee
                                 </Link>
                             </Button>
@@ -160,10 +157,10 @@ export default function PersonnelMovementsShow({ movement }: Props) {
                         </div>
                         {movement.remarks && (
                             <div className="space-y-2 py-4">
-                                <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                                <span className="text-xs font-medium tracking-wide text-slate-500 uppercase">
                                     Remarks
                                 </span>
-                                <p className="whitespace-pre-wrap text-sm text-slate-800">
+                                <p className="text-sm whitespace-pre-wrap text-slate-800">
                                     {movement.remarks}
                                 </p>
                             </div>
@@ -173,7 +170,10 @@ export default function PersonnelMovementsShow({ movement }: Props) {
                                 label="Recorded by"
                                 value={movement.recorded_by}
                             />
-                            <Row label="Recorded at" value={movement.recorded_at} />
+                            <Row
+                                label="Recorded at"
+                                value={movement.recorded_at}
+                            />
                         </div>
                     </CardContent>
                 </Card>

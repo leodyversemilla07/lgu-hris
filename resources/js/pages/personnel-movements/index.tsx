@@ -7,7 +7,7 @@ import {
     Search,
     Users,
 } from 'lucide-react';
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,14 +29,6 @@ import {
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
     Pagination,
     PaginationContent,
     PaginationEllipsis,
@@ -45,6 +37,14 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -163,10 +163,6 @@ export default function PersonnelMovementsIndex({
         return searchableText.includes(normalizedQuery);
     });
 
-    useEffect(() => {
-        setPage(1);
-    }, [normalizedQuery, employeeFilter, typeFilter]);
-
     const totalPages = Math.max(
         1,
         Math.ceil(visibleMovements.length / ITEMS_PER_PAGE),
@@ -237,6 +233,7 @@ export default function PersonnelMovementsIndex({
         setQuery('');
         setEmployeeFilter('all');
         setTypeFilter('all');
+        setPage(1);
         router.get(
             '/personnel-movements',
             {},
@@ -348,9 +345,12 @@ export default function PersonnelMovementsIndex({
                                             <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 value={query}
-                                                onChange={(event) =>
-                                                    setQuery(event.target.value)
-                                                }
+                                                onChange={(event) => {
+                                                    setPage(1);
+                                                    setQuery(
+                                                        event.target.value,
+                                                    );
+                                                }}
                                                 placeholder="Search employee, number, type, date, or order no."
                                                 aria-label="Search movements"
                                                 className="pl-9"
@@ -360,6 +360,7 @@ export default function PersonnelMovementsIndex({
                                         <Select
                                             value={employeeFilter}
                                             onValueChange={(value) => {
+                                                setPage(1);
                                                 setEmployeeFilter(value);
                                                 applyFilters(value, typeFilter);
                                             }}
@@ -393,6 +394,7 @@ export default function PersonnelMovementsIndex({
                                         <Select
                                             value={typeFilter}
                                             onValueChange={(value) => {
+                                                setPage(1);
                                                 setTypeFilter(value);
                                                 applyFilters(
                                                     employeeFilter,
@@ -602,7 +604,9 @@ export default function PersonnelMovementsIndex({
                                                         <PaginationItem>
                                                             <PaginationPrevious
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
                                                                     goToPage(
                                                                         currentPage -
@@ -624,43 +628,40 @@ export default function PersonnelMovementsIndex({
                                                         {paginationItems(
                                                             currentPage,
                                                             totalPages,
-                                                        ).map(
-                                                            (
-                                                                item,
-                                                                index,
-                                                            ) => (
-                                                                <PaginationItem
-                                                                    key={`${item}-${index}`}
-                                                                >
-                                                                    {item ===
-                                                                    'ellipsis' ? (
-                                                                        <PaginationEllipsis />
-                                                                    ) : (
-                                                                        <PaginationLink
-                                                                            href="#"
-                                                                            isActive={
-                                                                                item ===
-                                                                                currentPage
-                                                                            }
-                                                                            onClick={(event) => {
-                                                                                event.preventDefault();
-                                                                                goToPage(
-                                                                                    item,
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            {
-                                                                                item
-                                                                            }
-                                                                        </PaginationLink>
-                                                                    )}
-                                                                </PaginationItem>
-                                                            ),
-                                                        )}
+                                                        ).map((item, index) => (
+                                                            <PaginationItem
+                                                                key={`${item}-${index}`}
+                                                            >
+                                                                {item ===
+                                                                'ellipsis' ? (
+                                                                    <PaginationEllipsis />
+                                                                ) : (
+                                                                    <PaginationLink
+                                                                        href="#"
+                                                                        isActive={
+                                                                            item ===
+                                                                            currentPage
+                                                                        }
+                                                                        onClick={(
+                                                                            event,
+                                                                        ) => {
+                                                                            event.preventDefault();
+                                                                            goToPage(
+                                                                                item,
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        {item}
+                                                                    </PaginationLink>
+                                                                )}
+                                                            </PaginationItem>
+                                                        ))}
                                                         <PaginationItem>
                                                             <PaginationNext
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
                                                                     goToPage(
                                                                         currentPage +

@@ -112,7 +112,9 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
 
     const employeesCovered = new Set(rows.map((row) => row.employee_id)).size;
     const configuredBalances = rows.filter((row) => row.total_days > 0).length;
-    const negativeBalances = rows.filter((row) => row.remaining_days < 0).length;
+    const negativeBalances = rows.filter(
+        (row) => row.remaining_days < 0,
+    ).length;
     const totalAllocated = rows.reduce((sum, row) => sum + row.total_days, 0);
 
     const summaryCards = [
@@ -168,7 +170,10 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                         Leave balances
                                     </h1>
                                     <p className="text-sm text-muted-foreground">
-                                        Set and review employee leave allocations for {year} from the same shared table layout used across the updated HRIS.
+                                        Set and review employee leave
+                                        allocations for {year} from the same
+                                        shared table layout used across the
+                                        updated HRIS.
                                     </p>
                                 </div>
 
@@ -185,9 +190,14 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card shadow-xs">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -211,12 +221,21 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                     <div className="flex flex-col gap-1">
                                         <CardTitle>Balance registry</CardTitle>
                                         <CardDescription>
-                                            Filter the registry, then update total days inline for each employee and leave type.
+                                            Filter the registry, then update
+                                            total days inline for each employee
+                                            and leave type.
                                         </CardDescription>
                                     </div>
                                     <CardAction>
                                         <Badge variant="secondary">
-                                            {numberFormatter.format(filteredRows.length)} of {numberFormatter.format(rows.length)} shown
+                                            {numberFormatter.format(
+                                                filteredRows.length,
+                                            )}{' '}
+                                            of{' '}
+                                            {numberFormatter.format(
+                                                rows.length,
+                                            )}{' '}
+                                            shown
                                         </Badge>
                                     </CardAction>
                                 </CardHeader>
@@ -226,14 +245,19 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                             <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 value={query}
-                                                onChange={(event) => setQuery(event.target.value)}
+                                                onChange={(event) =>
+                                                    setQuery(event.target.value)
+                                                }
                                                 placeholder="Search employee number, employee name, or leave type"
                                                 aria-label="Search leave balances"
                                                 className="pl-9"
                                             />
                                         </div>
 
-                                        <Select value={typeFilter} onValueChange={setTypeFilter}>
+                                        <Select
+                                            value={typeFilter}
+                                            onValueChange={setTypeFilter}
+                                        >
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder="All leave types" />
                                             </SelectTrigger>
@@ -243,7 +267,10 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                                         All types
                                                     </SelectItem>
                                                     {leaveTypes.map((type) => (
-                                                        <SelectItem key={type.value} value={type.value}>
+                                                        <SelectItem
+                                                            key={type.value}
+                                                            value={type.value}
+                                                        >
                                                             {type.label}
                                                         </SelectItem>
                                                     ))}
@@ -256,15 +283,29 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                         <div className="overflow-hidden rounded-lg border">
                                             <Table>
                                                 <TableCaption>
-                                                    Balance registry for {numberFormatter.format(filteredRows.length)} leave balance rows.
+                                                    Balance registry for{' '}
+                                                    {numberFormatter.format(
+                                                        filteredRows.length,
+                                                    )}{' '}
+                                                    leave balance rows.
                                                 </TableCaption>
                                                 <TableHeader>
                                                     <TableRow>
-                                                        <TableHead>Employee</TableHead>
-                                                        <TableHead>Leave type</TableHead>
-                                                        <TableHead>Total days</TableHead>
-                                                        <TableHead>Used</TableHead>
-                                                        <TableHead>Remaining</TableHead>
+                                                        <TableHead>
+                                                            Employee
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Leave type
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Total days
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Used
+                                                        </TableHead>
+                                                        <TableHead>
+                                                            Remaining
+                                                        </TableHead>
                                                         <TableHead className="text-right">
                                                             Action
                                                         </TableHead>
@@ -287,9 +328,13 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                                 <EmptyMedia variant="icon">
                                                     <WalletCards />
                                                 </EmptyMedia>
-                                                <EmptyTitle>No matching balances</EmptyTitle>
+                                                <EmptyTitle>
+                                                    No matching balances
+                                                </EmptyTitle>
                                                 <EmptyDescription>
-                                                    Adjust the search or leave type filter to bring leave balance rows back into view.
+                                                    Adjust the search or leave
+                                                    type filter to bring leave
+                                                    balance rows back into view.
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                             <EmptyContent>
@@ -304,7 +349,8 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                         </Empty>
                                     )}
 
-                                    {(query || typeFilter !== 'all') && filteredRows.length > 0 ? (
+                                    {(query || typeFilter !== 'all') &&
+                                    filteredRows.length > 0 ? (
                                         <div className="flex justify-end">
                                             <Button
                                                 type="button"
@@ -351,7 +397,9 @@ function BalanceEditRow({ row, year }: { row: BalanceRow; year: number }) {
                     <span>{row.leave_type}</span>
                     {row.max_days_per_year ? (
                         <span className="text-sm text-muted-foreground">
-                            Limit: {numberFormatter.format(row.max_days_per_year)} days/year
+                            Limit:{' '}
+                            {numberFormatter.format(row.max_days_per_year)}{' '}
+                            days/year
                         </span>
                     ) : null}
                 </div>

@@ -1,15 +1,17 @@
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     flexRender,
     getCoreRowModel,
     getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
-    type ColumnDef,
-    type PaginationState,
-    type SortingState,
-    type VisibilityState,
 } from '@tanstack/react-table';
-import { Head, Link, useForm } from '@inertiajs/react';
+import type {
+    ColumnDef,
+    PaginationState,
+    SortingState,
+    VisibilityState,
+} from '@tanstack/react-table';
 import {
     Archive,
     ArrowRight,
@@ -22,7 +24,8 @@ import {
     Upload,
     Users,
 } from 'lucide-react';
-import { type FormEvent, useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +37,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
     DialogContent,
@@ -58,7 +62,6 @@ import {
     EmptyTitle,
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     Pagination,
     PaginationContent,
@@ -119,7 +122,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Employee ID
                 <ArrowUpDown />
@@ -137,7 +142,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Employee
                 <ArrowUpDown />
@@ -151,7 +158,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
                     <div className="flex flex-col gap-1">
                         <div className="font-medium">{employee.full_name}</div>
                         <div className="text-sm text-muted-foreground">
-                            {employee.email ?? employee.phone ?? 'No contact information'}
+                            {employee.email ??
+                                employee.phone ??
+                                'No contact information'}
                         </div>
                     </div>
                 </div>
@@ -165,7 +174,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Department
                 <ArrowUpDown />
@@ -178,7 +189,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Position
                 <ArrowUpDown />
@@ -191,7 +204,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Employment
                 <ArrowUpDown />
@@ -203,7 +218,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
             return (
                 <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">{employee.employment_type}</Badge>
-                    <Badge variant="secondary">{employee.employment_status}</Badge>
+                    <Badge variant="secondary">
+                        {employee.employment_status}
+                    </Badge>
                 </div>
             );
         },
@@ -214,13 +231,18 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Start date
                 <ArrowUpDown />
             </Button>
         ),
-        cell: ({ row }) => row.original.hired_at ?? <span className="text-muted-foreground">Not set</span>,
+        cell: ({ row }) =>
+            row.original.hired_at ?? (
+                <span className="text-muted-foreground">Not set</span>
+            ),
     },
     {
         accessorKey: 'is_active',
@@ -228,7 +250,9 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         header: ({ column }) => (
             <Button
                 variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+                onClick={() =>
+                    column.toggleSorting(column.getIsSorted() === 'asc')
+                }
             >
                 Directory status
                 <ArrowUpDown />
@@ -266,7 +290,10 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
     },
 ];
 
-function paginationItems(currentPage: number, totalPages: number): Array<number | 'ellipsis'> {
+function paginationItems(
+    currentPage: number,
+    totalPages: number,
+): Array<number | 'ellipsis'> {
     if (totalPages <= 5) {
         return Array.from({ length: totalPages }, (_, index) => index + 1);
     }
@@ -276,24 +303,49 @@ function paginationItems(currentPage: number, totalPages: number): Array<number 
     }
 
     if (currentPage >= totalPages - 2) {
-        return [1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+        return [
+            1,
+            'ellipsis',
+            totalPages - 3,
+            totalPages - 2,
+            totalPages - 1,
+            totalPages,
+        ];
     }
 
-    return [1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages];
+    return [
+        1,
+        'ellipsis',
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        'ellipsis',
+        totalPages,
+    ];
 }
 
 export default function EmployeesIndex({ employees }: Props) {
-    const activeEmployees = employees.filter((employee) => employee.is_active).length;
+    const activeEmployees = employees.filter(
+        (employee) => employee.is_active,
+    ).length;
     const archivedEmployees = employees.length - activeEmployees;
-    const departments = new Set(employees.map((employee) => employee.department)).size;
-    const employeesWithEmail = employees.filter((employee) => employee.email).length;
+    const departments = new Set(
+        employees.map((employee) => employee.department),
+    ).size;
+    const employeesWithEmail = employees.filter(
+        (employee) => employee.email,
+    ).length;
 
     const [importOpen, setImportOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [query, setQuery] = useState('');
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>([]);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+        {},
+    );
+    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>(
+        [],
+    );
     const [pagination, setPagination] = useState<PaginationState>({
         pageIndex: 0,
         pageSize: ITEMS_PER_PAGE,
@@ -306,7 +358,10 @@ export default function EmployeesIndex({ employees }: Props) {
 
     const filteredEmployees = employees.filter((employee) => {
         const matchesStatus =
-            statusFilter === 'all' || (statusFilter === 'active' ? employee.is_active : !employee.is_active);
+            statusFilter === 'all' ||
+            (statusFilter === 'active'
+                ? employee.is_active
+                : !employee.is_active);
 
         if (!matchesStatus) {
             return false;
@@ -347,25 +402,34 @@ export default function EmployeesIndex({ employees }: Props) {
         {
             id: 'select',
             header: ({ table }) => {
-                const pageIds = table.getRowModel().rows.map((row) => row.original.id);
+                const pageIds = table
+                    .getRowModel()
+                    .rows.map((row) => row.original.id);
                 const allSelected =
                     pageIds.length > 0 &&
-                    pageIds.every((employeeId) => selectedEmployeeIdsSet.has(employeeId));
+                    pageIds.every((employeeId) =>
+                        selectedEmployeeIdsSet.has(employeeId),
+                    );
                 const someSelected = pageIds.some((employeeId) =>
                     selectedEmployeeIdsSet.has(employeeId),
                 );
 
                 return (
                     <Checkbox
-                        checked={allSelected || (someSelected && 'indeterminate')}
+                        checked={
+                            allSelected || (someSelected && 'indeterminate')
+                        }
                         onCheckedChange={(value) => {
                             setSelectedEmployeeIds((current) => {
                                 if (value) {
-                                    return Array.from(new Set([...current, ...pageIds]));
+                                    return Array.from(
+                                        new Set([...current, ...pageIds]),
+                                    );
                                 }
 
                                 return current.filter(
-                                    (employeeId) => !pageIds.includes(employeeId),
+                                    (employeeId) =>
+                                        !pageIds.includes(employeeId),
                                 );
                             });
                         }}
@@ -422,8 +486,11 @@ export default function EmployeesIndex({ employees }: Props) {
     const pageStart =
         filteredEmployees.length === 0
             ? 0
-            : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1;
-    const pageEnd = filteredEmployees.length === 0 ? 0 : pageStart + visibleRows - 1;
+            : table.getState().pagination.pageIndex *
+                  table.getState().pagination.pageSize +
+              1;
+    const pageEnd =
+        filteredEmployees.length === 0 ? 0 : pageStart + visibleRows - 1;
 
     const summaryCards = [
         {
@@ -490,9 +557,12 @@ export default function EmployeesIndex({ employees }: Props) {
                                     <Badge variant="outline" className="w-fit">
                                         Workforce
                                     </Badge>
-                                    <h1 className="text-2xl font-semibold tracking-tight">Employees</h1>
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Employees
+                                    </h1>
                                     <p className="text-sm text-muted-foreground">
-                                        Browse the employee directory, review assignment coverage, and jump into each
+                                        Browse the employee directory, review
+                                        assignment coverage, and jump into each
                                         record from a cleaner registry view.
                                     </p>
                                 </div>
@@ -505,7 +575,10 @@ export default function EmployeesIndex({ employees }: Props) {
                                         </Link>
                                     </Button>
 
-                                    <Dialog open={importOpen} onOpenChange={setImportOpen}>
+                                    <Dialog
+                                        open={importOpen}
+                                        onOpenChange={setImportOpen}
+                                    >
                                         <DialogTrigger asChild>
                                             <Button variant="outline">
                                                 <Upload data-icon="inline-start" />
@@ -514,35 +587,51 @@ export default function EmployeesIndex({ employees }: Props) {
                                         </DialogTrigger>
                                         <DialogContent>
                                             <DialogHeader>
-                                                <DialogTitle>Import employees</DialogTitle>
+                                                <DialogTitle>
+                                                    Import employees
+                                                </DialogTitle>
                                                 <DialogDescription>
-                                                    Upload an Excel or CSV file. Download the{' '}
+                                                    Upload an Excel or CSV file.
+                                                    Download the{' '}
                                                     <a
                                                         href="/import/employees/template"
                                                         className="font-medium underline underline-offset-4"
                                                     >
                                                         template
                                                     </a>{' '}
-                                                    to confirm the required columns.
+                                                    to confirm the required
+                                                    columns.
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <form onSubmit={submitImport} className="flex flex-col gap-4">
+                                            <form
+                                                onSubmit={submitImport}
+                                                className="flex flex-col gap-4"
+                                            >
                                                 <Input
                                                     type="file"
                                                     accept=".xlsx,.xls,.csv"
                                                     onChange={(e) =>
-                                                        importForm.setData('file', e.target.files?.[0] ?? null)
+                                                        importForm.setData(
+                                                            'file',
+                                                            e.target
+                                                                .files?.[0] ??
+                                                                null,
+                                                        )
                                                     }
                                                 />
                                                 {importForm.errors.file && (
-                                                    <p className="text-xs text-destructive">{importForm.errors.file}</p>
+                                                    <p className="text-xs text-destructive">
+                                                        {importForm.errors.file}
+                                                    </p>
                                                 )}
                                                 <DialogFooter>
                                                     <Button
                                                         type="button"
                                                         variant="outline"
                                                         onClick={() => {
-                                                            setImportOpen(false);
+                                                            setImportOpen(
+                                                                false,
+                                                            );
                                                             importForm.reset();
                                                         }}
                                                     >
@@ -550,7 +639,11 @@ export default function EmployeesIndex({ employees }: Props) {
                                                     </Button>
                                                     <Button
                                                         type="submit"
-                                                        disabled={importForm.processing || !importForm.data.file}
+                                                        disabled={
+                                                            importForm.processing ||
+                                                            !importForm.data
+                                                                .file
+                                                        }
                                                     >
                                                         Upload and import
                                                     </Button>
@@ -571,9 +664,14 @@ export default function EmployeesIndex({ employees }: Props) {
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card shadow-xs">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -589,7 +687,9 @@ export default function EmployeesIndex({ employees }: Props) {
                                             <item.icon className="size-4" />
                                             Snapshot
                                         </div>
-                                        <div className="text-muted-foreground">{item.detail}</div>
+                                        <div className="text-muted-foreground">
+                                            {item.detail}
+                                        </div>
                                     </CardFooter>
                                 </Card>
                             ))}
@@ -599,15 +699,25 @@ export default function EmployeesIndex({ employees }: Props) {
                             <Card>
                                 <CardHeader>
                                     <div className="flex flex-col gap-1">
-                                        <CardTitle>Employee directory</CardTitle>
+                                        <CardTitle>
+                                            Employee directory
+                                        </CardTitle>
                                         <CardDescription>
-                                            Search by employee details, sort columns, and tailor the registry view by
-                                            record status.
+                                            Search by employee details, sort
+                                            columns, and tailor the registry
+                                            view by record status.
                                         </CardDescription>
                                     </div>
                                     <CardAction>
                                         <Badge variant="secondary">
-                                            {numberFormatter.format(visibleRows)} of {numberFormatter.format(employees.length)} shown
+                                            {numberFormatter.format(
+                                                visibleRows,
+                                            )}{' '}
+                                            of{' '}
+                                            {numberFormatter.format(
+                                                employees.length,
+                                            )}{' '}
+                                            shown
                                         </Badge>
                                     </CardAction>
                                 </CardHeader>
@@ -618,7 +728,11 @@ export default function EmployeesIndex({ employees }: Props) {
                                                 <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
                                                 <Input
                                                     value={query}
-                                                    onChange={(event) => setQuery(event.target.value)}
+                                                    onChange={(event) =>
+                                                        setQuery(
+                                                            event.target.value,
+                                                        )
+                                                    }
                                                     placeholder="Search employees, departments, or positions"
                                                     aria-label="Search employees"
                                                     className="pl-9"
@@ -630,14 +744,22 @@ export default function EmployeesIndex({ employees }: Props) {
                                                 value={statusFilter}
                                                 onValueChange={(value) => {
                                                     if (value) {
-                                                        setStatusFilter(value as StatusFilter);
+                                                        setStatusFilter(
+                                                            value as StatusFilter,
+                                                        );
                                                     }
                                                 }}
                                                 variant="outline"
                                             >
-                                                <ToggleGroupItem value="all">All</ToggleGroupItem>
-                                                <ToggleGroupItem value="active">Active</ToggleGroupItem>
-                                                <ToggleGroupItem value="archived">Archived</ToggleGroupItem>
+                                                <ToggleGroupItem value="all">
+                                                    All
+                                                </ToggleGroupItem>
+                                                <ToggleGroupItem value="active">
+                                                    Active
+                                                </ToggleGroupItem>
+                                                <ToggleGroupItem value="archived">
+                                                    Archived
+                                                </ToggleGroupItem>
                                             </ToggleGroup>
                                         </div>
 
@@ -651,17 +773,29 @@ export default function EmployeesIndex({ employees }: Props) {
                                             <DropdownMenuContent align="end">
                                                 {table
                                                     .getAllColumns()
-                                                    .filter((column) => column.getCanHide())
+                                                    .filter((column) =>
+                                                        column.getCanHide(),
+                                                    )
                                                     .map((column) => {
-                                                        const meta = column.columnDef.meta as ColumnMeta | undefined;
+                                                        const meta = column
+                                                            .columnDef.meta as
+                                                            | ColumnMeta
+                                                            | undefined;
 
                                                         return (
                                                             <DropdownMenuCheckboxItem
                                                                 key={column.id}
                                                                 checked={column.getIsVisible()}
-                                                                onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                                                                onCheckedChange={(
+                                                                    value,
+                                                                ) =>
+                                                                    column.toggleVisibility(
+                                                                        !!value,
+                                                                    )
+                                                                }
                                                             >
-                                                                {meta?.label ?? column.id}
+                                                                {meta?.label ??
+                                                                    column.id}
                                                             </DropdownMenuCheckboxItem>
                                                         );
                                                     })}
@@ -673,41 +807,76 @@ export default function EmployeesIndex({ employees }: Props) {
                                         <div className="overflow-hidden rounded-lg border">
                                             <Table>
                                                 <TableHeader>
-                                                    {table.getHeaderGroups().map((headerGroup) => (
-                                                        <TableRow key={headerGroup.id}>
-                                                            {headerGroup.headers.map((header) => (
-                                                                <TableHead key={header.id}>
-                                                                    {header.isPlaceholder
-                                                                        ? null
-                                                                        : flexRender(
-                                                                              header.column.columnDef.header,
-                                                                              header.getContext(),
-                                                                          )}
-                                                                </TableHead>
-                                                            ))}
-                                                        </TableRow>
-                                                    ))}
+                                                    {table
+                                                        .getHeaderGroups()
+                                                        .map((headerGroup) => (
+                                                            <TableRow
+                                                                key={
+                                                                    headerGroup.id
+                                                                }
+                                                            >
+                                                                {headerGroup.headers.map(
+                                                                    (
+                                                                        header,
+                                                                    ) => (
+                                                                        <TableHead
+                                                                            key={
+                                                                                header.id
+                                                                            }
+                                                                        >
+                                                                            {header.isPlaceholder
+                                                                                ? null
+                                                                                : flexRender(
+                                                                                      header
+                                                                                          .column
+                                                                                          .columnDef
+                                                                                          .header,
+                                                                                      header.getContext(),
+                                                                                  )}
+                                                                        </TableHead>
+                                                                    ),
+                                                                )}
+                                                            </TableRow>
+                                                        ))}
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {table.getRowModel().rows.map((row) => (
-                                                        <TableRow
-                                                            key={row.id}
-                                                            data-state={
-                                                                selectedEmployeeIdsSet.has(
-                                                                    row.original.id,
-                                                                ) && 'selected'
-                                                            }
-                                                        >
-                                                            {row.getVisibleCells().map((cell) => (
-                                                                <TableCell key={cell.id}>
-                                                                    {flexRender(
-                                                                        cell.column.columnDef.cell,
-                                                                        cell.getContext(),
+                                                    {table
+                                                        .getRowModel()
+                                                        .rows.map((row) => (
+                                                            <TableRow
+                                                                key={row.id}
+                                                                data-state={
+                                                                    selectedEmployeeIdsSet.has(
+                                                                        row
+                                                                            .original
+                                                                            .id,
+                                                                    ) &&
+                                                                    'selected'
+                                                                }
+                                                            >
+                                                                {row
+                                                                    .getVisibleCells()
+                                                                    .map(
+                                                                        (
+                                                                            cell,
+                                                                        ) => (
+                                                                            <TableCell
+                                                                                key={
+                                                                                    cell.id
+                                                                                }
+                                                                            >
+                                                                                {flexRender(
+                                                                                    cell
+                                                                                        .column
+                                                                                        .columnDef
+                                                                                        .cell,
+                                                                                    cell.getContext(),
+                                                                                )}
+                                                                            </TableCell>
+                                                                        ),
                                                                     )}
-                                                                </TableCell>
-                                                            ))}
-                                                        </TableRow>
-                                                    ))}
+                                                            </TableRow>
+                                                        ))}
                                                 </TableBody>
                                             </Table>
                                         </div>
@@ -718,7 +887,9 @@ export default function EmployeesIndex({ employees }: Props) {
                                                     <Users />
                                                 </EmptyMedia>
                                                 <EmptyTitle>
-                                                    {employees.length === 0 ? 'No employees yet' : 'No matching employees'}
+                                                    {employees.length === 0
+                                                        ? 'No employees yet'
+                                                        : 'No matching employees'}
                                                 </EmptyTitle>
                                                 <EmptyDescription>
                                                     {employees.length === 0
@@ -739,14 +910,24 @@ export default function EmployeesIndex({ employees }: Props) {
                                                             <Button
                                                                 type="button"
                                                                 variant="outline"
-                                                                onClick={() => setImportOpen(true)}
+                                                                onClick={() =>
+                                                                    setImportOpen(
+                                                                        true,
+                                                                    )
+                                                                }
                                                             >
                                                                 <Upload data-icon="inline-start" />
                                                                 Import employees
                                                             </Button>
                                                         </>
                                                     ) : (
-                                                        <Button type="button" variant="outline" onClick={resetFilters}>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            onClick={
+                                                                resetFilters
+                                                            }
+                                                        >
                                                             Reset filters
                                                         </Button>
                                                     )}
@@ -755,23 +936,43 @@ export default function EmployeesIndex({ employees }: Props) {
                                         </Empty>
                                     )}
 
-                                    {hasFilters && filteredEmployees.length > 0 && (
-                                        <div className="flex justify-end">
-                                            <Button type="button" variant="ghost" size="sm" onClick={resetFilters}>
-                                                Reset filters
-                                            </Button>
-                                        </div>
-                                    )}
+                                    {hasFilters &&
+                                        filteredEmployees.length > 0 && (
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={resetFilters}
+                                                >
+                                                    Reset filters
+                                                </Button>
+                                            </div>
+                                        )}
 
                                     {filteredEmployees.length > 0 && (
                                         <div className="flex flex-col gap-3 pt-2 md:flex-row md:items-center md:justify-between">
                                             <p className="text-sm text-muted-foreground">
-                                                {numberFormatter.format(selectedFilteredCount)}{' '}
+                                                {numberFormatter.format(
+                                                    selectedFilteredCount,
+                                                )}{' '}
                                                 of{' '}
-                                                {numberFormatter.format(filteredEmployees.length)} row(s) selected. Showing{' '}
-                                                {numberFormatter.format(pageStart)} to{' '}
-                                                {numberFormatter.format(pageEnd)} of{' '}
-                                                {numberFormatter.format(filteredEmployees.length)} employee records.
+                                                {numberFormatter.format(
+                                                    filteredEmployees.length,
+                                                )}{' '}
+                                                row(s) selected. Showing{' '}
+                                                {numberFormatter.format(
+                                                    pageStart,
+                                                )}{' '}
+                                                to{' '}
+                                                {numberFormatter.format(
+                                                    pageEnd,
+                                                )}{' '}
+                                                of{' '}
+                                                {numberFormatter.format(
+                                                    filteredEmployees.length,
+                                                )}{' '}
+                                                employee records.
                                             </p>
 
                                             {totalPages > 1 && (
@@ -780,11 +981,15 @@ export default function EmployeesIndex({ employees }: Props) {
                                                         <PaginationItem>
                                                             <PaginationPrevious
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
                                                                     table.previousPage();
                                                                 }}
-                                                                aria-disabled={!table.getCanPreviousPage()}
+                                                                aria-disabled={
+                                                                    !table.getCanPreviousPage()
+                                                                }
                                                                 className={
                                                                     table.getCanPreviousPage()
                                                                         ? undefined
@@ -792,17 +997,31 @@ export default function EmployeesIndex({ employees }: Props) {
                                                                 }
                                                             />
                                                         </PaginationItem>
-                                                        {paginationItems(currentPage, totalPages).map((item, index) => (
-                                                            <PaginationItem key={`${item}-${index}`}>
-                                                                {item === 'ellipsis' ? (
+                                                        {paginationItems(
+                                                            currentPage,
+                                                            totalPages,
+                                                        ).map((item, index) => (
+                                                            <PaginationItem
+                                                                key={`${item}-${index}`}
+                                                            >
+                                                                {item ===
+                                                                'ellipsis' ? (
                                                                     <PaginationEllipsis />
                                                                 ) : (
                                                                     <PaginationLink
                                                                         href="#"
-                                                                        isActive={item === currentPage}
-                                                                        onClick={(event) => {
+                                                                        isActive={
+                                                                            item ===
+                                                                            currentPage
+                                                                        }
+                                                                        onClick={(
+                                                                            event,
+                                                                        ) => {
                                                                             event.preventDefault();
-                                                                            table.setPageIndex(item - 1);
+                                                                            table.setPageIndex(
+                                                                                item -
+                                                                                    1,
+                                                                            );
                                                                         }}
                                                                     >
                                                                         {item}
@@ -813,11 +1032,15 @@ export default function EmployeesIndex({ employees }: Props) {
                                                         <PaginationItem>
                                                             <PaginationNext
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
                                                                     table.nextPage();
                                                                 }}
-                                                                aria-disabled={!table.getCanNextPage()}
+                                                                aria-disabled={
+                                                                    !table.getCanNextPage()
+                                                                }
                                                                 className={
                                                                     table.getCanNextPage()
                                                                         ? undefined

@@ -22,8 +22,8 @@ import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-    type ChartConfig,
 } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
 import {
     Empty,
     EmptyDescription,
@@ -43,7 +43,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+];
 
 type DashboardType = 'organization' | 'department' | 'employee';
 type IconKey = 'folder' | 'calendar' | 'clock' | 'building' | 'users';
@@ -114,14 +116,19 @@ const dashboardBadgeLabels: Record<DashboardType, string> = {
 };
 
 function truncateLabel(value: string, maxLength: number = 18): string {
-    return value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
+    return value.length > maxLength
+        ? `${value.slice(0, maxLength - 1)}...`
+        : value;
 }
 
 function DashboardChart({ section }: { section: ChartSection }) {
     const Icon = iconMap[section.icon];
     const chartData = section.items.map(({ label, value }) => ({
         label,
-        shortLabel: truncateLabel(label, section.layout === 'vertical' ? 14 : 18),
+        shortLabel: truncateLabel(
+            label,
+            section.layout === 'vertical' ? 14 : 18,
+        ),
         total: value,
     }));
 
@@ -133,7 +140,9 @@ function DashboardChart({ section }: { section: ChartSection }) {
                         <Icon />
                     </EmptyMedia>
                     <EmptyTitle>{section.emptyTitle}</EmptyTitle>
-                    <EmptyDescription>{section.emptyDescription}</EmptyDescription>
+                    <EmptyDescription>
+                        {section.emptyDescription}
+                    </EmptyDescription>
                 </EmptyHeader>
             </Empty>
         );
@@ -141,10 +150,23 @@ function DashboardChart({ section }: { section: ChartSection }) {
 
     if (section.layout === 'horizontal') {
         return (
-            <ChartContainer config={chartConfig} className="min-h-[320px] w-full">
-                <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 8, right: 8 }}>
+            <ChartContainer
+                config={chartConfig}
+                className="min-h-[320px] w-full"
+            >
+                <BarChart
+                    accessibilityLayer
+                    data={chartData}
+                    layout="vertical"
+                    margin={{ left: 8, right: 8 }}
+                >
                     <CartesianGrid horizontal={false} />
-                    <XAxis allowDecimals={false} axisLine={false} tickLine={false} type="number" />
+                    <XAxis
+                        allowDecimals={false}
+                        axisLine={false}
+                        tickLine={false}
+                        type="number"
+                    />
                     <YAxis
                         axisLine={false}
                         dataKey="shortLabel"
@@ -157,7 +179,9 @@ function DashboardChart({ section }: { section: ChartSection }) {
                             <ChartTooltipContent
                                 formatter={(value, _name, item) => (
                                     <>
-                                        <span className="text-muted-foreground">{item.payload.label}</span>
+                                        <span className="text-muted-foreground">
+                                            {item.payload.label}
+                                        </span>
                                         <span className="font-mono font-medium text-foreground">
                                             {Number(value).toLocaleString()}
                                         </span>
@@ -177,13 +201,20 @@ function DashboardChart({ section }: { section: ChartSection }) {
         <ChartContainer config={chartConfig} className="min-h-[320px] w-full">
             <BarChart accessibilityLayer data={chartData}>
                 <CartesianGrid vertical={false} />
-                <XAxis axisLine={false} dataKey="shortLabel" tickLine={false} tickMargin={10} />
+                <XAxis
+                    axisLine={false}
+                    dataKey="shortLabel"
+                    tickLine={false}
+                    tickMargin={10}
+                />
                 <ChartTooltip
                     content={
                         <ChartTooltipContent
                             formatter={(value, _name, item) => (
                                 <>
-                                    <span className="text-muted-foreground">{item.payload.label}</span>
+                                    <span className="text-muted-foreground">
+                                        {item.payload.label}
+                                    </span>
                                     <span className="font-mono font-medium text-foreground">
                                         {Number(value).toLocaleString()}
                                     </span>
@@ -221,8 +252,12 @@ export default function Dashboard({
                                 <Badge variant="outline" className="w-fit">
                                     {dashboardBadgeLabels[dashboardType]}
                                 </Badge>
-                                <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-                                <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
+                                <h1 className="text-2xl font-semibold tracking-tight">
+                                    {title}
+                                </h1>
+                                <p className="max-w-3xl text-sm text-muted-foreground">
+                                    {description}
+                                </p>
                             </div>
                         </div>
 
@@ -231,9 +266,14 @@ export default function Dashboard({
                                 const Icon = iconMap[item.icon];
 
                                 return (
-                                    <Card key={item.title} className="@container/card shadow-xs">
+                                    <Card
+                                        key={item.title}
+                                        className="@container/card shadow-xs"
+                                    >
                                         <CardHeader>
-                                            <CardDescription>{item.title}</CardDescription>
+                                            <CardDescription>
+                                                {item.title}
+                                            </CardDescription>
                                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                                 {item.value}
                                             </CardTitle>
@@ -249,7 +289,9 @@ export default function Dashboard({
                                                 <Icon className="size-4" />
                                                 Snapshot
                                             </div>
-                                            <div className="text-muted-foreground">{item.detail}</div>
+                                            <div className="text-muted-foreground">
+                                                {item.detail}
+                                            </div>
                                         </CardFooter>
                                     </Card>
                                 );
@@ -264,13 +306,18 @@ export default function Dashboard({
                                             <div className="flex flex-col gap-1">
                                                 <CardTitle>Insights</CardTitle>
                                                 <CardDescription>
-                                                    Review the grouped metrics that matter for your workspace.
+                                                    Review the grouped metrics
+                                                    that matter for your
+                                                    workspace.
                                                 </CardDescription>
                                             </div>
                                             <CardAction>
                                                 <TabsList>
                                                     {charts.map((section) => (
-                                                        <TabsTrigger key={section.key} value={section.key}>
+                                                        <TabsTrigger
+                                                            key={section.key}
+                                                            value={section.key}
+                                                        >
                                                             {section.tab}
                                                         </TabsTrigger>
                                                     ))}
@@ -279,14 +326,24 @@ export default function Dashboard({
                                         </CardHeader>
                                         <CardContent>
                                             {charts.map((section) => (
-                                                <TabsContent key={section.key} value={section.key} className="mt-0">
+                                                <TabsContent
+                                                    key={section.key}
+                                                    value={section.key}
+                                                    className="mt-0"
+                                                >
                                                     <div className="mb-4 flex flex-col gap-1">
-                                                        <h2 className="text-base font-semibold">{section.title}</h2>
+                                                        <h2 className="text-base font-semibold">
+                                                            {section.title}
+                                                        </h2>
                                                         <p className="text-sm text-muted-foreground">
-                                                            {section.description}
+                                                            {
+                                                                section.description
+                                                            }
                                                         </p>
                                                     </div>
-                                                    <DashboardChart section={section} />
+                                                    <DashboardChart
+                                                        section={section}
+                                                    />
                                                 </TabsContent>
                                             ))}
                                         </CardContent>
@@ -299,36 +356,57 @@ export default function Dashboard({
                             <Card>
                                 <CardHeader>
                                     <CardTitle>{recentRecords.title}</CardTitle>
-                                    <CardDescription>{recentRecords.description}</CardDescription>
+                                    <CardDescription>
+                                        {recentRecords.description}
+                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     {recentRecords.rows.length > 0 ? (
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
-                                                    <TableHead>Record</TableHead>
+                                                    <TableHead>
+                                                        Record
+                                                    </TableHead>
                                                     <TableHead>Type</TableHead>
                                                     <TableHead>Date</TableHead>
-                                                    <TableHead>Reference</TableHead>
+                                                    <TableHead>
+                                                        Reference
+                                                    </TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {recentRecords.rows.map((row) => (
-                                                    <TableRow key={row.id}>
-                                                        <TableCell className="font-medium">{row.record}</TableCell>
-                                                        <TableCell>
-                                                            <Badge variant="secondary">{row.type}</Badge>
-                                                        </TableCell>
-                                                        <TableCell>{row.date ?? 'N/A'}</TableCell>
-                                                        <TableCell>
-                                                            {row.reference ? (
-                                                                <Badge variant="outline">{row.reference}</Badge>
-                                                            ) : (
-                                                                <span className="text-muted-foreground">N/A</span>
-                                                            )}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
+                                                {recentRecords.rows.map(
+                                                    (row) => (
+                                                        <TableRow key={row.id}>
+                                                            <TableCell className="font-medium">
+                                                                {row.record}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge variant="secondary">
+                                                                    {row.type}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {row.date ??
+                                                                    'N/A'}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {row.reference ? (
+                                                                    <Badge variant="outline">
+                                                                        {
+                                                                            row.reference
+                                                                        }
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground">
+                                                                        N/A
+                                                                    </span>
+                                                                )}
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ),
+                                                )}
                                             </TableBody>
                                         </Table>
                                     ) : (
@@ -337,9 +415,13 @@ export default function Dashboard({
                                                 <EmptyMedia variant="icon">
                                                     <ArrowRightLeft />
                                                 </EmptyMedia>
-                                                <EmptyTitle>No recent records</EmptyTitle>
+                                                <EmptyTitle>
+                                                    No recent records
+                                                </EmptyTitle>
                                                 <EmptyDescription>
-                                                    Activity rows will appear here as new records are created.
+                                                    Activity rows will appear
+                                                    here as new records are
+                                                    created.
                                                 </EmptyDescription>
                                             </EmptyHeader>
                                         </Empty>

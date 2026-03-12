@@ -7,7 +7,9 @@ import {
     FileText,
     XCircle,
 } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import InputError from '@/components/input-error';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -32,7 +34,6 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -116,7 +117,10 @@ export default function LeaveShow({
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Leave', href: '/leave' },
-        { title: `Leave #${leaveRequest.id}`, href: `/leave/${leaveRequest.id}` },
+        {
+            title: `Leave #${leaveRequest.id}`,
+            href: `/leave/${leaveRequest.id}`,
+        },
     ];
 
     const [approvalAction, setApprovalAction] = useState<
@@ -130,7 +134,7 @@ export default function LeaveShow({
     const lifecycleLabel = isDraft ? 'Saved on' : 'Filed on';
     const lifecycleValue = isDraft
         ? leaveRequest.saved_at
-        : leaveRequest.submitted_at ?? leaveRequest.saved_at;
+        : (leaveRequest.submitted_at ?? leaveRequest.saved_at);
 
     const summaryCards = [
         {
@@ -224,9 +228,7 @@ export default function LeaveShow({
                                                 <Button
                                                     variant="outline"
                                                     onClick={() =>
-                                                        openApproval(
-                                                            'rejected',
-                                                        )
+                                                        openApproval('rejected')
                                                     }
                                                 >
                                                     <XCircle data-icon="inline-start" />
@@ -234,9 +236,7 @@ export default function LeaveShow({
                                                 </Button>
                                                 <Button
                                                     onClick={() =>
-                                                        openApproval(
-                                                            'approved',
-                                                        )
+                                                        openApproval('approved')
                                                     }
                                                 >
                                                     <CheckCircle2 data-icon="inline-start" />
@@ -248,7 +248,9 @@ export default function LeaveShow({
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <Button variant="outline">
-                                                    {isDraft ? 'Discard draft' : 'Cancel request'}
+                                                    {isDraft
+                                                        ? 'Discard draft'
+                                                        : 'Cancel request'}
                                                 </Button>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
@@ -266,7 +268,9 @@ export default function LeaveShow({
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                     <AlertDialogCancel>
-                                                        {isDraft ? 'Keep draft' : 'Keep request'}
+                                                        {isDraft
+                                                            ? 'Keep draft'
+                                                            : 'Keep request'}
                                                     </AlertDialogCancel>
                                                     <AlertDialogAction
                                                         onClick={handleCancel}
@@ -274,7 +278,9 @@ export default function LeaveShow({
                                                             cancelForm.processing
                                                         }
                                                     >
-                                                        {isDraft ? 'Yes, discard' : 'Yes, cancel'}
+                                                        {isDraft
+                                                            ? 'Yes, discard'
+                                                            : 'Yes, cancel'}
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
@@ -291,7 +297,9 @@ export default function LeaveShow({
                                     className="@container/card shadow-xs"
                                 >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -413,15 +421,11 @@ export default function LeaveShow({
                                             />
                                             <DetailField
                                                 label="Leave type"
-                                                value={
-                                                    leaveRequest.leave_type
-                                                }
+                                                value={leaveRequest.leave_type}
                                             />
                                             <DetailField
                                                 label="Start date"
-                                                value={
-                                                    leaveRequest.start_date
-                                                }
+                                                value={leaveRequest.start_date}
                                             />
                                             <DetailField
                                                 label="End date"
@@ -458,9 +462,7 @@ export default function LeaveShow({
                                                 label="Current status"
                                                 value={
                                                     <Badge
-                                                        variant={
-                                                            status.variant
-                                                        }
+                                                        variant={status.variant}
                                                     >
                                                         {status.label}
                                                     </Badge>
@@ -468,15 +470,11 @@ export default function LeaveShow({
                                             />
                                             <DetailField
                                                 label="Actioned by"
-                                                value={
-                                                    leaveRequest.actioned_by
-                                                }
+                                                value={leaveRequest.actioned_by}
                                             />
                                             <DetailField
                                                 label="Actioned on"
-                                                value={
-                                                    leaveRequest.actioned_at
-                                                }
+                                                value={leaveRequest.actioned_at}
                                             />
                                             <DetailField
                                                 label="Remarks"
@@ -491,43 +489,59 @@ export default function LeaveShow({
                                     <CardHeader>
                                         <CardTitle>Approval history</CardTitle>
                                         <CardDescription>
-                                            Every recorded workflow action on this leave request.
+                                            Every recorded workflow action on
+                                            this leave request.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
                                         {approvalHistory.length === 0 ? (
                                             <p className="text-sm text-muted-foreground">
-                                                No workflow actions have been recorded yet.
+                                                No workflow actions have been
+                                                recorded yet.
                                             </p>
                                         ) : (
                                             <div className="flex flex-col gap-3">
-                                                {approvalHistory.map((entry) => (
-                                                    <div
-                                                        key={entry.id}
-                                                        className="rounded-lg border px-4 py-3"
-                                                    >
-                                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                                            <div className="space-y-1">
-                                                                <div className="flex flex-wrap items-center gap-2">
-                                                                    <Badge variant="outline">
-                                                                        {entry.action.charAt(0).toUpperCase() + entry.action.slice(1)}
-                                                                    </Badge>
-                                                                    <span className="text-sm text-muted-foreground">
-                                                                        {entry.acted_at}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {entry.acted_by ?? 'System'}
-                                                                </p>
-                                                                {entry.remarks ? (
-                                                                    <p className="text-sm text-foreground">
-                                                                        {entry.remarks}
+                                                {approvalHistory.map(
+                                                    (entry) => (
+                                                        <div
+                                                            key={entry.id}
+                                                            className="rounded-lg border px-4 py-3"
+                                                        >
+                                                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                                                <div className="space-y-1">
+                                                                    <div className="flex flex-wrap items-center gap-2">
+                                                                        <Badge variant="outline">
+                                                                            {entry.action
+                                                                                .charAt(
+                                                                                    0,
+                                                                                )
+                                                                                .toUpperCase() +
+                                                                                entry.action.slice(
+                                                                                    1,
+                                                                                )}
+                                                                        </Badge>
+                                                                        <span className="text-sm text-muted-foreground">
+                                                                            {
+                                                                                entry.acted_at
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-sm text-muted-foreground">
+                                                                        {entry.acted_by ??
+                                                                            'System'}
                                                                     </p>
-                                                                ) : null}
+                                                                    {entry.remarks ? (
+                                                                        <p className="text-sm text-foreground">
+                                                                            {
+                                                                                entry.remarks
+                                                                            }
+                                                                        </p>
+                                                                    ) : null}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    ),
+                                                )}
                                             </div>
                                         )}
                                     </CardContent>
@@ -578,7 +592,9 @@ export default function LeaveShow({
 
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Processing guidance</CardTitle>
+                                        <CardTitle>
+                                            Processing guidance
+                                        </CardTitle>
                                         <CardDescription>
                                             Use the action controls only while
                                             the request is still pending.
@@ -586,7 +602,11 @@ export default function LeaveShow({
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
                                         <p>
-                                            Draft requests can be submitted or discarded, while submitted requests can still be approved, rejected, or cancelled based on your available permissions.
+                                            Draft requests can be submitted or
+                                            discarded, while submitted requests
+                                            can still be approved, rejected, or
+                                            cancelled based on your available
+                                            permissions.
                                         </p>
                                         <p>
                                             Once a final action is recorded, the
@@ -615,12 +635,12 @@ function DetailField({
 }) {
     return (
         <div className={wide ? 'sm:col-span-2 xl:col-span-3' : undefined}>
-            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {label}
             </dt>
             <dd className="mt-1 text-sm text-foreground">
                 {value ?? (
-                    <span className="italic text-muted-foreground">
+                    <span className="text-muted-foreground italic">
                         Not provided
                     </span>
                 )}
@@ -632,7 +652,7 @@ function DetailField({
 function SideItem({ label, value }: { label: string; value: string }) {
     return (
         <div className="rounded-lg border bg-background p-3">
-            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                 {label}
             </div>
             <div className="mt-1 text-sm font-medium text-foreground">
@@ -641,4 +661,3 @@ function SideItem({ label, value }: { label: string; value: string }) {
         </div>
     );
 }
-

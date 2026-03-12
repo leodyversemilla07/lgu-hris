@@ -9,10 +9,12 @@ import {
     Save,
     ShieldCheck,
 } from 'lucide-react';
-import { type ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     Card,
     CardAction,
@@ -22,7 +24,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -311,9 +312,14 @@ export default function PersonnelMovementsCreate({
 
                         <div className="grid grid-cols-1 gap-4 px-4 md:grid-cols-2 lg:px-6 @5xl/main:grid-cols-4">
                             {summaryCards.map((item) => (
-                                <Card key={item.title} className="@container/card shadow-xs">
+                                <Card
+                                    key={item.title}
+                                    className="@container/card shadow-xs"
+                                >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -340,12 +346,18 @@ export default function PersonnelMovementsCreate({
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="flex flex-col gap-2 md:col-span-2">
                                             <Label htmlFor="employee_id">
-                                                Employee <span className="text-destructive">*</span>
+                                                Employee{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Select
                                                 value={data.employee_id}
                                                 onValueChange={(value) =>
-                                                    setData('employee_id', value)
+                                                    setData(
+                                                        'employee_id',
+                                                        value,
+                                                    )
                                                 }
                                             >
                                                 <SelectTrigger
@@ -361,28 +373,44 @@ export default function PersonnelMovementsCreate({
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {employees.map((employee) => (
-                                                            <SelectItem
-                                                                key={employee.value}
-                                                                value={employee.value}
-                                                            >
-                                                                {employee.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {employees.map(
+                                                            (employee) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        employee.value
+                                                                    }
+                                                                    value={
+                                                                        employee.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        employee.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
-                                            <InputError message={errors.employee_id} />
+                                            <InputError
+                                                message={errors.employee_id}
+                                            />
                                         </div>
 
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="movement_type_id">
-                                                Movement type <span className="text-destructive">*</span>
+                                                Movement type{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Select
                                                 value={data.movement_type_id}
                                                 onValueChange={(value) =>
-                                                    setData('movement_type_id', value)
+                                                    setData(
+                                                        'movement_type_id',
+                                                        value,
+                                                    )
                                                 }
                                             >
                                                 <SelectTrigger
@@ -398,33 +426,49 @@ export default function PersonnelMovementsCreate({
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectGroup>
-                                                        {movementTypes.map((type) => (
-                                                            <SelectItem
-                                                                key={type.value}
-                                                                value={type.value}
-                                                            >
-                                                                {type.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {movementTypes.map(
+                                                            (type) => (
+                                                                <SelectItem
+                                                                    key={
+                                                                        type.value
+                                                                    }
+                                                                    value={
+                                                                        type.value
+                                                                    }
+                                                                >
+                                                                    {type.label}
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
                                             <InputError
-                                                message={errors.movement_type_id}
+                                                message={
+                                                    errors.movement_type_id
+                                                }
                                             />
                                         </div>
 
                                         <div className="flex flex-col gap-2">
                                             <Label>
-                                                Effective date <span className="text-destructive">*</span>
+                                                Effective date{' '}
+                                                <span className="text-destructive">
+                                                    *
+                                                </span>
                                             </Label>
                                             <DatePickerField
                                                 value={data.effective_date}
                                                 onChange={(value) =>
-                                                    setData('effective_date', value)
+                                                    setData(
+                                                        'effective_date',
+                                                        value,
+                                                    )
                                                 }
                                                 placeholder="Pick effective date"
-                                                invalid={Boolean(errors.effective_date)}
+                                                invalid={Boolean(
+                                                    errors.effective_date,
+                                                )}
                                             />
                                             <InputError
                                                 message={errors.effective_date}
@@ -459,9 +503,14 @@ export default function PersonnelMovementsCreate({
                                             <div className="flex flex-col gap-2">
                                                 <Label>From department</Label>
                                                 <OptionalSelect
-                                                    value={data.from_department_id}
+                                                    value={
+                                                        data.from_department_id
+                                                    }
                                                     onValueChange={(value) =>
-                                                        setData('from_department_id', value)
+                                                        setData(
+                                                            'from_department_id',
+                                                            value,
+                                                        )
                                                     }
                                                     placeholder="None"
                                                     options={departments}
@@ -470,9 +519,14 @@ export default function PersonnelMovementsCreate({
                                             <div className="flex flex-col gap-2">
                                                 <Label>To department</Label>
                                                 <OptionalSelect
-                                                    value={data.to_department_id}
+                                                    value={
+                                                        data.to_department_id
+                                                    }
                                                     onValueChange={(value) =>
-                                                        setData('to_department_id', value)
+                                                        setData(
+                                                            'to_department_id',
+                                                            value,
+                                                        )
                                                     }
                                                     placeholder="None"
                                                     options={departments}
@@ -484,9 +538,14 @@ export default function PersonnelMovementsCreate({
                                             <div className="flex flex-col gap-2">
                                                 <Label>From position</Label>
                                                 <OptionalSelect
-                                                    value={data.from_position_id}
+                                                    value={
+                                                        data.from_position_id
+                                                    }
                                                     onValueChange={(value) =>
-                                                        setData('from_position_id', value)
+                                                        setData(
+                                                            'from_position_id',
+                                                            value,
+                                                        )
                                                     }
                                                     placeholder="None"
                                                     options={positions}
@@ -497,7 +556,10 @@ export default function PersonnelMovementsCreate({
                                                 <OptionalSelect
                                                     value={data.to_position_id}
                                                     onValueChange={(value) =>
-                                                        setData('to_position_id', value)
+                                                        setData(
+                                                            'to_position_id',
+                                                            value,
+                                                        )
                                                     }
                                                     placeholder="None"
                                                     options={positions}
@@ -507,9 +569,13 @@ export default function PersonnelMovementsCreate({
 
                                         <div className="grid gap-4 md:grid-cols-2">
                                             <div className="flex flex-col gap-2">
-                                                <Label>From employment status</Label>
+                                                <Label>
+                                                    From employment status
+                                                </Label>
                                                 <OptionalSelect
-                                                    value={data.from_employment_status_id}
+                                                    value={
+                                                        data.from_employment_status_id
+                                                    }
                                                     onValueChange={(value) =>
                                                         setData(
                                                             'from_employment_status_id',
@@ -521,9 +587,13 @@ export default function PersonnelMovementsCreate({
                                                 />
                                             </div>
                                             <div className="flex flex-col gap-2">
-                                                <Label>To employment status</Label>
+                                                <Label>
+                                                    To employment status
+                                                </Label>
                                                 <OptionalSelect
-                                                    value={data.to_employment_status_id}
+                                                    value={
+                                                        data.to_employment_status_id
+                                                    }
                                                     onValueChange={(value) =>
                                                         setData(
                                                             'to_employment_status_id',
@@ -545,7 +615,10 @@ export default function PersonnelMovementsCreate({
                                     <Textarea
                                         value={data.remarks}
                                         onChange={(event) =>
-                                            setData('remarks', event.target.value)
+                                            setData(
+                                                'remarks',
+                                                event.target.value,
+                                            )
                                         }
                                         placeholder="Additional notes or context for this movement"
                                         rows={5}
@@ -558,13 +631,15 @@ export default function PersonnelMovementsCreate({
                                     <CardHeader>
                                         <CardTitle>Movement snapshot</CardTitle>
                                         <CardDescription>
-                                            Quick view of the selected employee and movement context before saving.
+                                            Quick view of the selected employee
+                                            and movement context before saving.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-4">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-sm font-medium">
-                                                {selectedEmployee?.label ?? 'No employee selected'}
+                                                {selectedEmployee?.label ??
+                                                    'No employee selected'}
                                             </span>
                                             <span className="text-sm text-muted-foreground">
                                                 {selectedEmployee?.employee_number
@@ -584,26 +659,32 @@ export default function PersonnelMovementsCreate({
                                     <CardHeader>
                                         <CardTitle>Before saving</CardTitle>
                                         <CardDescription>
-                                            Core checks to keep the movement registry consistent.
+                                            Core checks to keep the movement
+                                            registry consistent.
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
                                         <div className="flex items-start gap-2">
                                             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
                                             <span>
-                                                Confirm the employee, movement type, and effective date.
+                                                Confirm the employee, movement
+                                                type, and effective date.
                                             </span>
                                         </div>
                                         <div className="flex items-start gap-2">
                                             <ArrowRightLeft className="mt-0.5 size-4 shrink-0" />
                                             <span>
-                                                Review from and to values carefully for transfers, promotions, and status changes.
+                                                Review from and to values
+                                                carefully for transfers,
+                                                promotions, and status changes.
                                             </span>
                                         </div>
                                         <div className="flex items-start gap-2">
                                             <FileText className="mt-0.5 size-4 shrink-0" />
                                             <span>
-                                                Use order number and remarks to preserve the official movement context.
+                                                Use order number and remarks to
+                                                preserve the official movement
+                                                context.
                                             </span>
                                         </div>
                                     </CardContent>

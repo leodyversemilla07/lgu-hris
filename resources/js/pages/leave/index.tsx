@@ -8,7 +8,7 @@ import {
     Search,
     XCircle,
 } from 'lucide-react';
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,14 +30,6 @@ import {
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import {
     Pagination,
     PaginationContent,
     PaginationEllipsis,
@@ -46,7 +38,22 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -149,10 +156,6 @@ export default function LeaveIndex({
 
         return searchableText.includes(normalizedQuery);
     });
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [normalizedQuery, leaveRequests.length]);
 
     const totalPages = Math.max(
         1,
@@ -262,10 +265,25 @@ export default function LeaveIndex({
         }
 
         if (page >= totalPages - 2) {
-            return [1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+            return [
+                1,
+                'ellipsis',
+                totalPages - 3,
+                totalPages - 2,
+                totalPages - 1,
+                totalPages,
+            ];
         }
 
-        return [1, 'ellipsis', page - 1, page, page + 1, 'ellipsis', totalPages];
+        return [
+            1,
+            'ellipsis',
+            page - 1,
+            page,
+            page + 1,
+            'ellipsis',
+            totalPages,
+        ];
     }
 
     return (
@@ -377,9 +395,12 @@ export default function LeaveIndex({
                                             <Search className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 value={query}
-                                                onChange={(event) =>
-                                                    setQuery(event.target.value)
-                                                }
+                                                onChange={(event) => {
+                                                    setCurrentPage(1);
+                                                    setQuery(
+                                                        event.target.value,
+                                                    );
+                                                }}
                                                 placeholder="Search employee, leave type, dates, or status"
                                                 aria-label="Search leave requests"
                                                 className="pl-9"
@@ -700,9 +721,14 @@ export default function LeaveIndex({
                                                         <PaginationItem>
                                                             <PaginationPrevious
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
-                                                                    goToPage(page - 1);
+                                                                    goToPage(
+                                                                        page -
+                                                                            1,
+                                                                    );
                                                                 }}
                                                                 aria-disabled={
                                                                     page === 1
@@ -729,7 +755,9 @@ export default function LeaveIndex({
                                                                                 item ===
                                                                                 page
                                                                             }
-                                                                            onClick={(event) => {
+                                                                            onClick={(
+                                                                                event,
+                                                                            ) => {
                                                                                 event.preventDefault();
                                                                                 goToPage(
                                                                                     item,
@@ -747,9 +775,14 @@ export default function LeaveIndex({
                                                         <PaginationItem>
                                                             <PaginationNext
                                                                 href="#"
-                                                                onClick={(event) => {
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
                                                                     event.preventDefault();
-                                                                    goToPage(page + 1);
+                                                                    goToPage(
+                                                                        page +
+                                                                            1,
+                                                                    );
                                                                 }}
                                                                 aria-disabled={
                                                                     page ===

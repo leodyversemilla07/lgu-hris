@@ -8,7 +8,19 @@ import {
     UserCog,
     Users,
 } from 'lucide-react';
-import { type FormEvent, useDeferredValue, useState } from 'react';
+import { useDeferredValue, useState } from 'react';
+import type { FormEvent } from 'react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,17 +41,6 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import {
     Empty,
     EmptyContent,
@@ -176,7 +177,10 @@ function EditRoleDialog({
                                 form.setData('role', value)
                             }
                         >
-                            <SelectTrigger id={`role-${user.id}`} className="w-full">
+                            <SelectTrigger
+                                id={`role-${user.id}`}
+                                className="w-full"
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -190,7 +194,9 @@ function EditRoleDialog({
                             </SelectContent>
                         </Select>
                         {form.errors.role && (
-                            <p className="text-xs text-destructive">{form.errors.role}</p>
+                            <p className="text-xs text-destructive">
+                                {form.errors.role}
+                            </p>
                         )}
                     </div>
 
@@ -216,7 +222,9 @@ function EditRoleDialog({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        <SelectItem value="0">No department</SelectItem>
+                                        <SelectItem value="0">
+                                            No department
+                                        </SelectItem>
                                         {departments.map((department) => (
                                             <SelectItem
                                                 key={department.value}
@@ -302,7 +310,9 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
                                 required
                             />
                             {form.errors.name && (
-                                <p className="text-xs text-destructive">{form.errors.name}</p>
+                                <p className="text-xs text-destructive">
+                                    {form.errors.name}
+                                </p>
                             )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -317,7 +327,9 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
                                 required
                             />
                             {form.errors.email && (
-                                <p className="text-xs text-destructive">{form.errors.email}</p>
+                                <p className="text-xs text-destructive">
+                                    {form.errors.email}
+                                </p>
                             )}
                         </div>
                     </div>
@@ -331,7 +343,10 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
                                     form.setData('role', value)
                                 }
                             >
-                                <SelectTrigger id="create-user-role" className="w-full">
+                                <SelectTrigger
+                                    id="create-user-role"
+                                    className="w-full"
+                                >
                                     <SelectValue placeholder="Select role" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -345,11 +360,15 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
                                 </SelectContent>
                             </Select>
                             {form.errors.role && (
-                                <p className="text-xs text-destructive">{form.errors.role}</p>
+                                <p className="text-xs text-destructive">
+                                    {form.errors.role}
+                                </p>
                             )}
                         </div>
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="create-user-password">Password</Label>
+                            <Label htmlFor="create-user-password">
+                                Password
+                            </Label>
                             <Input
                                 id="create-user-password"
                                 type="password"
@@ -407,8 +426,8 @@ function DeleteUserDialog({ user }: { user: UserRow }) {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete user account?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Remove {user.name} from access control. This action cannot
-                        be undone.
+                        Remove {user.name} from access control. This action
+                        cannot be undone.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -472,7 +491,9 @@ export default function AccessControlIndex({
     const departmentHeads = users.filter((user) =>
         user.roles.includes('Department Head'),
     ).length;
-    const admins = users.filter((user) => user.roles.includes('HR Admin')).length;
+    const admins = users.filter((user) =>
+        user.roles.includes('HR Admin'),
+    ).length;
 
     const summaryCards = [
         {
@@ -546,7 +567,9 @@ export default function AccessControlIndex({
                                     className="@container/card shadow-xs"
                                 >
                                     <CardHeader>
-                                        <CardDescription>{item.title}</CardDescription>
+                                        <CardDescription>
+                                            {item.title}
+                                        </CardDescription>
                                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                             {item.value}
                                         </CardTitle>
@@ -575,12 +598,14 @@ export default function AccessControlIndex({
                                 <Card>
                                     <CardHeader>
                                         <div className="flex flex-col gap-1">
-                                            <CardTitle>Access workspace</CardTitle>
+                                            <CardTitle>
+                                                Access workspace
+                                            </CardTitle>
                                             <CardDescription>
-                                                Review accounts or inspect recent
-                                                audit events with the same
-                                                streamlined layout as the rest of
-                                                the system.
+                                                Review accounts or inspect
+                                                recent audit events with the
+                                                same streamlined layout as the
+                                                rest of the system.
                                             </CardDescription>
                                         </div>
                                         <CardAction>
@@ -606,7 +631,8 @@ export default function AccessControlIndex({
                                                         value={userQuery}
                                                         onChange={(event) =>
                                                             setUserQuery(
-                                                                event.target.value,
+                                                                event.target
+                                                                    .value,
                                                             )
                                                         }
                                                         placeholder="Search users, emails, or roles"
@@ -668,7 +694,9 @@ export default function AccessControlIndex({
                                                                         </TableCell>
                                                                         <TableCell>
                                                                             <div className="flex flex-wrap gap-2">
-                                                                                {user.roles.length >
+                                                                                {user
+                                                                                    .roles
+                                                                                    .length >
                                                                                 0 ? (
                                                                                     user.roles.map(
                                                                                         (
@@ -764,7 +792,8 @@ export default function AccessControlIndex({
                                                         value={auditQuery}
                                                         onChange={(event) =>
                                                             setAuditQuery(
-                                                                event.target.value,
+                                                                event.target
+                                                                    .value,
                                                             )
                                                         }
                                                         placeholder="Search users, events, descriptions, or IP"
@@ -838,7 +867,9 @@ export default function AccessControlIndex({
                                                                             {
                                                                                 log.auditable_type
                                                                             }
-                                                                            {' #'}
+                                                                            {
+                                                                                ' #'
+                                                                            }
                                                                             {
                                                                                 log.auditable_id
                                                                             }
