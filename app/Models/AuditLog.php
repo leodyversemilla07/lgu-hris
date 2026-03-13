@@ -2,15 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class AuditLog extends Model
 {
+    use HasUuids;
+
     public $timestamps = false;
 
     protected $fillable = [
+        'uuid',
         'user_id',
         'event',
         'auditable_type',
@@ -21,6 +25,11 @@ class AuditLog extends Model
         'ip_address',
         'created_at',
     ];
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected $casts = [
         'old_values' => 'array',

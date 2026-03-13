@@ -19,6 +19,7 @@ class EmployeeFactory extends Factory
         $department = Department::factory();
 
         return [
+            'uuid' => fake()->uuid(),
             'employee_number' => 'EMP-'.fake()->unique()->numerify('####'),
             'first_name' => fake()->firstName(),
             'middle_name' => fake()->boolean(60) ? fake()->firstName() : null,

@@ -42,6 +42,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type WorkSchedule = {
     id: number;
+    uuid: string;
     name: string;
     time_in: string;
     time_out: string;
@@ -267,7 +268,7 @@ function EditScheduleDialog({ schedule }: { schedule: WorkSchedule }) {
 
     function submit(event: React.FormEvent): void {
         event.preventDefault();
-        form.put(`/work-schedules/${schedule.id}`, {
+        form.put(`/work-schedules/${schedule.uuid}`, {
             onSuccess: () => setOpen(false),
         });
     }
@@ -329,7 +330,7 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
             return;
         }
 
-        router.delete(`/work-schedules/${schedule.id}`);
+        router.delete(`/work-schedules/${schedule.uuid}`);
     }
 
     return (

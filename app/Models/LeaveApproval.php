@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,15 +10,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class LeaveApproval extends Model
 {
     /** @use HasFactory<\Database\Factories\LeaveApprovalFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'leave_request_id',
         'action',
         'remarks',
         'acted_by',
         'acted_at',
     ];
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected function casts(): array
     {

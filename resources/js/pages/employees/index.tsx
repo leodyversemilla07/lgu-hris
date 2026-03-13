@@ -85,6 +85,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type EmployeeRecord = {
     id: number;
+    uuid: string;
     employee_number: string;
     full_name: string;
     email: string | null;
@@ -154,7 +155,7 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
             const employee = row.original;
 
             return (
-                <div className="min-w-[260px]">
+                <div className="min-w-65">
                     <div className="flex flex-col gap-1">
                         <div className="font-medium">{employee.full_name}</div>
                         <div className="text-sm text-muted-foreground">
@@ -278,7 +279,7 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         cell: ({ row }) => (
             <div className="text-right">
                 <Button asChild variant="ghost" size="sm">
-                    <Link href={`/employees/${row.original.id}`}>
+                    <Link href={`/employees/${row.original.uuid}`}>
                         View profile
                         <ArrowRight data-icon="inline-end" />
                     </Link>
@@ -881,7 +882,7 @@ export default function EmployeesIndex({ employees }: Props) {
                                             </Table>
                                         </div>
                                     ) : (
-                                        <Empty className="min-h-[280px] border-border bg-muted/20">
+                                        <Empty className="min-h-70 border-border bg-muted/20">
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
                                                     <Users />

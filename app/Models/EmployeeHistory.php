@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EmployeeHistory extends Model
 {
     /** @use HasFactory<\Database\Factories\EmployeeHistoryFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'employee_id',
         'event_type',
         'title',
@@ -23,6 +25,11 @@ class EmployeeHistory extends Model
         'source_id',
         'recorded_by',
     ];
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected function casts(): array
     {

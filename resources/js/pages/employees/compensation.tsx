@@ -67,6 +67,7 @@ type CurrentCompensation = {
 
 type Employee = {
     id: number;
+    uuid: string;
     full_name: string;
     employee_number: string;
 };
@@ -219,7 +220,7 @@ export default function EmployeeCompensation({
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Employees', href: '/employees' },
-        { title: employee.full_name, href: `/employees/${employee.id}` },
+        { title: employee.full_name, href: `/employees/${employee.uuid}` },
         { title: 'Compensation', href: '#' },
     ];
 
@@ -286,7 +287,7 @@ export default function EmployeeCompensation({
 
     function submit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        form.post(`/employees/${employee.id}/compensation`);
+        form.post(`/employees/${employee.uuid}/compensation`);
     }
 
     return (
@@ -323,7 +324,7 @@ export default function EmployeeCompensation({
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
                                         <Link
-                                            href={`/employees/${employee.id}`}
+                                            href={`/employees/${employee.uuid}`}
                                         >
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to employee
@@ -675,7 +676,7 @@ export default function EmployeeCompensation({
                                             asChild
                                         >
                                             <Link
-                                                href={`/employees/${employee.id}`}
+                                                href={`/employees/${employee.uuid}`}
                                             >
                                                 Cancel
                                             </Link>

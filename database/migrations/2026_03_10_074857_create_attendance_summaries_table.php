@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('attendance_summaries', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->unsignedSmallInteger('year');
             $table->unsignedTinyInteger('month');

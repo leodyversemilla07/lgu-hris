@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('salary_grades', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->unsignedTinyInteger('grade');
             $table->unsignedTinyInteger('step');
             $table->decimal('monthly_salary', 12, 2);

@@ -17,6 +17,7 @@ class LeaveRequestFactory extends Factory
         $end = (clone $start)->modify('+'.fake()->numberBetween(0, 4).' days');
 
         return [
+            'uuid' => fake()->uuid(),
             'employee_id' => Employee::factory(),
             'leave_type_id' => LeaveType::factory(),
             'start_date' => $start->format('Y-m-d'),

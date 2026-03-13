@@ -22,6 +22,7 @@ class UserController extends Controller
             ->get()
             ->map(fn (User $user): array => [
                 'id' => $user->id,
+                'uuid' => $user->uuid,
                 'name' => $user->name,
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name')->toArray(),

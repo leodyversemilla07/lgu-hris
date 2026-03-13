@@ -78,6 +78,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type UserRow = {
     id: number;
+    uuid: string;
     name: string;
     email: string;
     roles: string[];
@@ -148,7 +149,7 @@ function EditRoleDialog({
     function submit(event: FormEvent): void {
         event.preventDefault();
 
-        form.put(`/access-control/users/${user.id}`, {
+        form.put(`/access-control/users/${user.uuid}`, {
             onSuccess: () => setOpen(false),
         });
     }
@@ -407,7 +408,7 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
 
 function DeleteUserDialog({ user }: { user: UserRow }) {
     function handleDelete(): void {
-        router.delete(`/access-control/users/${user.id}`);
+        router.delete(`/access-control/users/${user.uuid}`);
     }
 
     return (
@@ -697,7 +698,7 @@ export default function AccessControlIndex({
                                                                                 {user
                                                                                     .roles
                                                                                     .length >
-                                                                                0 ? (
+                                                                                    0 ? (
                                                                                     user.roles.map(
                                                                                         (
                                                                                             role,
@@ -752,7 +753,7 @@ export default function AccessControlIndex({
                                                     </Table>
                                                 </div>
                                             ) : (
-                                                <Empty className="min-h-[280px] border-border bg-muted/20">
+                                                <Empty className="min-h-70 border-border bg-muted/20">
                                                     <EmptyHeader>
                                                         <EmptyMedia variant="icon">
                                                             <Users />
@@ -889,7 +890,7 @@ export default function AccessControlIndex({
                                                     </Table>
                                                 </div>
                                             ) : (
-                                                <Empty className="min-h-[280px] border-border bg-muted/20">
+                                                <Empty className="min-h-70 border-border bg-muted/20">
                                                     <EmptyHeader>
                                                         <EmptyMedia variant="icon">
                                                             <History />

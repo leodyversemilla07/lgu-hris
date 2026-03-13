@@ -162,6 +162,7 @@ class EmployeeController extends Controller
                 ->values()
                 ->map(fn (EmployeeDocument $document): array => [
                     'id' => $document->id,
+                    'uuid' => $document->uuid,
                     'document_type' => $document->documentType->name,
                     'file_name' => $document->file_name,
                     'file_size_formatted' => $this->formatFileSize($document->file_size),
@@ -176,6 +177,7 @@ class EmployeeController extends Controller
                 ->values()
                 ->map(fn (PersonnelMovement $movement): array => [
                     'id' => $movement->id,
+                    'uuid' => $movement->uuid,
                     'movement_type' => $movement->movementType->name,
                     'effective_date' => $movement->effective_date->format('M d, Y'),
                     'order_number' => $movement->order_number,
@@ -341,6 +343,7 @@ class EmployeeController extends Controller
     {
         return [
             'id' => $employee->id,
+            'uuid' => $employee->uuid,
             'employee_number' => $employee->employee_number,
             'full_name' => trim(collect([
                 $employee->first_name,
@@ -366,6 +369,7 @@ class EmployeeController extends Controller
     {
         return [
             'id' => $employee->id,
+            'uuid' => $employee->uuid,
             'user_id' => $employee->user_id,
             'employee_number' => $employee->employee_number,
             'first_name' => $employee->first_name,

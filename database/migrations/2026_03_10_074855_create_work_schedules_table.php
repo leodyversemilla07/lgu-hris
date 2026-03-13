@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('work_schedules', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('name');
             $table->time('time_in');
             $table->time('time_out');

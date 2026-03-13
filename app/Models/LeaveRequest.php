@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,9 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LeaveRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'employee_id',
         'leave_type_id',
         'start_date',
@@ -24,6 +26,16 @@ class LeaveRequest extends Model
         'actioned_at',
         'remarks',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected function casts(): array
     {

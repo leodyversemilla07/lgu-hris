@@ -354,6 +354,7 @@ class LeaveController extends Controller
     {
         return [
             'id' => $leaveRequest->id,
+            'uuid' => $leaveRequest->uuid,
             'employee_id' => $leaveRequest->employee_id,
             'employee_name' => "{$leaveRequest->employee->last_name}, {$leaveRequest->employee->first_name}",
             'leave_type' => $leaveRequest->leaveType->name,

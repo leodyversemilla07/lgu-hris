@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PersonnelMovement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'employee_id',
         'movement_type_id',
         'effective_date',
@@ -24,6 +26,16 @@ class PersonnelMovement extends Model
         'remarks',
         'recorded_by',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected $casts = [
         'effective_date' => 'date',

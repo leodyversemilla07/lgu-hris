@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('attendance_logs', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->date('log_date');
             $table->time('time_in')->nullable();
@@ -22,7 +23,7 @@ return new class extends Migration
             $table->unsignedSmallInteger('minutes_late')->default(0);
             $table->unsignedSmallInteger('minutes_undertime')->default(0);
             $table->text('remarks')->nullable();
-            $table->enum('source', ['manual', 'import'])->default('manual');
+            $table->string('source')->default('manual');
             $table->foreignId('recorded_by')->nullable()->nullOnDelete()->constrained('users');
             $table->timestamps();
 

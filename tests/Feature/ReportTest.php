@@ -81,7 +81,7 @@ test('department head reports page is scoped to their managed department', funct
             ->has('departments', 1)
             ->has('employees', 1)
             ->where('departments.0.value', (string) $managedDepartment->id)
-            ->where('employees.0.value', (string) $managedEmployee->id)
+            ->where('employees.0.value', $managedEmployee->uuid)
         );
 });
 
@@ -374,7 +374,7 @@ test('department head with export permission can export service record within ma
     ]);
 
     $this->actingAs($departmentHead)
-        ->get("/exports/service-record/{$employee->id}/pdf")
+        ->get("/exports/service-record/{$employee->uuid}/pdf")
         ->assertOk()
         ->assertHeader('content-type', 'application/pdf');
 });
@@ -396,7 +396,7 @@ test('department head with export permission cannot export service record outsid
     ]);
 
     $this->actingAs($departmentHead)
-        ->get("/exports/service-record/{$employee->id}/pdf")
+        ->get("/exports/service-record/{$employee->uuid}/pdf")
         ->assertForbidden();
 });
 
@@ -421,7 +421,7 @@ test('masterlist pdf export returns pdf', function () {
 test('service record pdf export returns pdf for valid employee', function () {
     $emp = makeReportEmployee();
     $this->actingAs($this->hrAdmin)
-        ->get("/exports/service-record/{$emp->id}/pdf")
+        ->get("/exports/service-record/{$emp->uuid}/pdf")
         ->assertOk()
         ->assertHeader('content-type', 'application/pdf');
 });
@@ -452,7 +452,7 @@ test('service record pdf export records employee scoped export history', functio
     $employee = makeReportEmployee();
 
     $this->actingAs($this->hrAdmin)
-        ->get("/exports/service-record/{$employee->id}/pdf")
+        ->get("/exports/service-record/{$employee->uuid}/pdf")
         ->assertOk();
 
     $this->assertDatabaseHas('report_exports', [

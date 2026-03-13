@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceSummary extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'employee_id',
         'year',
         'month',
@@ -22,6 +24,11 @@ class AttendanceSummary extends Model
         'total_late_minutes',
         'total_undertime_minutes',
     ];
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected $casts = [
         'year' => 'integer',

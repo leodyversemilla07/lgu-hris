@@ -40,6 +40,7 @@ class EmployeeCompensationController extends Controller
         return Inertia::render('employees/compensation', [
             'employee' => [
                 'id' => $employee->id,
+                'uuid' => $employee->uuid,
                 'full_name' => "{$employee->last_name}, {$employee->first_name}",
                 'employee_number' => $employee->employee_number,
             ],

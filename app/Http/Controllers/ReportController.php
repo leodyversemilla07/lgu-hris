@@ -44,9 +44,9 @@ class ReportController extends Controller
             ->map(fn (Department $department): array => ['value' => (string) $department->id, 'label' => $department->name]);
 
         $employees = $employeeQuery
-            ->get(['id', 'first_name', 'last_name', 'employee_number'])
+            ->get(['id', 'uuid', 'first_name', 'last_name', 'employee_number'])
             ->map(fn (Employee $employee): array => [
-                'value' => (string) $employee->id,
+                'value' => $employee->uuid,
                 'label' => "{$employee->last_name}, {$employee->first_name} ({$employee->employee_number})",
             ]);
 

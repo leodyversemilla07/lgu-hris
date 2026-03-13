@@ -51,6 +51,7 @@ type Option = {
 
 type EmployeeDetail = {
     id: number;
+    uuid: string;
     user_id: number | null;
     employee_number: string;
     first_name: string;
@@ -240,8 +241,8 @@ export default function EditEmployee({
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Employees', href: '/employees' },
-        { title: employee.full_name, href: `/employees/${employee.id}` },
-        { title: 'Edit', href: `/employees/${employee.id}/edit` },
+        { title: employee.full_name, href: `/employees/${employee.uuid}` },
+        { title: 'Edit', href: `/employees/${employee.uuid}/edit` },
     ];
 
     const form = useForm<EmployeeFormData>({
@@ -324,7 +325,7 @@ export default function EditEmployee({
     ];
 
     function submit(): void {
-        form.put(`/employees/${employee.id}`);
+        form.put(`/employees/${employee.uuid}`);
     }
 
     return (
@@ -363,7 +364,7 @@ export default function EditEmployee({
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
                                         <Link
-                                            href={`/employees/${employee.id}`}
+                                            href={`/employees/${employee.uuid}`}
                                         >
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to profile
@@ -1312,7 +1313,7 @@ export default function EditEmployee({
                                             asChild
                                         >
                                             <Link
-                                                href={`/employees/${employee.id}`}
+                                                href={`/employees/${employee.uuid}`}
                                             >
                                                 Cancel
                                             </Link>

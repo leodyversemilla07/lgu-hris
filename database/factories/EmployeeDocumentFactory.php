@@ -15,6 +15,7 @@ class EmployeeDocumentFactory extends Factory
     public function definition(): array
     {
         return [
+            'uuid' => fake()->uuid(),
             'employee_id' => Employee::factory(),
             'document_type_id' => DocumentType::factory(),
             'root_document_id' => null,

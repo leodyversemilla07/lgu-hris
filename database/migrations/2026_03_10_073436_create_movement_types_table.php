@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('movement_types', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('code', 20)->unique();
             $table->string('name');
             $table->string('description')->nullable();

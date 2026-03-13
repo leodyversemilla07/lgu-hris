@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,9 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class EmployeeDocument extends Model
 {
     /** @use HasFactory<\Database\Factories\EmployeeDocumentFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
+        'uuid',
         'employee_id',
         'document_type_id',
         'root_document_id',
@@ -28,6 +30,16 @@ class EmployeeDocument extends Model
         'is_current_version',
         'replaced_at',
     ];
+
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['uuid'];
+    }
 
     protected function casts(): array
     {

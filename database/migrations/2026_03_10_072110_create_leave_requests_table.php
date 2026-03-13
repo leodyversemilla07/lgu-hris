@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('employee_id')->constrained()->restrictOnDelete();
             $table->foreignId('leave_type_id')->constrained()->restrictOnDelete();
             $table->date('start_date');
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->text('reason')->nullable();
             $table->string('status', 20)->default('submitted')
                 ->comment('submitted, approved, rejected, cancelled');
+            $table->timestamp('submitted_at')->nullable();
             $table->foreignId('actioned_by')->nullable()
                 ->constrained('users')->nullOnDelete();
             $table->timestamp('actioned_at')->nullable();

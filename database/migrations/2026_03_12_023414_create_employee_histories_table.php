@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('employee_histories', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
             $table->string('event_type', 50);
             $table->string('title');

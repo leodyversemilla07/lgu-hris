@@ -68,6 +68,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type EmployeeDetail = {
     id: number;
+    uuid: string;
     user_id: number | null;
     employee_number: string;
     first_name: string;
@@ -106,6 +107,7 @@ type Option = { value: string; label: string };
 
 type DocumentRecord = {
     id: number;
+    uuid: string;
     document_type: string;
     file_name: string;
     file_size_formatted: string;
@@ -123,6 +125,7 @@ type DocumentTypeOption = {
 
 type MovementRecord = {
     id: number;
+    uuid: string;
     movement_type: string;
     effective_date: string;
     order_number: string | null;
@@ -191,7 +194,7 @@ export default function EmployeeShow({
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Dashboard', href: '/dashboard' },
         { title: 'Employees', href: '/employees' },
-        { title: employee.full_name, href: `/employees/${employee.id}` },
+        { title: employee.full_name, href: `/employees/${employee.uuid}` },
     ];
 
     const archiveForm = useForm({});
@@ -210,8 +213,10 @@ export default function EmployeeShow({
         notes: '',
         is_confidential: false,
     });
-    const linkUserForm = useForm({
-        user_id: employee.user_id ? String(employee.user_id) : '',
+    const linkUserForm = useForm<{
+        user_id: string | null;
+    }>({
+        user_id: employee.user_id ? String(employee.user_id) : null,
     });
 
     const linkedAccountLabel =
@@ -275,27 +280,19 @@ export default function EmployeeShow({
     }
 
     function handleArchive(): void {
-        archiveForm.patch(`/employees/${employee.id}/archive`);
+        archiveForm.patch(`/employees/${employee.uuid}/archive`);
     }
 
     function handleRestore(): void {
-        restoreForm.patch(`/employees/${employee.id}/restore`);
+        restoreForm.patch(`/employees/${employee.uuid}/restore`);
     }
 
-    function handleDeleteDocument(documentId: number): void {
+    function handleDeleteDocument(documentId: string): void {
         deleteDocForm.delete(`/documents/${documentId}`);
     }
 
     function handleLinkUser(): void {
-        linkUserForm.patch(`/employees/${employee.id}/link-user`, {
-            data: {
-                user_id:
-                    linkUserForm.data.user_id === '' ||
-                    linkUserForm.data.user_id === '0'
-                        ? null
-                        : linkUserForm.data.user_id,
-            },
-        });
+        linkUserForm.patch(`/employees/${employee.uuid}/link-user`);
     }
 
     return (
@@ -344,7 +341,7 @@ export default function EmployeeShow({
                                     </Button>
                                     <Button asChild>
                                         <Link
-                                            href={`/employees/${employee.id}/edit`}
+                                            href={`/employees/${employee.uuid}/edit`}
                                         >
                                             <Pencil data-icon="inline-start" />
                                             Edit employee
@@ -801,16 +798,15 @@ export default function EmployeeShow({
                                                         User account
                                                     </Label>
                                                     <Select
-                                                        value={
-                                                            linkUserForm.data
-                                                                .user_id
-                                                        }
+                                                        value={linkUserForm.data.user_id ?? '0'}
                                                         onValueChange={(
                                                             value,
                                                         ) =>
                                                             linkUserForm.setData(
                                                                 'user_id',
-                                                                value,
+                                                                value === '0'
+                                                                    ? null
+                                                                    : value,
                                                             )
                                                         }
                                                     >
@@ -1193,7 +1189,7 @@ export default function EmployeeShow({
                                                                             size="sm"
                                                                         >
                                                                             <a
-                                                                                href={`/documents/${document.id}/download`}
+                                                                                href={`/documents/${document.uuid}/download`}
                                                                             >
                                                                                 <Download data-icon="inline-start" />
                                                                                 Download
@@ -1237,7 +1233,7 @@ export default function EmployeeShow({
                                                                                         variant="destructive"
                                                                                         onClick={() =>
                                                                                             handleDeleteDocument(
-                                                                                                document.id,
+                                                                                                document.uuid,
                                                                                             )
                                                                                         }
                                                                                         disabled={
@@ -1372,7 +1368,7 @@ export default function EmployeeShow({
                                                                     size="sm"
                                                                 >
                                                                     <Link
-                                                                        href={`/personnel-movements/${movement.id}`}
+                                                                        href={`/personnel-movements/${movement.uuid}`}
                                                                     >
                                                                         View
                                                                         details
@@ -1532,7 +1528,7 @@ export default function EmployeeShow({
                                         <CardAction>
                                             <Button asChild size="sm">
                                                 <Link
-                                                    href={`/employees/${employee.id}/compensation`}
+                                                    href={`/employees/${employee.uuid}/compensation`}
                                                 >
                                                     <Plus data-icon="inline-start" />
                                                     Update salary grade
@@ -1562,7 +1558,7 @@ export default function EmployeeShow({
                                                         variant="outline"
                                                     >
                                                         <Link
-                                                            href={`/employees/${employee.id}/compensation`}
+                                                            href={`/employees/${employee.uuid}/compensation`}
                                                         >
                                                             Assign salary grade
                                                         </Link>

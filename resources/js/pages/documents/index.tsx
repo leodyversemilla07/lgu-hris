@@ -77,6 +77,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type DocumentVersionRecord = {
     id: number;
+    uuid: string;
     file_name: string;
     file_size_formatted: string;
     is_confidential: boolean;
@@ -90,6 +91,7 @@ type DocumentVersionRecord = {
 
 type DocumentRecord = {
     id: number;
+    uuid: string;
     employee_id: number;
     employee_name: string;
     employee_number: string;
@@ -305,7 +307,7 @@ export default function DocumentsIndex({
         });
     }
 
-    function handleDelete(documentId: number): void {
+    function handleDelete(documentId: string): void {
         deleteForm.delete(`/documents/${documentId}`);
     }
 
@@ -789,7 +791,7 @@ export default function DocumentsIndex({
                                                                     document.id
                                                                 }
                                                             >
-                                                                <TableCell className="min-w-[220px]">
+                                                                <TableCell className="min-w-55">
                                                                     <div className="flex flex-col gap-1">
                                                                         <div className="font-medium">
                                                                             {
@@ -871,7 +873,7 @@ export default function DocumentsIndex({
                                                                                             >
                                                                                                 {version.is_previewable && (
                                                                                                     <a
-                                                                                                        href={`/documents/${version.id}/preview`}
+                                                                                                        href={`/documents/${version.uuid}/preview`}
                                                                                                         target="_blank"
                                                                                                         rel="noreferrer"
                                                                                                         className="inline-flex items-center gap-1 hover:text-foreground"
@@ -881,7 +883,7 @@ export default function DocumentsIndex({
                                                                                                     </a>
                                                                                                 )}
                                                                                                 <a
-                                                                                                    href={`/documents/${version.id}/download`}
+                                                                                                    href={`/documents/${version.uuid}/download`}
                                                                                                     className="inline-flex items-center gap-2 hover:text-foreground"
                                                                                                 >
                                                                                                     <Download className="size-3" />
@@ -931,7 +933,7 @@ export default function DocumentsIndex({
                                                                                 size="sm"
                                                                             >
                                                                                 <a
-                                                                                    href={`/documents/${document.id}/preview`}
+                                                                                    href={`/documents/${document.uuid}/preview`}
                                                                                     target="_blank"
                                                                                     rel="noreferrer"
                                                                                 >
@@ -947,7 +949,7 @@ export default function DocumentsIndex({
                                                                             size="sm"
                                                                         >
                                                                             <a
-                                                                                href={`/documents/${document.id}/download`}
+                                                                                href={`/documents/${document.uuid}/download`}
                                                                             >
                                                                                 <Download data-icon="inline-start" />
                                                                                 Download
@@ -994,7 +996,7 @@ export default function DocumentsIndex({
                                                                                     <AlertDialogAction
                                                                                         onClick={() =>
                                                                                             handleDelete(
-                                                                                                document.id,
+                                                                                                document.uuid,
                                                                                             )
                                                                                         }
                                                                                         className="bg-destructive text-white hover:bg-destructive/90"
@@ -1013,7 +1015,7 @@ export default function DocumentsIndex({
                                             </Table>
                                         </div>
                                     ) : (
-                                        <Empty className="min-h-[280px] border-border bg-muted/20">
+                                        <Empty className="min-h-70 border-border bg-muted/20">
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
                                                     <FileArchive />

@@ -58,6 +58,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type MovementRecord = {
     id: number;
+    uuid: string;
     employee_id: number;
     employee_name: string;
     employee_number: string;
@@ -457,7 +458,7 @@ export default function PersonnelMovementsIndex({
                                                                     movement.id
                                                                 }
                                                             >
-                                                                <TableCell className="min-w-[220px]">
+                                                                <TableCell className="min-w-55">
                                                                     <div className="flex flex-col gap-1">
                                                                         <div className="font-medium">
                                                                             {
@@ -509,7 +510,7 @@ export default function PersonnelMovementsIndex({
                                                                         size="sm"
                                                                     >
                                                                         <Link
-                                                                            href={`/personnel-movements/${movement.id}`}
+                                                                            href={`/personnel-movements/${movement.uuid}`}
                                                                         >
                                                                             View
                                                                         </Link>
@@ -522,7 +523,7 @@ export default function PersonnelMovementsIndex({
                                             </Table>
                                         </div>
                                     ) : (
-                                        <Empty className="min-h-[280px] border-border bg-muted/20">
+                                        <Empty className="min-h-70 border-border bg-muted/20">
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
                                                     <ArrowRightLeft />

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\SalaryGrade;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class SalaryGradeSeeder extends Seeder
 {
@@ -62,14 +62,12 @@ class SalaryGradeSeeder extends Seeder
                     'grade' => $grade,
                     'step' => $step,
                     'monthly_salary' => round($salary, 2),
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ];
             }
         }
 
         foreach ($rows as $row) {
-            DB::table('salary_grades')->updateOrInsert(
+            SalaryGrade::updateOrCreate(
                 ['grade' => $row['grade'], 'step' => $row['step']],
                 $row,
             );

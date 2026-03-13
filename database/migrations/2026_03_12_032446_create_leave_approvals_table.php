@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('leave_approvals', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('leave_request_id')->constrained()->cascadeOnDelete();
             $table->string('action', 20);
             $table->text('remarks')->nullable();

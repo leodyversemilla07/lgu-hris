@@ -13,6 +13,7 @@ class WorkScheduleFactory extends Factory
     public function definition(): array
     {
         return [
+            'uuid' => fake()->uuid(),
             'name' => $this->faker->randomElement([
                 'Regular 8-5',
                 'Regular 7-4',

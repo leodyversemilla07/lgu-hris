@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('leave_balances', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('employee_id')->constrained()->restrictOnDelete();
             $table->foreignId('leave_type_id')->constrained()->restrictOnDelete();
             $table->unsignedSmallInteger('year');

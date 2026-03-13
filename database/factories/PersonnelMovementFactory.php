@@ -15,6 +15,7 @@ class PersonnelMovementFactory extends Factory
     public function definition(): array
     {
         return [
+            'uuid' => fake()->uuid(),
             'employee_id' => Employee::factory(),
             'movement_type_id' => MovementType::factory(),
             'effective_date' => fake()->dateTimeBetween('-2 years', 'now')->format('Y-m-d'),

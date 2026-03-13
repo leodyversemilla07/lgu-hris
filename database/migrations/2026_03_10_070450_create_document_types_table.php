@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('document_types', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('code')->unique();
             $table->string('name')->unique();
             $table->string('description')->nullable();

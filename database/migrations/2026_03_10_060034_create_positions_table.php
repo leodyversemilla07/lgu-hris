@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('positions', function (Blueprint $table): void {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
             $table->string('code')->unique();
             $table->string('name');

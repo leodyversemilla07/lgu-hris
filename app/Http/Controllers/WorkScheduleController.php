@@ -20,6 +20,7 @@ class WorkScheduleController extends Controller
             ->get()
             ->map(fn (WorkSchedule $workSchedule): array => [
                 'id' => $workSchedule->id,
+                'uuid' => $workSchedule->uuid,
                 'name' => $workSchedule->name,
                 'time_in' => substr($workSchedule->time_in, 0, 5),
                 'time_out' => substr($workSchedule->time_out, 0, 5),

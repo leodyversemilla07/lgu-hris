@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\WorkSchedule;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class WorkScheduleSeeder extends Seeder
 {
@@ -37,12 +37,9 @@ class WorkScheduleSeeder extends Seeder
         ];
 
         foreach ($schedules as $schedule) {
-            DB::table('work_schedules')->updateOrInsert(
+            WorkSchedule::updateOrCreate(
                 ['name' => $schedule['name']],
-                array_merge($schedule, [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]),
+                $schedule,
             );
         }
     }

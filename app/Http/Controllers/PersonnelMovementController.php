@@ -187,6 +187,7 @@ class PersonnelMovementController extends Controller
     {
         return [
             'id' => $movement->id,
+            'uuid' => $movement->uuid,
             'employee_id' => $movement->employee_id,
             'employee_name' => "{$movement->employee->last_name}, {$movement->employee->first_name}",
             'employee_number' => $movement->employee->employee_number,

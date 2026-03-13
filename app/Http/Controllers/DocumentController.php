@@ -216,6 +216,7 @@ class DocumentController extends Controller
 
         return [
             'id' => $document->id,
+            'uuid' => $document->uuid,
             'employee_id' => $document->employee_id,
             'employee_name' => trim(collect([
                 $document->employee->first_name,
@@ -247,6 +248,7 @@ class DocumentController extends Controller
     {
         return [
             'id' => $document->id,
+            'uuid' => $document->uuid,
             'file_name' => $document->file_name,
             'file_size_formatted' => $this->formatFileSize($document->file_size),
             'is_confidential' => $document->is_confidential,

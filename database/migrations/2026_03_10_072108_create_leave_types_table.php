@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('leave_types', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('code', 20)->unique();
             $table->string('name');
             $table->unsignedSmallInteger('max_days_per_year')->nullable()->comment('null = unlimited');

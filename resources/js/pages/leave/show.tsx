@@ -39,6 +39,7 @@ import type { BreadcrumbItem } from '@/types';
 
 type LeaveRequestDetail = {
     id: number;
+    uuid: string;
     employee_id: number;
     employee_name: string;
     employee_number: string;
@@ -119,7 +120,7 @@ export default function LeaveShow({
         { title: 'Leave', href: '/leave' },
         {
             title: `Leave #${leaveRequest.id}`,
-            href: `/leave/${leaveRequest.id}`,
+            href: `/leave/${leaveRequest.uuid}`,
         },
     ];
 
@@ -170,17 +171,17 @@ export default function LeaveShow({
     }
 
     function submitApproval(): void {
-        approvalForm.post(`/leave/${leaveRequest.id}/approve`, {
+        approvalForm.post(`/leave/${leaveRequest.uuid}/approve`, {
             onSuccess: () => setApprovalAction(null),
         });
     }
 
     function handleSubmit(): void {
-        submitForm.post(`/leave/${leaveRequest.id}/submit`);
+        submitForm.post(`/leave/${leaveRequest.uuid}/submit`);
     }
 
     function handleCancel(): void {
-        cancelForm.patch(`/leave/${leaveRequest.id}/cancel`);
+        cancelForm.patch(`/leave/${leaveRequest.uuid}/cancel`);
     }
 
     return (

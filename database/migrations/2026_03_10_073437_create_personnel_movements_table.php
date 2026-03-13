@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('personnel_movements', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->foreignId('employee_id')->constrained()->restrictOnDelete();
             $table->foreignId('movement_type_id')->constrained()->restrictOnDelete();
             $table->date('effective_date');
