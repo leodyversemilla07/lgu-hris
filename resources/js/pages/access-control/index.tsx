@@ -68,6 +68,12 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    destroy as destroyUser,
+    store as storeUser,
+    update as updateUser,
+} from '@/actions/App/Http/Controllers/UserController';
+import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -149,7 +155,7 @@ function EditRoleDialog({
     function submit(event: FormEvent): void {
         event.preventDefault();
 
-        form.put(`/access-control/users/${user.uuid}`, {
+        form.submit(updateUser(user.uuid), {
             onSuccess: () => setOpen(false),
         });
     }
@@ -275,7 +281,7 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
     function submit(event: FormEvent): void {
         event.preventDefault();
 
-        form.post('/access-control/users', {
+        form.submit(storeUser(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -408,7 +414,7 @@ function CreateUserDialog({ roles }: { roles: string[] }) {
 
 function DeleteUserDialog({ user }: { user: UserRow }) {
     function handleDelete(): void {
-        router.delete(`/access-control/users/${user.uuid}`);
+        router.delete(destroyUser(user.uuid));
     }
 
     return (
@@ -553,7 +559,7 @@ export default function AccessControlIndex({
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <CreateUserDialog roles={roles} />
                                     <Button asChild variant="outline">
-                                        <Link href="/reference-data">
+                                        <Link href={referenceDataIndex()}>
                                             Review reference data
                                         </Link>
                                     </Button>

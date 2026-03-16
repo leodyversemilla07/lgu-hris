@@ -72,6 +72,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    destroy as destroyDocument,
+    download as downloadDocument,
+    preview as previewDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -298,7 +305,7 @@ export default function DocumentsIndex({
     ];
 
     function handleUpload(): void {
-        form.post('/documents', {
+        form.post(storeDocument.url(), {
             forceFormData: true,
             onSuccess: () => {
                 setShowUploadForm(false);
@@ -308,7 +315,7 @@ export default function DocumentsIndex({
     }
 
     function handleDelete(documentId: string): void {
-        deleteForm.delete(`/documents/${documentId}`);
+        deleteForm.delete(destroyDocument.url(documentId));
     }
 
     function resetFilters(): void {
@@ -361,7 +368,7 @@ export default function DocumentsIndex({
                                             : 'Upload document'}
                                     </Button>
                                     <Button asChild variant="outline">
-                                        <Link href="/employees">
+                                        <Link href={employeesIndex()}>
                                             Go to employees
                                             <ArrowRight data-icon="inline-end" />
                                         </Link>
@@ -873,7 +880,7 @@ export default function DocumentsIndex({
                                                                                             >
                                                                                                 {version.is_previewable && (
                                                                                                     <a
-                                                                                                        href={`/documents/${version.uuid}/preview`}
+                                                                                                        href={previewDocument.url(version.uuid)}
                                                                                                         target="_blank"
                                                                                                         rel="noreferrer"
                                                                                                         className="inline-flex items-center gap-1 hover:text-foreground"
@@ -883,7 +890,7 @@ export default function DocumentsIndex({
                                                                                                     </a>
                                                                                                 )}
                                                                                                 <a
-                                                                                                    href={`/documents/${version.uuid}/download`}
+                                                                                                    href={downloadDocument.url(version.uuid)}
                                                                                                     className="inline-flex items-center gap-2 hover:text-foreground"
                                                                                                 >
                                                                                                     <Download className="size-3" />
@@ -933,7 +940,7 @@ export default function DocumentsIndex({
                                                                                 size="sm"
                                                                             >
                                                                                 <a
-                                                                                    href={`/documents/${document.uuid}/preview`}
+                                                                                    href={previewDocument.url(document.uuid)}
                                                                                     target="_blank"
                                                                                     rel="noreferrer"
                                                                                 >
@@ -949,7 +956,7 @@ export default function DocumentsIndex({
                                                                             size="sm"
                                                                         >
                                                                             <a
-                                                                                href={`/documents/${document.uuid}/download`}
+                                                                                href={downloadDocument.url(document.uuid)}
                                                                             >
                                                                                 <Download data-icon="inline-start" />
                                                                                 Download
@@ -1050,7 +1057,7 @@ export default function DocumentsIndex({
                                                                 asChild
                                                                 variant="outline"
                                                             >
-                                                                <Link href="/employees">
+                                                                <Link href={employeesIndex()}>
                                                                     <Users data-icon="inline-start" />
                                                                     View
                                                                     employees

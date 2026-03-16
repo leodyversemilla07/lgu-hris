@@ -52,6 +52,11 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    destroy as destroyReferenceData,
+    store as storeReferenceData,
+    update as updateReferenceData,
+} from '@/actions/App/Http/Controllers/ReferenceDataController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -151,7 +156,7 @@ function deactivate(type: string, id: number, name: string) {
         )
     )
         return;
-    router.delete(`/reference-data/${id}`, { data: { type } });
+    router.delete(destroyReferenceData(id), { data: { type } });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -164,7 +169,7 @@ function AddDepartmentDialog() {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/reference-data', {
+        form.post(storeReferenceData.url(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -242,7 +247,7 @@ function EditDepartmentDialog({ dept }: { dept: Department }) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.put(`/reference-data/${dept.id}`, {
+        form.put(updateReferenceData.url(dept.id), {
             onSuccess: () => setOpen(false),
         });
     }
@@ -407,7 +412,7 @@ function AddPositionDialog({ deptOptions }: { deptOptions: DeptOption[] }) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/reference-data', {
+        form.post(storeReferenceData.url(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -514,7 +519,7 @@ function EditPositionDialog({
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.put(`/reference-data/${position.id}`, {
+        form.put(updateReferenceData.url(position.id), {
             onSuccess: () => setOpen(false),
         });
     }
@@ -728,7 +733,7 @@ function AddSimpleDialog({
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/reference-data', {
+        form.post(storeReferenceData.url(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -810,7 +815,7 @@ function EditSimpleDialog({
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.put(`/reference-data/${record.id}`, {
+        form.put(updateReferenceData.url(record.id), {
             onSuccess: () => setOpen(false),
         });
     }
@@ -994,7 +999,7 @@ function AddLeaveTypeDialog() {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/reference-data', {
+        form.post(storeReferenceData.url(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -1103,7 +1108,7 @@ function EditLeaveTypeDialog({ lt }: { lt: LeaveType }) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.put(`/reference-data/${lt.id}`, {
+        form.put(updateReferenceData.url(lt.id), {
             onSuccess: () => setOpen(false),
         });
     }
@@ -1311,7 +1316,7 @@ function AddDocumentTypeDialog() {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.post('/reference-data', {
+        form.post(storeReferenceData.url(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -1400,7 +1405,7 @@ function EditDocumentTypeDialog({ dt }: { dt: DocumentType }) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        form.put(`/reference-data/${dt.id}`, {
+        form.put(updateReferenceData.url(dt.id), {
             onSuccess: () => setOpen(false),
         });
     }
