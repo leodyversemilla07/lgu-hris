@@ -34,6 +34,12 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+    approve as approveLeave,
+    cancel as cancelLeave,
+    index as leaveIndex,
+    submit as submitLeave,
+} from '@/actions/App/Http/Controllers/LeaveController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -171,17 +177,17 @@ export default function LeaveShow({
     }
 
     function submitApproval(): void {
-        approvalForm.post(`/leave/${leaveRequest.uuid}/approve`, {
+        approvalForm.post(approveLeave.url(leaveRequest.uuid), {
             onSuccess: () => setApprovalAction(null),
         });
     }
 
     function handleSubmit(): void {
-        submitForm.post(`/leave/${leaveRequest.uuid}/submit`);
+        submitForm.post(submitLeave.url(leaveRequest.uuid));
     }
 
     function handleCancel(): void {
-        cancelForm.patch(`/leave/${leaveRequest.uuid}/cancel`);
+        cancelForm.patch(cancelLeave.url(leaveRequest.uuid));
     }
 
     return (
@@ -209,7 +215,7 @@ export default function LeaveShow({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/leave">
+                                        <Link href={leaveIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to leave
                                         </Link>

@@ -45,6 +45,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
+import { upsert as upsertLeaveBalance } from '@/actions/App/Http/Controllers/LeaveBalanceController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -179,7 +181,7 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/leave">
+                                        <Link href={leaveIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to requests
                                         </Link>
@@ -435,7 +437,7 @@ function BalanceEditRow({ row, year }: { row: BalanceRow; year: number }) {
                     size="sm"
                     variant="ghost"
                     onClick={() =>
-                        form.post('/leave-balances/upsert', {
+                        form.post(upsertLeaveBalance.url(), {
                             preserveState: true,
                             preserveScroll: true,
                         })

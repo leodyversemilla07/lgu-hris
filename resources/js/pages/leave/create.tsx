@@ -40,9 +40,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { index as leaveIndex, store } from '@/actions/App/Http/Controllers/LeaveController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { store } from '@/actions/App/Http/Controllers/LeaveController';
 
 type EmployeeOption = {
     value: string;
@@ -276,7 +276,7 @@ export default function LeaveCreate({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/leave">
+                                        <Link href={leaveIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to requests
                                         </Link>
@@ -660,7 +660,7 @@ export default function LeaveCreate({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href="/leave">Cancel</Link>
+                                            <Link href={leaveIndex()}>Cancel</Link>
                                         </Button>
                                     </CardFooter>
                                 </Card>

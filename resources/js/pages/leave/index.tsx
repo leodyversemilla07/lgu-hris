@@ -54,6 +54,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    create as leaveCreate,
+    index as leaveIndex,
+    show as leaveShow,
+} from '@/actions/App/Http/Controllers/LeaveController';
+import { index as leaveBalancesIndex } from '@/actions/App/Http/Controllers/LeaveBalanceController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -219,7 +225,7 @@ export default function LeaveIndex({
             params.employee_id = employeeId;
         }
 
-        router.get('/leave', params, {
+        router.get(leaveIndex.url({ query: params }), {}, {
             preserveState: true,
             replace: true,
         });
@@ -249,7 +255,7 @@ export default function LeaveIndex({
         setStatusFilter('all');
         setTypeFilter('all');
         setEmployeeFilter('all');
-        router.get('/leave', {}, { preserveState: true, replace: true });
+        router.get(leaveIndex(), {}, { preserveState: true, replace: true });
     }
 
     function goToPage(nextPage: number): void {
@@ -312,14 +318,14 @@ export default function LeaveIndex({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild>
-                                        <Link href="/leave/create">
+                                        <Link href={leaveCreate()}>
                                             <Plus data-icon="inline-start" />
                                             File leave
                                         </Link>
                                     </Button>
                                     {canApprove && (
                                         <Button asChild variant="outline">
-                                            <Link href="/leave-balances">
+                                            <Link href={leaveBalancesIndex()}>
                                                 <CalendarDays data-icon="inline-start" />
                                                 Leave balances
                                             </Link>
@@ -620,7 +626,7 @@ export default function LeaveIndex({
                                                                             size="sm"
                                                                         >
                                                                             <Link
-                                                                                href={`/leave/${leaveRequest.uuid}`}
+                                                                                href={leaveShow(leaveRequest.uuid)}
                                                                             >
                                                                                 View
                                                                             </Link>
@@ -655,7 +661,7 @@ export default function LeaveIndex({
                                                     {leaveRequests.length ===
                                                         0 ? (
                                                         <Button asChild>
-                                                            <Link href="/leave/create">
+                                                            <Link href={leaveCreate()}>
                                                                 <Plus data-icon="inline-start" />
                                                                 File leave
                                                             </Link>
