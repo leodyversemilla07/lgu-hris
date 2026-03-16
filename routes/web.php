@@ -7,6 +7,7 @@ use App\Http\Controllers\EmployeeCompensationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
@@ -17,6 +18,19 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
+
+Route::get('install', [InstallationController::class, 'index'])->name('install.index');
+Route::get('install/requirements', [InstallationController::class, 'checkRequirements'])->name('install.requirements');
+Route::get('install/database', [InstallationController::class, 'database'])->name('install.database');
+Route::post('install/database/check', [InstallationController::class, 'checkDatabase'])->name('install.database.check');
+Route::post('install/database', [InstallationController::class, 'storeDatabase'])->name('install.database.store');
+Route::get('install/environment', [InstallationController::class, 'environment'])->name('install.environment');
+Route::post('install/environment', [InstallationController::class, 'storeEnvironment'])->name('install.environment.store');
+Route::get('install/migrations', [InstallationController::class, 'migrations'])->name('install.migrations');
+Route::post('install/migrations', [InstallationController::class, 'runMigrations'])->name('install.migrations.run');
+Route::get('install/admin', [InstallationController::class, 'admin'])->name('install.admin');
+Route::post('install/admin', [InstallationController::class, 'createAdmin'])->name('install.admin.store');
+Route::get('install/complete', [InstallationController::class, 'complete'])->name('install.complete');
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
