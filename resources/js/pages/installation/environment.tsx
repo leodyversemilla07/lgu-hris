@@ -19,6 +19,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    database,
+    migrations,
+    storeEnvironment,
+} from '@/actions/App/Http/Controllers/InstallationController';
 
 export default function EnvironmentConfig() {
     const [formData, setFormData] = useState({
@@ -50,7 +55,7 @@ export default function EnvironmentConfig() {
         setError(null);
 
         try {
-            const response = await fetch('/install/environment', {
+            const response = await fetch(storeEnvironment.url(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,7 +83,7 @@ export default function EnvironmentConfig() {
             }
 
             if (response.ok && result.success !== false) {
-                router.get('/install/migrations');
+                router.get(migrations());
             } else {
                 setError(
                     result.message ||
@@ -294,7 +299,7 @@ export default function EnvironmentConfig() {
 
                             {/* Actions */}
                             <div className="flex justify-between pt-4">
-                                <Link href="/install/database">
+                                <Link href={database()}>
                                     <Button variant="outline">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back

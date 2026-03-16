@@ -9,6 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { home, login } from '@/routes';
 
 export default function Complete() {
     return (
@@ -73,13 +74,13 @@ export default function Complete() {
                             </div>
 
                             <div className="flex flex-col justify-center gap-4 pt-4 sm:flex-row">
-                                <Link href="/">
+                                <Link href={home()}>
                                     <Button variant="outline" size="lg">
                                         <Home className="mr-2 h-4 w-4" />
                                         Go to Home
                                     </Button>
                                 </Link>
-                                <Link href="/login">
+                                <Link href={login()}>
                                     <Button size="lg">
                                         <LogIn className="mr-2 h-4 w-4" />
                                         Log In

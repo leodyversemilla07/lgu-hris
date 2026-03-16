@@ -17,6 +17,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    admin,
+    environment,
+    runMigrations as runMigrationsAction,
+} from '@/actions/App/Http/Controllers/InstallationController';
 
 export default function Migrations() {
     const [isRunning, setIsRunning] = useState(false);
@@ -37,7 +42,7 @@ export default function Migrations() {
         setMessage('Running database migrations...');
 
         try {
-            const response = await fetch('/install/migrations', {
+            const response = await fetch(runMigrationsAction.url(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,7 +76,7 @@ export default function Migrations() {
     };
 
     const handleContinue = () => {
-        router.get('/install/admin');
+        router.get(admin());
     };
 
     return (
@@ -153,7 +158,7 @@ export default function Migrations() {
 
                             {/* Actions */}
                             <div className="flex justify-between pt-4">
-                                <Link href="/install/environment">
+                                <Link href={environment()}>
                                     <Button variant="outline">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back

@@ -15,6 +15,15 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import {
+    admin,
+    checkRequirements,
+    complete,
+    database,
+    environment,
+    index as installIndex,
+    migrations,
+} from '@/actions/App/Http/Controllers/InstallationController';
 
 interface Step {
     id: number;
@@ -133,7 +142,7 @@ export default function InstallationIndex({ steps, currentStep }: Props) {
                             New to LGU HRIS? Start the installation wizard to
                             configure your system.
                         </p>
-                        <Link href="/install/requirements">
+                        <Link href={checkRequirements()}>
                             <Button size="lg">Start Installation</Button>
                         </Link>
                     </div>
@@ -146,18 +155,18 @@ export default function InstallationIndex({ steps, currentStep }: Props) {
 function getStepUrl(stepId: number): string {
     switch (stepId) {
         case 1:
-            return '/install/requirements';
+            return checkRequirements.url();
         case 2:
-            return '/install/database';
+            return database.url();
         case 3:
-            return '/install/environment';
+            return environment.url();
         case 4:
-            return '/install/migrations';
+            return migrations.url();
         case 5:
-            return '/install/admin';
+            return admin.url();
         case 6:
-            return '/install/complete';
+            return complete.url();
         default:
-            return '/install';
+            return installIndex.url();
     }
 }

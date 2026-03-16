@@ -10,6 +10,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    complete,
+    createAdmin,
+    migrations,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -69,7 +74,7 @@ export default function AdminUser() {
         setError(null);
 
         try {
-            const response = await fetch('/install/admin', {
+            const response = await fetch(createAdmin.url(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -84,7 +89,7 @@ export default function AdminUser() {
             const result = await response.json();
 
             if (response.ok) {
-                router.get('/install/complete');
+                router.get(complete());
             } else {
                 setError(result.message || 'Failed to create admin user');
             }
@@ -204,7 +209,7 @@ export default function AdminUser() {
 
                             {/* Actions */}
                             <div className="flex justify-between pt-4">
-                                <Link href="/install/migrations">
+                                <Link href={migrations()}>
                                     <Button variant="outline">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back

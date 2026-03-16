@@ -19,6 +19,12 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    checkDatabase,
+    checkRequirements,
+    environment,
+    storeDatabase,
+} from '@/actions/App/Http/Controllers/InstallationController';
 
 export default function DatabaseConfig() {
     const [formData, setFormData] = useState({
@@ -50,7 +56,7 @@ export default function DatabaseConfig() {
         setTestResult(null);
 
         try {
-            const response = await fetch('/install/database/check', {
+            const response = await fetch(checkDatabase.url(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,7 +122,7 @@ export default function DatabaseConfig() {
 
         (async () => {
             try {
-                const response = await fetch('/install/database', {
+                const response = await fetch(storeDatabase.url(), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -144,7 +150,7 @@ export default function DatabaseConfig() {
                     );
                 }
 
-                router.get('/install/environment');
+                router.get(environment());
             } catch (error) {
                 setTestResult({
                     success: false,
@@ -282,7 +288,7 @@ export default function DatabaseConfig() {
 
                             {/* Actions */}
                             <div className="flex justify-between pt-4">
-                                <Link href="/install/requirements">
+                                <Link href={checkRequirements()}>
                                     <Button variant="outline">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back

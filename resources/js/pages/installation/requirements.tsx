@@ -17,6 +17,11 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    checkRequirements,
+    database,
+    index as installIndex,
+} from '@/actions/App/Http/Controllers/InstallationController';
 
 interface Requirement {
     php_version?: {
@@ -38,12 +43,12 @@ export default function Requirements({ requirements, passed }: Props) {
 
     const handleContinue = () => {
         setIsChecking(true);
-        router.get('/install/database');
+        router.get(database());
     };
 
     const handleRetry = () => {
         setIsChecking(true);
-        router.reload();
+        router.get(checkRequirements());
     };
 
     return (
@@ -167,7 +172,7 @@ export default function Requirements({ requirements, passed }: Props) {
 
                             {/* Actions */}
                             <div className="flex justify-between pt-4">
-                                <Link href="/install">
+                                <Link href={installIndex()}>
                                     <Button variant="outline">
                                         <ArrowLeft className="mr-2 h-4 w-4" />
                                         Back
