@@ -15,8 +15,14 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -118,30 +124,37 @@ export default function EnvironmentConfig() {
                                 <h3 className="mb-4 font-semibold">
                                     Application Settings
                                 </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="app_name">
+                                <FieldGroup>
+                                    <Field>
+                                        <FieldLabel htmlFor="app_name">
                                             Application Name
-                                        </Label>
-                                        <Input
-                                            id="app_name"
-                                            name="app_name"
-                                            value={formData.app_name}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="app_url">
+                                        </FieldLabel>
+                                        <FieldContent>
+                                            <Input
+                                                id="app_name"
+                                                name="app_name"
+                                                value={formData.app_name}
+                                                onChange={handleChange}
+                                            />
+                                        </FieldContent>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="app_url">
                                             Application URL
-                                        </Label>
-                                        <Input
-                                            id="app_url"
-                                            name="app_url"
-                                            value={formData.app_url}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                </div>
+                                        </FieldLabel>
+                                        <FieldContent>
+                                            <Input
+                                                id="app_url"
+                                                name="app_url"
+                                                value={formData.app_url}
+                                                onChange={handleChange}
+                                            />
+                                            <FieldDescription>
+                                                Use the public URL where users will access this application.
+                                            </FieldDescription>
+                                        </FieldContent>
+                                    </Field>
+                                </FieldGroup>
                             </div>
 
                             {/* Mail Settings */}
@@ -149,145 +162,161 @@ export default function EnvironmentConfig() {
                                 <h3 className="mb-4 font-semibold">
                                     Mail Settings
                                 </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <Label htmlFor="mail_driver">
+                                <FieldGroup>
+                                    <Field>
+                                        <FieldLabel htmlFor="mail_driver">
                                             Mail Driver
-                                        </Label>
-                                        <Select
-                                            value={formData.mail_driver}
-                                            onValueChange={(value) =>
-                                                handleSelectChange(
-                                                    'mail_driver',
-                                                    value,
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="smtp">
-                                                    SMTP
-                                                </SelectItem>
-                                                <SelectItem value="sendmail">
-                                                    Sendmail
-                                                </SelectItem>
-                                                <SelectItem value="mailgun">
-                                                    Mailgun
-                                                </SelectItem>
-                                                <SelectItem value="postmark">
-                                                    Postmark
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="mail_host">
-                                                SMTP Host
-                                            </Label>
-                                            <Input
-                                                id="mail_host"
-                                                name="mail_host"
-                                                value={formData.mail_host}
-                                                onChange={handleChange}
-                                                placeholder="smtp.gmail.com"
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="mail_port">
-                                                SMTP Port
-                                            </Label>
-                                            <Input
-                                                id="mail_port"
-                                                name="mail_port"
-                                                type="number"
-                                                value={formData.mail_port}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="mail_username">
-                                                Username
-                                            </Label>
-                                            <Input
-                                                id="mail_username"
-                                                name="mail_username"
-                                                value={formData.mail_username}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="mail_password">
-                                                Password
-                                            </Label>
-                                            <Input
-                                                id="mail_password"
-                                                name="mail_password"
-                                                type="password"
-                                                value={formData.mail_password}
-                                                onChange={handleChange}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="mail_encryption">
-                                                Encryption
-                                            </Label>
+                                        </FieldLabel>
+                                        <FieldContent>
                                             <Select
-                                                value={formData.mail_encryption}
+                                                value={formData.mail_driver}
                                                 onValueChange={(value) =>
                                                     handleSelectChange(
-                                                        'mail_encryption',
+                                                        'mail_driver',
                                                         value,
                                                     )
                                                 }
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger id="mail_driver">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="tls">
-                                                        TLS
+                                                    <SelectItem value="smtp">
+                                                        SMTP
                                                     </SelectItem>
-                                                    <SelectItem value="ssl">
-                                                        SSL
+                                                    <SelectItem value="sendmail">
+                                                        Sendmail
+                                                    </SelectItem>
+                                                    <SelectItem value="mailgun">
+                                                        Mailgun
+                                                    </SelectItem>
+                                                    <SelectItem value="postmark">
+                                                        Postmark
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="mail_from_address">
+                                        </FieldContent>
+                                    </Field>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Field>
+                                            <FieldLabel htmlFor="mail_host">
+                                                SMTP Host
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="mail_host"
+                                                    name="mail_host"
+                                                    value={formData.mail_host}
+                                                    onChange={handleChange}
+                                                    placeholder="smtp.gmail.com"
+                                                />
+                                            </FieldContent>
+                                        </Field>
+                                        <Field>
+                                            <FieldLabel htmlFor="mail_port">
+                                                SMTP Port
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="mail_port"
+                                                    name="mail_port"
+                                                    type="number"
+                                                    value={formData.mail_port}
+                                                    onChange={handleChange}
+                                                />
+                                            </FieldContent>
+                                        </Field>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Field>
+                                            <FieldLabel htmlFor="mail_username">
+                                                Username
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="mail_username"
+                                                    name="mail_username"
+                                                    value={formData.mail_username}
+                                                    onChange={handleChange}
+                                                />
+                                            </FieldContent>
+                                        </Field>
+                                        <Field>
+                                            <FieldLabel htmlFor="mail_password">
+                                                Password
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="mail_password"
+                                                    name="mail_password"
+                                                    type="password"
+                                                    value={formData.mail_password}
+                                                    onChange={handleChange}
+                                                />
+                                            </FieldContent>
+                                        </Field>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Field>
+                                            <FieldLabel htmlFor="mail_encryption">
+                                                Encryption
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Select
+                                                    value={formData.mail_encryption}
+                                                    onValueChange={(value) =>
+                                                        handleSelectChange(
+                                                            'mail_encryption',
+                                                            value,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger id="mail_encryption">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="tls">
+                                                            TLS
+                                                        </SelectItem>
+                                                        <SelectItem value="ssl">
+                                                            SSL
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FieldContent>
+                                        </Field>
+                                        <Field>
+                                            <FieldLabel htmlFor="mail_from_address">
                                                 From Address
-                                            </Label>
-                                            <Input
-                                                id="mail_from_address"
-                                                name="mail_from_address"
-                                                type="email"
-                                                value={
-                                                    formData.mail_from_address
-                                                }
-                                                onChange={handleChange}
-                                                placeholder="noreply@example.gov.ph"
-                                            />
-                                        </div>
+                                            </FieldLabel>
+                                            <FieldContent>
+                                                <Input
+                                                    id="mail_from_address"
+                                                    name="mail_from_address"
+                                                    type="email"
+                                                    value={
+                                                        formData.mail_from_address
+                                                    }
+                                                    onChange={handleChange}
+                                                    placeholder="noreply@example.gov.ph"
+                                                />
+                                            </FieldContent>
+                                        </Field>
                                     </div>
-                                    <div>
-                                        <Label htmlFor="mail_from_name">
+                                    <Field>
+                                        <FieldLabel htmlFor="mail_from_name">
                                             From Name
-                                        </Label>
-                                        <Input
-                                            id="mail_from_name"
-                                            name="mail_from_name"
-                                            value={formData.mail_from_name}
-                                            onChange={handleChange}
-                                        />
-                                    </div>
-                                </div>
+                                        </FieldLabel>
+                                        <FieldContent>
+                                            <Input
+                                                id="mail_from_name"
+                                                name="mail_from_name"
+                                                value={formData.mail_from_name}
+                                                onChange={handleChange}
+                                            />
+                                        </FieldContent>
+                                    </Field>
+                                </FieldGroup>
                             </div>
 
                             {error && (

@@ -15,8 +15,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export default function AdminUser() {
     const [formData, setFormData] = useState({
@@ -116,79 +123,76 @@ export default function AdminUser() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="space-y-4">
-                                <div>
-                                    <Label htmlFor="name">Full Name</Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        placeholder="John Doe"
-                                    />
-                                    {errors.name && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.name}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <Label htmlFor="email">Email Address</Label>
-                                    <Input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        placeholder="admin@example.gov.ph"
-                                    />
-                                    {errors.email && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.email}
-                                        </p>
-                                    )}
-                                </div>
+                            <FieldGroup>
+                                <Field>
+                                    <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            placeholder="John Doe"
+                                        />
+                                        <FieldError>{errors.name}</FieldError>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel htmlFor="email">
+                                        Email Address
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            placeholder="admin@example.gov.ph"
+                                        />
+                                        <FieldDescription>
+                                            Use an email that will manage the whole system.
+                                        </FieldDescription>
+                                        <FieldError>{errors.email}</FieldError>
+                                    </FieldContent>
+                                </Field>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label htmlFor="password">
+                                    <Field>
+                                        <FieldLabel htmlFor="password">
                                             Password
-                                        </Label>
-                                        <Input
-                                            id="password"
-                                            name="password"
-                                            type="password"
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            placeholder="••••••••"
-                                        />
-                                        {errors.password && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.password}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="password_confirmation">
+                                        </FieldLabel>
+                                        <FieldContent>
+                                            <Input
+                                                id="password"
+                                                name="password"
+                                                type="password"
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                placeholder="••••••••"
+                                            />
+                                            <FieldError>{errors.password}</FieldError>
+                                        </FieldContent>
+                                    </Field>
+                                    <Field>
+                                        <FieldLabel htmlFor="password_confirmation">
                                             Confirm Password
-                                        </Label>
-                                        <Input
-                                            id="password_confirmation"
-                                            name="password_confirmation"
-                                            type="password"
-                                            value={
-                                                formData.password_confirmation
-                                            }
-                                            onChange={handleChange}
-                                            placeholder="••••••••"
-                                        />
-                                        {errors.password_confirmation && (
-                                            <p className="mt-1 text-sm text-red-500">
-                                                {errors.password_confirmation}
-                                            </p>
-                                        )}
-                                    </div>
+                                        </FieldLabel>
+                                        <FieldContent>
+                                            <Input
+                                                id="password_confirmation"
+                                                name="password_confirmation"
+                                                type="password"
+                                                value={
+                                                    formData.password_confirmation
+                                                }
+                                                onChange={handleChange}
+                                                placeholder="••••••••"
+                                            />
+                                            <FieldError>{errors.password_confirmation}</FieldError>
+                                        </FieldContent>
+                                    </Field>
                                 </div>
-                            </div>
+                            </FieldGroup>
 
                             <Alert>
                                 <UserPlus className="h-4 w-4" />

@@ -23,8 +23,15 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    Field,
+    FieldContent,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 export default function DatabaseConfig() {
     const [formData, setFormData] = useState({
@@ -179,77 +186,84 @@ export default function DatabaseConfig() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <Label htmlFor="host">Database Host</Label>
-                                    <Input
-                                        id="host"
-                                        name="host"
-                                        value={formData.host}
-                                        onChange={handleChange}
-                                        placeholder="localhost"
-                                    />
-                                    {errors.host && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.host}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <Label htmlFor="port">Port</Label>
-                                    <Input
-                                        id="port"
-                                        name="port"
-                                        type="number"
-                                        value={formData.port}
-                                        onChange={handleChange}
-                                        placeholder="3306"
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="database">
+                            <FieldGroup className="grid grid-cols-2 gap-4">
+                                <Field className="col-span-2">
+                                    <FieldLabel htmlFor="host">
+                                        Database Host
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="host"
+                                            name="host"
+                                            value={formData.host}
+                                            onChange={handleChange}
+                                            placeholder="localhost"
+                                        />
+                                        <FieldDescription>
+                                            Most local setups use localhost.
+                                        </FieldDescription>
+                                        <FieldError>{errors.host}</FieldError>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel htmlFor="port">Port</FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="port"
+                                            name="port"
+                                            type="number"
+                                            value={formData.port}
+                                            onChange={handleChange}
+                                            placeholder="3306"
+                                        />
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel htmlFor="database">
                                         Database Name
-                                    </Label>
-                                    <Input
-                                        id="database"
-                                        name="database"
-                                        value={formData.database}
-                                        onChange={handleChange}
-                                        placeholder="lgu_hris"
-                                    />
-                                    {errors.database && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.database}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <Label htmlFor="username">Username</Label>
-                                    <Input
-                                        id="username"
-                                        name="username"
-                                        value={formData.username}
-                                        onChange={handleChange}
-                                        placeholder="root"
-                                    />
-                                    {errors.username && (
-                                        <p className="mt-1 text-sm text-red-500">
-                                            {errors.username}
-                                        </p>
-                                    )}
-                                </div>
-                                <div>
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        placeholder="••••••••"
-                                    />
-                                </div>
-                            </div>
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="database"
+                                            name="database"
+                                            value={formData.database}
+                                            onChange={handleChange}
+                                            placeholder="lgu_hris"
+                                        />
+                                        <FieldError>{errors.database}</FieldError>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel htmlFor="username">
+                                        Username
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="username"
+                                            name="username"
+                                            value={formData.username}
+                                            onChange={handleChange}
+                                            placeholder="root"
+                                        />
+                                        <FieldError>{errors.username}</FieldError>
+                                    </FieldContent>
+                                </Field>
+                                <Field>
+                                    <FieldLabel htmlFor="password">
+                                        Password
+                                    </FieldLabel>
+                                    <FieldContent>
+                                        <Input
+                                            id="password"
+                                            name="password"
+                                            type="password"
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            placeholder="••••••••"
+                                        />
+                                    </FieldContent>
+                                </Field>
+                            </FieldGroup>
 
                             {/* Test Result */}
                             {testResult && (
