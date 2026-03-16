@@ -42,6 +42,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { store } from '@/actions/App/Http/Controllers/LeaveController';
 
 type EmployeeOption = {
     value: string;
@@ -175,12 +176,10 @@ export default function LeaveCreate({
         form.transform((data) => ({
             ...data,
             status,
-        })).post('/leave', {
-            onFinish: () =>
-                form.transform((data) => ({
-                    ...data,
-                    status: 'submitted',
-                })),
+        }));
+
+        form.submit(store(), {
+            onFinish: () => form.setData('status', 'submitted'),
         });
     }
 
@@ -193,7 +192,7 @@ export default function LeaveCreate({
     const balance =
         form.data.employee_id && form.data.leave_type_id
             ? (balances[form.data.employee_id]?.[form.data.leave_type_id] ??
-              null)
+                null)
             : null;
 
     const syncRequestedDays = useEffectEvent(
