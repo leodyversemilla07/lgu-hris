@@ -96,7 +96,7 @@ export default function AdminUser() {
             const result = await response.json();
 
             if (response.ok) {
-                router.get(complete());
+                router.get(complete.url());
             } else {
                 setError(result.message || 'Failed to create admin user');
             }

@@ -157,7 +157,7 @@ export default function DatabaseConfig() {
                     );
                 }
 
-                router.get(environment());
+                router.get(environment.url());
             } catch (error) {
                 setTestResult({
                     success: false,

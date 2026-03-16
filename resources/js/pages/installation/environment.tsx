@@ -89,7 +89,7 @@ export default function EnvironmentConfig() {
             }
 
             if (response.ok && result.success !== false) {
-                router.get(migrations());
+                router.get(migrations.url());
             } else {
                 setError(
                     result.message ||
@@ -177,7 +177,7 @@ export default function EnvironmentConfig() {
                                                     )
                                                 }
                                             >
-                                                <SelectTrigger id="mail_driver">
+                                                <SelectTrigger id="mail_driver" className="w-full">
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -271,7 +271,7 @@ export default function EnvironmentConfig() {
                                                         )
                                                     }
                                                 >
-                                                    <SelectTrigger id="mail_encryption">
+                                                    <SelectTrigger id="mail_encryption" className="w-full">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
