@@ -11,6 +11,13 @@ import {
     Upload,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import {
+    biometricImport,
+    create as attendanceCreate,
+    index as attendanceIndex,
+    store as storeAttendance,
+} from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -39,11 +46,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    biometricImport,
-    index as attendanceIndex,
-    store as storeAttendance,
-} from '@/actions/App/Http/Controllers/AttendanceController';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -86,9 +88,9 @@ const BIOMETRIC_HEADERS = [
 ];
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Attendance', href: '/attendance' },
-    { title: 'Log attendance', href: '/attendance/log' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Attendance', href: attendanceIndex.url() },
+    { title: 'Log attendance', href: attendanceCreate.url() },
 ];
 
 const numberFormatter = new Intl.NumberFormat();

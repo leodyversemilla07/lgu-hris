@@ -8,6 +8,12 @@ import {
     Loader2,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    checkDatabase,
+    checkRequirements,
+    environment,
+    storeDatabase,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,12 +25,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    checkDatabase,
-    checkRequirements,
-    environment,
-    storeDatabase,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 export default function DatabaseConfig() {
     const [formData, setFormData] = useState({

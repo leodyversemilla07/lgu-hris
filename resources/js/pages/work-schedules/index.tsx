@@ -9,6 +9,14 @@ import {
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
+import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy,
+    index as workSchedulesIndex,
+    store,
+    update,
+} from '@/actions/App/Http/Controllers/WorkScheduleController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,12 +45,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    destroy,
-    store,
-    update,
-} from '@/actions/App/Http/Controllers/WorkScheduleController';
-import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -73,9 +75,9 @@ type Props = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Attendance', href: '/attendance' },
-    { title: 'Work schedules', href: '/work-schedules' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Attendance', href: attendanceIndex.url() },
+    { title: 'Work schedules', href: workSchedulesIndex.url() },
 ];
 
 function formatTime(value: string): string {

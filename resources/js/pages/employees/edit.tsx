@@ -10,6 +10,13 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    edit as editEmployee,
+    index as employeesIndex,
+    show as showEmployee,
+    update as updateEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -37,7 +44,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { show as showEmployee, update as updateEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -240,10 +246,10 @@ export default function EditEmployee({
     workSchedules,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Employees', href: '/employees' },
-        { title: employee.full_name, href: `/employees/${employee.uuid}` },
-        { title: 'Edit', href: `/employees/${employee.uuid}/edit` },
+        { title: 'Dashboard', href: dashboardIndex.url() },
+        { title: 'Employees', href: employeesIndex.url() },
+        { title: employee.full_name, href: showEmployee.url(employee.uuid) },
+        { title: 'Edit', href: editEmployee.url(employee.uuid) },
     ];
 
     const form = useForm<EmployeeFormData>({

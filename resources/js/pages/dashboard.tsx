@@ -8,6 +8,7 @@ import {
     Users,
 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -44,7 +45,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
 ];
 
 type DashboardType = 'organization' | 'department' | 'employee';
@@ -134,7 +135,7 @@ function DashboardChart({ section }: { section: ChartSection }) {
 
     if (chartData.length === 0) {
         return (
-            <Empty className="min-h-[320px] border-border bg-muted/20">
+            <Empty className="min-h-80 border-border bg-muted/20">
                 <EmptyHeader>
                     <EmptyMedia variant="icon">
                         <Icon />
@@ -152,7 +153,7 @@ function DashboardChart({ section }: { section: ChartSection }) {
         return (
             <ChartContainer
                 config={chartConfig}
-                className="min-h-[320px] w-full"
+                className="min-h-80 w-full"
             >
                 <BarChart
                     accessibilityLayer
@@ -198,7 +199,7 @@ function DashboardChart({ section }: { section: ChartSection }) {
     }
 
     return (
-        <ChartContainer config={chartConfig} className="min-h-[320px] w-full">
+        <ChartContainer config={chartConfig} className="min-h-80 w-full">
             <BarChart accessibilityLayer data={chartData}>
                 <CartesianGrid vertical={false} />
                 <XAxis
@@ -410,7 +411,7 @@ export default function Dashboard({
                                             </TableBody>
                                         </Table>
                                     ) : (
-                                        <Empty className="min-h-[220px] border-border bg-muted/20">
+                                        <Empty className="min-h-55 border-border bg-muted/20">
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
                                                     <ArrowRightLeft />

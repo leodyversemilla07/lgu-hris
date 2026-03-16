@@ -10,6 +10,12 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { store as storeEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    index as employeesIndex,
+    show as showEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -37,8 +43,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { store as storeEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
-import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -220,9 +224,9 @@ export default function EmployeeCompensation({
     current,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Employees', href: '/employees' },
-        { title: employee.full_name, href: `/employees/${employee.uuid}` },
+        { title: 'Dashboard', href: dashboardIndex.url() },
+        { title: 'Employees', href: employeesIndex.url() },
+        { title: employee.full_name, href: showEmployee.url(employee.uuid) },
         { title: 'Compensation', href: '#' },
     ];
 

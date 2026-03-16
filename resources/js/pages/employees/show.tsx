@@ -20,6 +20,25 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy as destroyDocument,
+    download as downloadDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    archive as archiveEmployee,
+    edit as editEmployee,
+    index as employeesIndex,
+    linkUser as linkEmployeeUser,
+    restore as restoreEmployee,
+    show as showEmployeeAction,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import {
+    create as createPersonnelMovement,
+    show as showPersonnelMovement,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -63,23 +82,6 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    archive as archiveEmployee,
-    edit as editEmployee,
-    index as employeesIndex,
-    linkUser as linkEmployeeUser,
-    restore as restoreEmployee,
-} from '@/actions/App/Http/Controllers/EmployeeController';
-import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
-import {
-    destroy as destroyDocument,
-    download as downloadDocument,
-    store as storeDocument,
-} from '@/actions/App/Http/Controllers/DocumentController';
-import {
-    create as createPersonnelMovement,
-    show as showPersonnelMovement,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -209,9 +211,12 @@ export default function EmployeeShow({
     compensation,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Employees', href: '/employees' },
-        { title: employee.full_name, href: `/employees/${employee.uuid}` },
+        { title: 'Dashboard', href: dashboardIndex.url() },
+        { title: 'Employees', href: employeesIndex.url() },
+        {
+            title: employee.full_name,
+            href: showEmployeeAction.url(employee.uuid),
+        },
     ];
 
     const archiveForm = useForm({});

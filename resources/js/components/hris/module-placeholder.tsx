@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Clock3 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +12,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -33,7 +33,7 @@ export default function ModulePlaceholder({
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Dashboard',
-            href: '/dashboard',
+            href: dashboardIndex.url(),
         },
         {
             title,

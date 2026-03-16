@@ -1,6 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Settings, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    database,
+    migrations,
+    storeEnvironment,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,11 +24,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    database,
-    migrations,
-    storeEnvironment,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 export default function EnvironmentConfig() {
     const [formData, setFormData] = useState({

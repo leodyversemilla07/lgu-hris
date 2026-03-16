@@ -10,6 +10,12 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    create as createEmployee,
+    index as employeesIndex,
+    store as storeEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -37,10 +43,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    index as employeesIndex,
-    store as storeEmployee,
-} from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -94,9 +96,9 @@ type EmployeeFormData = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Employees', href: '/employees' },
-    { title: 'Create employee', href: '/employees/create' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Employees', href: employeesIndex.url() },
+    { title: 'Create employee', href: createEmployee.url() },
 ];
 
 const SEX_OPTIONS = [

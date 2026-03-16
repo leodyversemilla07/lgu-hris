@@ -8,6 +8,12 @@ import {
     Users,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    create as movementsCreate,
+    index as movementsIndex,
+    show as movementsShow,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -53,11 +59,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    create as movementsCreate,
-    index as movementsIndex,
-    show as movementsShow,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -82,8 +83,8 @@ type Props = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Personnel Movements', href: '/personnel-movements' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Personnel Movements', href: movementsIndex.url() },
 ];
 
 const ITEMS_PER_PAGE = 10;

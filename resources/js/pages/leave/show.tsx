@@ -9,6 +9,14 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    approve as approveLeave,
+    cancel as cancelLeave,
+    index as leaveIndex,
+    show as leaveShow,
+    submit as submitLeave,
+} from '@/actions/App/Http/Controllers/LeaveController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -34,12 +42,6 @@ import {
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    approve as approveLeave,
-    cancel as cancelLeave,
-    index as leaveIndex,
-    submit as submitLeave,
-} from '@/actions/App/Http/Controllers/LeaveController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -122,11 +124,11 @@ export default function LeaveShow({
     canCancel,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Leave', href: '/leave' },
+        { title: 'Dashboard', href: dashboardIndex.url() },
+        { title: 'Leave', href: leaveIndex.url() },
         {
             title: `Leave #${leaveRequest.id}`,
-            href: `/leave/${leaveRequest.uuid}`,
+            href: leaveShow.url(leaveRequest.uuid),
         },
     ];
 

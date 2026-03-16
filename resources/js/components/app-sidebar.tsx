@@ -11,7 +11,15 @@ import {
     WalletCards,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
 import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
+import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
+import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
+import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
+import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
+import { index as reportsIndex } from '@/actions/App/Http/Controllers/ReportController';
+import { index as accessControlIndex } from '@/actions/App/Http/Controllers/UserController';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -37,54 +45,54 @@ type SidebarModule = {
 const sidebarModules: SidebarModule[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
+        href: dashboardIndex.url(),
         icon: LayoutGrid,
     },
     {
         title: 'Employees',
-        href: '/employees',
+        href: employeesIndex.url(),
         icon: UserRoundSearch,
         visibleForAnyPermission: ['employees.view', 'employees.manage'],
     },
     {
         title: 'Documents',
-        href: '/documents',
+        href: documentsIndex.url(),
         icon: FileArchive,
         visibleForAnyPermission: ['documents.view', 'documents.manage'],
     },
     {
         title: 'Leave',
-        href: '/leave',
+        href: leaveIndex.url(),
         icon: WalletCards,
         visibleForAnyPermission: ['leave.file', 'leave.approve'],
     },
     {
         title: 'Movements',
-        href: '/personnel-movements',
+        href: movementsIndex.url(),
         icon: ArrowRightLeft,
         visibleForAnyPermission: ['movements.view', 'movements.manage'],
     },
     {
         title: 'Attendance',
-        href: '/attendance',
+        href: attendanceIndex.url(),
         icon: CalendarDays,
         visibleForAnyPermission: ['attendance.view', 'attendance.manage'],
     },
     {
         title: 'Reports',
-        href: '/reports',
+        href: reportsIndex.url(),
         icon: FileSpreadsheet,
         visibleForAnyPermission: ['reports.view', 'reports.export'],
     },
     {
         title: 'Access Control',
-        href: '/access-control',
+        href: accessControlIndex.url(),
         icon: ShieldCheck,
         visibleForAnyPermission: ['access-control.manage'],
     },
     {
         title: 'Reference Data',
-        href: '/reference-data',
+        href: referenceDataIndex.url(),
         icon: Database,
         visibleForAnyPermission: ['reference-data.manage'],
     },

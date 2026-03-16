@@ -1,9 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
+import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
-import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -29,8 +30,8 @@ type MovementDetail = {
 type Props = { movement: MovementDetail };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Personnel Movements', href: '/personnel-movements' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Personnel Movements', href: movementsIndex.url() },
     { title: 'Movement detail', href: '#' },
 ];
 

@@ -1,6 +1,11 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { UserPlus, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    complete,
+    createAdmin,
+    migrations,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,11 +15,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    complete,
-    createAdmin,
-    migrations,
-} from '@/actions/App/Http/Controllers/InstallationController';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 

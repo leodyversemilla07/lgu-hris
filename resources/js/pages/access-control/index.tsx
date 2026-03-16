@@ -10,6 +10,14 @@ import {
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
 import type { FormEvent } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
+import {
+    index as accessControlIndex,
+    destroy as destroyUser,
+    store as storeUser,
+    update as updateUser,
+} from '@/actions/App/Http/Controllers/UserController';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -68,18 +76,12 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    destroy as destroyUser,
-    store as storeUser,
-    update as updateUser,
-} from '@/actions/App/Http/Controllers/UserController';
-import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Access Control', href: '/access-control' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Access Control', href: accessControlIndex.url() },
 ];
 
 type UserRow = {

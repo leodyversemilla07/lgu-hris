@@ -6,15 +6,6 @@ import {
     UserPlus,
     CheckCircle,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import {
     admin,
     checkRequirements,
@@ -24,6 +15,15 @@ import {
     index as installIndex,
     migrations,
 } from '@/actions/App/Http/Controllers/InstallationController';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 
 interface Step {
     id: number;

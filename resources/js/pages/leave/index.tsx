@@ -9,6 +9,13 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as leaveBalancesIndex } from '@/actions/App/Http/Controllers/LeaveBalanceController';
+import {
+    create as leaveCreate,
+    index as leaveIndex,
+    show as leaveShow,
+} from '@/actions/App/Http/Controllers/LeaveController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,12 +61,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    create as leaveCreate,
-    index as leaveIndex,
-    show as leaveShow,
-} from '@/actions/App/Http/Controllers/LeaveController';
-import { index as leaveBalancesIndex } from '@/actions/App/Http/Controllers/LeaveBalanceController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -90,8 +91,8 @@ type Props = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Leave', href: '/leave' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Leave', href: leaveIndex.url() },
 ];
 
 const ITEMS_PER_PAGE = 10;

@@ -8,6 +8,11 @@ import {
     Database,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import {
+    admin,
+    environment,
+    runMigrations as runMigrationsAction,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,11 +22,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    admin,
-    environment,
-    runMigrations as runMigrationsAction,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 export default function Migrations() {
     const [isRunning, setIsRunning] = useState(false);

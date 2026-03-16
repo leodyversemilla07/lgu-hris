@@ -11,7 +11,9 @@ import {
 } from 'lucide-react';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import {
+    create as movementsCreate,
     index as movementsIndex,
     store as storeMovement,
 } from '@/actions/App/Http/Controllers/PersonnelMovementController';
@@ -85,9 +87,9 @@ type MovementFormData = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Personnel Movements', href: '/personnel-movements' },
-    { title: 'Record movement', href: '/personnel-movements/create' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Personnel Movements', href: movementsIndex.url() },
+    { title: 'Record movement', href: movementsCreate.url() },
 ];
 
 const numberFormatter = new Intl.NumberFormat();

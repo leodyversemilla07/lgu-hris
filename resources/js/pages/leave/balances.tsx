@@ -8,6 +8,12 @@ import {
     WalletCards,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    index as leaveBalancesIndex,
+    upsert as upsertLeaveBalance,
+} from '@/actions/App/Http/Controllers/LeaveBalanceController';
+import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,8 +51,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
-import { upsert as upsertLeaveBalance } from '@/actions/App/Http/Controllers/LeaveBalanceController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -75,9 +79,9 @@ type Props = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Leave', href: '/leave' },
-    { title: 'Leave balances', href: '/leave-balances' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Leave', href: leaveIndex.url() },
+    { title: 'Leave balances', href: leaveBalancesIndex.url() },
 ];
 
 const numberFormatter = new Intl.NumberFormat();

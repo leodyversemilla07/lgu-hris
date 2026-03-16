@@ -8,6 +8,11 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    checkRequirements,
+    database,
+    index as installIndex,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,11 +22,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    checkRequirements,
-    database,
-    index as installIndex,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 interface Requirement {
     php_version?: {

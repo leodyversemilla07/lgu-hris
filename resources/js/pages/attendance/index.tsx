@@ -1,6 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CalendarDays, Clock3, FileText, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
+import {
+    create as attendanceCreate,
+    index as attendanceIndex,
+} from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,11 +41,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    create as attendanceCreate,
-    index as attendanceIndex,
-} from '@/actions/App/Http/Controllers/AttendanceController';
-import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 import AppLayout from '@/layouts/app-layout';
 import type { Auth, BreadcrumbItem } from '@/types';
 
@@ -93,8 +94,8 @@ const MONTHS = [
 ];
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Attendance', href: '/attendance' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Attendance', href: attendanceIndex.url() },
 ];
 
 const numberFormatter = new Intl.NumberFormat();

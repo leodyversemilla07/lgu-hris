@@ -13,6 +13,15 @@ import {
     Users,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy as destroyDocument,
+    index as documentsIndex,
+    download as downloadDocument,
+    preview as previewDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -72,13 +81,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    destroy as destroyDocument,
-    download as downloadDocument,
-    preview as previewDocument,
-    store as storeDocument,
-} from '@/actions/App/Http/Controllers/DocumentController';
-import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -137,8 +139,8 @@ type Props = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Documents', href: '/documents' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Documents', href: documentsIndex.url() },
 ];
 
 const ITEMS_PER_PAGE = 10;

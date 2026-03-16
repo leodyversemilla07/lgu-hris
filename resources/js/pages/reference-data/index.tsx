@@ -13,6 +13,13 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    index as referenceDataIndex,
+    destroy as destroyReferenceData,
+    store as storeReferenceData,
+    update as updateReferenceData,
+} from '@/actions/App/Http/Controllers/ReferenceDataController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -52,17 +59,12 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    destroy as destroyReferenceData,
-    store as storeReferenceData,
-    update as updateReferenceData,
-} from '@/actions/App/Http/Controllers/ReferenceDataController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Reference Data', href: '/reference-data' },
+    { title: 'Dashboard', href: dashboardIndex.url() },
+    { title: 'Reference Data', href: referenceDataIndex.url() },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
