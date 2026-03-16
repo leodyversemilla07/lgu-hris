@@ -37,6 +37,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    index as employeesIndex,
+    store as storeEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -285,7 +289,7 @@ export default function CreateEmployee({
     ];
 
     function submit(): void {
-        form.post('/employees');
+        form.submit(storeEmployee());
     }
 
     return (
@@ -320,7 +324,7 @@ export default function CreateEmployee({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/employees">
+                                        <Link href={employeesIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to registry
                                         </Link>
@@ -1268,7 +1272,7 @@ export default function CreateEmployee({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href="/employees">
+                                            <Link href={employeesIndex()}>
                                                 Cancel
                                             </Link>
                                         </Button>

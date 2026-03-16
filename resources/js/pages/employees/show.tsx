@@ -63,6 +63,23 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    archive as archiveEmployee,
+    edit as editEmployee,
+    index as employeesIndex,
+    linkUser as linkEmployeeUser,
+    restore as restoreEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    destroy as destroyDocument,
+    download as downloadDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import {
+    create as createPersonnelMovement,
+    show as showPersonnelMovement,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -266,7 +283,7 @@ export default function EmployeeShow({
     ];
 
     function handleUpload(): void {
-        uploadForm.post('/documents', {
+        uploadForm.post(storeDocument.url(), {
             forceFormData: true,
             onSuccess: () => {
                 uploadForm.reset(
@@ -280,19 +297,19 @@ export default function EmployeeShow({
     }
 
     function handleArchive(): void {
-        archiveForm.patch(`/employees/${employee.uuid}/archive`);
+        archiveForm.patch(archiveEmployee.url(employee.uuid));
     }
 
     function handleRestore(): void {
-        restoreForm.patch(`/employees/${employee.uuid}/restore`);
+        restoreForm.patch(restoreEmployee.url(employee.uuid));
     }
 
     function handleDeleteDocument(documentId: string): void {
-        deleteDocForm.delete(`/documents/${documentId}`);
+        deleteDocForm.delete(destroyDocument.url(documentId));
     }
 
     function handleLinkUser(): void {
-        linkUserForm.patch(`/employees/${employee.uuid}/link-user`);
+        linkUserForm.patch(linkEmployeeUser.url(employee.uuid));
     }
 
     return (
@@ -334,15 +351,13 @@ export default function EmployeeShow({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/employees">
+                                        <Link href={employeesIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to registry
                                         </Link>
                                     </Button>
                                     <Button asChild>
-                                        <Link
-                                            href={`/employees/${employee.uuid}/edit`}
-                                        >
+                                        <Link href={editEmployee(employee.uuid)}>
                                             <Pencil data-icon="inline-start" />
                                             Edit employee
                                         </Link>
@@ -1189,7 +1204,7 @@ export default function EmployeeShow({
                                                                             size="sm"
                                                                         >
                                                                             <a
-                                                                                href={`/documents/${document.uuid}/download`}
+                                                                                href={downloadDocument.url(document.uuid)}
                                                                             >
                                                                                 <Download data-icon="inline-start" />
                                                                                 Download
@@ -1270,7 +1285,7 @@ export default function EmployeeShow({
                                         <CardAction>
                                             <Button asChild size="sm">
                                                 <Link
-                                                    href={`/personnel-movements/create?employee_id=${employee.id}`}
+                                                    href={createPersonnelMovement.url({ query: { employee_id: employee.id } })}
                                                 >
                                                     <Plus data-icon="inline-start" />
                                                     Record movement
@@ -1368,7 +1383,7 @@ export default function EmployeeShow({
                                                                     size="sm"
                                                                 >
                                                                     <Link
-                                                                        href={`/personnel-movements/${movement.uuid}`}
+                                                                        href={showPersonnelMovement(movement.uuid)}
                                                                     >
                                                                         View
                                                                         details
@@ -1528,7 +1543,7 @@ export default function EmployeeShow({
                                         <CardAction>
                                             <Button asChild size="sm">
                                                 <Link
-                                                    href={`/employees/${employee.uuid}/compensation`}
+                                                    href={createEmployeeCompensation(employee.uuid)}
                                                 >
                                                     <Plus data-icon="inline-start" />
                                                     Update salary grade
@@ -1558,7 +1573,7 @@ export default function EmployeeShow({
                                                         variant="outline"
                                                     >
                                                         <Link
-                                                            href={`/employees/${employee.uuid}/compensation`}
+                                                            href={createEmployeeCompensation(employee.uuid)}
                                                         >
                                                             Assign salary grade
                                                         </Link>

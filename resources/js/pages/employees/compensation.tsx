@@ -37,6 +37,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { store as storeEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -287,7 +289,7 @@ export default function EmployeeCompensation({
 
     function submit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        form.post(`/employees/${employee.uuid}/compensation`);
+        form.post(storeEmployeeCompensation.url(employee.uuid));
     }
 
     return (
@@ -323,9 +325,7 @@ export default function EmployeeCompensation({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link
-                                            href={`/employees/${employee.uuid}`}
-                                        >
+                                        <Link href={showEmployee(employee.uuid)}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to employee
                                         </Link>
@@ -675,9 +675,7 @@ export default function EmployeeCompensation({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link
-                                                href={`/employees/${employee.uuid}`}
-                                            >
+                                            <Link href={showEmployee(employee.uuid)}>
                                                 Cancel
                                             </Link>
                                         </Button>

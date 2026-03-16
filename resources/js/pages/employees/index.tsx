@@ -80,6 +80,13 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import {
+    create as createEmployee,
+    index as employeesIndex,
+    show as showEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import { template as importEmployeesTemplate, store as importEmployees } from '@/actions/App/Http/Controllers/ImportController';
+import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -279,7 +286,7 @@ const baseEmployeeColumns: ColumnDef<EmployeeRecord>[] = [
         cell: ({ row }) => (
             <div className="text-right">
                 <Button asChild variant="ghost" size="sm">
-                    <Link href={`/employees/${row.original.uuid}`}>
+                    <Link href={showEmployee(row.original.uuid)}>
                         View profile
                         <ArrowRight data-icon="inline-end" />
                     </Link>
@@ -531,7 +538,7 @@ export default function EmployeesIndex({ employees }: Props) {
             return;
         }
 
-        importForm.post('/import/employees', {
+        importForm.post(importEmployees.url(), {
             forceFormData: true,
             onSuccess: () => {
                 setImportOpen(false);
@@ -570,7 +577,7 @@ export default function EmployeesIndex({ employees }: Props) {
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild>
-                                        <Link href="/employees/create">
+                                        <Link href={createEmployee()}>
                                             <Users data-icon="inline-start" />
                                             Add employee
                                         </Link>
@@ -595,7 +602,7 @@ export default function EmployeesIndex({ employees }: Props) {
                                                     Upload an Excel or CSV file.
                                                     Download the{' '}
                                                     <a
-                                                        href="/import/employees/template"
+                                                        href={importEmployeesTemplate.url()}
                                                         className="font-medium underline underline-offset-4"
                                                     >
                                                         template
@@ -654,7 +661,7 @@ export default function EmployeesIndex({ employees }: Props) {
                                     </Dialog>
 
                                     <Button asChild variant="outline">
-                                        <Link href="/documents">
+                                        <Link href={documentsIndex()}>
                                             Continue to documents
                                             <ArrowRight data-icon="inline-end" />
                                         </Link>
@@ -903,7 +910,7 @@ export default function EmployeesIndex({ employees }: Props) {
                                                     {employees.length === 0 ? (
                                                         <>
                                                             <Button asChild>
-                                                                <Link href="/employees/create">
+                                                                <Link href={createEmployee()}>
                                                                     <Users data-icon="inline-start" />
                                                                     Add employee
                                                                 </Link>

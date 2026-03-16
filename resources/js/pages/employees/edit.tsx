@@ -37,6 +37,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { show as showEmployee, update as updateEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -325,7 +326,7 @@ export default function EditEmployee({
     ];
 
     function submit(): void {
-        form.put(`/employees/${employee.uuid}`);
+        form.put(updateEmployee.url(employee.uuid));
     }
 
     return (
@@ -363,9 +364,7 @@ export default function EditEmployee({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link
-                                            href={`/employees/${employee.uuid}`}
-                                        >
+                                        <Link href={showEmployee(employee.uuid)}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to profile
                                         </Link>
@@ -1312,9 +1311,7 @@ export default function EditEmployee({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link
-                                                href={`/employees/${employee.uuid}`}
-                                            >
+                                            <Link href={showEmployee(employee.uuid)}>
                                                 Cancel
                                             </Link>
                                         </Button>
