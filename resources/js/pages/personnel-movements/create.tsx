@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
+import {
+    index as movementsIndex,
+    store as storeMovement,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -274,7 +278,7 @@ export default function PersonnelMovementsCreate({
                     <form
                         onSubmit={(event) => {
                             event.preventDefault();
-                            post('/personnel-movements');
+                            post(storeMovement.url());
                         }}
                         className="flex flex-col gap-4 py-4 md:gap-6 md:py-6"
                     >
@@ -297,7 +301,7 @@ export default function PersonnelMovementsCreate({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/personnel-movements">
+                                        <Link href={movementsIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to registry
                                         </Link>
@@ -703,7 +707,7 @@ export default function PersonnelMovementsCreate({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href="/personnel-movements">
+                                            <Link href={movementsIndex()}>
                                                 Cancel
                                             </Link>
                                         </Button>

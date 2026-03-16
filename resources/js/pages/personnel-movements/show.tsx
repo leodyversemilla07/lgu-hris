@@ -2,6 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
+import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -84,7 +86,7 @@ export default function PersonnelMovementsShow({ movement }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Movement – ${movement.employee_name}`} />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.14),_transparent_35%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
+            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,rgba(31,78,121,0.14),transparent_35%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(241,245,249,0.96))] p-4 md:p-6">
                 <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">
@@ -102,14 +104,12 @@ export default function PersonnelMovementsShow({ movement }: Props) {
                         </div>
                         <div className="flex gap-2">
                             <Button asChild variant="outline">
-                                <Link href="/personnel-movements">
+                                <Link href={movementsIndex()}>
                                     ← All movements
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link
-                                    href={`/employees/${movement.employee_id}`}
-                                >
+                                <Link href={showEmployee(movement.employee_id)}>
                                     View employee
                                 </Link>
                             </Button>

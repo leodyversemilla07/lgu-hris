@@ -11,6 +11,7 @@ import {
     WalletCards,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -126,7 +127,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
+                            <Link href={dashboardIndex()} prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

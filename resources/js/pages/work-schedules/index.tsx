@@ -343,7 +343,7 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Work Schedules" />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.12),_transparent_34%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
+            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,rgba(15,118,110,0.12),transparent_34%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(241,245,249,0.96))] p-4 md:p-6">
                 <section className="rounded-3xl border border-slate-200/75 bg-white/92 p-6 shadow-sm md:p-8">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-3">

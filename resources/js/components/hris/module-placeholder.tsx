@@ -11,6 +11,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -44,7 +45,7 @@ export default function ModulePlaceholder({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
 
-            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,_rgba(31,78,121,0.16),_transparent_48%),linear-gradient(180deg,_rgba(248,250,252,0.98),_rgba(241,245,249,0.96))] p-4 md:p-6">
+            <div className="flex flex-1 flex-col gap-6 bg-[radial-gradient(circle_at_top,rgba(31,78,121,0.16),transparent_48%),linear-gradient(180deg,rgba(248,250,252,0.98),rgba(241,245,249,0.96))] p-4 md:p-6">
                 <Card className="overflow-hidden border-slate-200/80 bg-white/95 shadow-sm">
                     <CardHeader className="gap-4 border-b border-slate-200/70 pb-5">
                         <div className="flex items-start justify-between gap-4">
@@ -106,7 +107,7 @@ export default function ModulePlaceholder({
                             Foundation route ready for iterative delivery.
                         </p>
                         <Button asChild>
-                            <Link href="/dashboard">
+                            <Link href={dashboardIndex()}>
                                 Return to dashboard
                                 <ArrowRight className="size-4" />
                             </Link>

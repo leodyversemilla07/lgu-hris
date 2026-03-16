@@ -1,5 +1,9 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
+import {
+    markAllAsRead,
+    markAsRead,
+} from '@/actions/App/Http/Controllers/NotificationController';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,7 +41,7 @@ export function AppSidebarHeader({
                         ) : null}
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[26rem]">
+                <DropdownMenuContent align="end" className="w-104">
                     <DropdownMenuLabel className="flex items-center justify-between gap-3">
                         <span>Notifications</span>
                         <div className="flex items-center gap-2">
@@ -48,7 +52,7 @@ export function AppSidebarHeader({
                             ) : null}
                             {notifications.unread_count > 0 ? (
                                 <Link
-                                    href="/notifications/read-all"
+                                    href={markAllAsRead.url()}
                                     method="patch"
                                     as="button"
                                     className="text-xs font-medium text-primary"
@@ -87,7 +91,7 @@ export function AppSidebarHeader({
                                         <div className="flex items-center gap-3 text-xs">
                                             {notification.read_at === null ? (
                                                 <Link
-                                                    href={`/notifications/${notification.id}/read`}
+                                                    href={markAsRead.url(notification.id)}
                                                     method="patch"
                                                     as="button"
                                                     className="font-medium text-primary"

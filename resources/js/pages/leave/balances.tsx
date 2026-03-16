@@ -325,7 +325,7 @@ export default function LeaveBalances({ rows, year, leaveTypes }: Props) {
                                             </Table>
                                         </div>
                                     ) : (
-                                        <Empty className="min-h-[280px] border-border bg-muted/20">
+                                        <Empty className="min-h-70 border-border bg-muted/20">
                                             <EmptyHeader>
                                                 <EmptyMedia variant="icon">
                                                     <WalletCards />
@@ -386,7 +386,7 @@ function BalanceEditRow({ row, year }: { row: BalanceRow; year: number }) {
 
     return (
         <TableRow>
-            <TableCell className="min-w-[240px]">
+            <TableCell className="min-w-60">
                 <div className="flex flex-col gap-1">
                     <div className="font-medium">{row.employee_name}</div>
                     <div className="text-sm text-muted-foreground">
