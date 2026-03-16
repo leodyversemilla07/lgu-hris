@@ -39,6 +39,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    biometricImport,
+    index as attendanceIndex,
+    store as storeAttendance,
+} from '@/actions/App/Http/Controllers/AttendanceController';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
@@ -241,11 +246,11 @@ export default function AttendanceLog({
 
     function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        form.post('/attendance');
+        form.submit(storeAttendance());
     }
 
     function handleBiometricUpload(): void {
-        biometricForm.post('/attendance/biometric', {
+        biometricForm.submit(biometricImport(), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => biometricForm.reset(),
@@ -282,7 +287,7 @@ export default function AttendanceLog({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href="/attendance">
+                                        <Link href={attendanceIndex()}>
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to monthly attendance
                                         </Link>
@@ -756,7 +761,7 @@ export default function AttendanceLog({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href="/attendance">
+                                            <Link href={attendanceIndex()}>
                                                 Cancel
                                             </Link>
                                         </Button>

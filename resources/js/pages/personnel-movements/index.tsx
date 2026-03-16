@@ -53,6 +53,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    create as movementsCreate,
+    index as movementsIndex,
+    show as movementsShow,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -224,7 +229,7 @@ export default function PersonnelMovementsIndex({
             params.movement_type_id = typeId;
         }
 
-        router.get('/personnel-movements', params, {
+        router.get(movementsIndex.url({ query: params }), {}, {
             preserveState: true,
             replace: true,
         });
@@ -236,7 +241,7 @@ export default function PersonnelMovementsIndex({
         setTypeFilter('all');
         setPage(1);
         router.get(
-            '/personnel-movements',
+            movementsIndex(),
             {},
             {
                 preserveState: true,
@@ -274,7 +279,7 @@ export default function PersonnelMovementsIndex({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild>
-                                        <Link href="/personnel-movements/create">
+                                        <Link href={movementsCreate()}>
                                             <Plus data-icon="inline-start" />
                                             Record movement
                                         </Link>
@@ -509,9 +514,7 @@ export default function PersonnelMovementsIndex({
                                                                         variant="ghost"
                                                                         size="sm"
                                                                     >
-                                                                        <Link
-                                                                            href={`/personnel-movements/${movement.uuid}`}
-                                                                        >
+                                                                        <Link href={movementsShow({ personnelMovement: movement.uuid })}>
                                                                             View
                                                                         </Link>
                                                                     </Button>
@@ -543,7 +546,7 @@ export default function PersonnelMovementsIndex({
                                                 <div className="flex flex-wrap justify-center gap-2">
                                                     {movements.length === 0 ? (
                                                         <Button asChild>
-                                                            <Link href="/personnel-movements/create">
+                                                            <Link href={movementsCreate()}>
                                                                 <Plus data-icon="inline-start" />
                                                                 Record movement
                                                             </Link>

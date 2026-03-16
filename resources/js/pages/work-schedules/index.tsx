@@ -37,6 +37,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    destroy,
+    store,
+    update,
+} from '@/actions/App/Http/Controllers/WorkScheduleController';
+import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
@@ -207,7 +213,7 @@ function CreateScheduleDialog() {
 
     function submit(event: React.FormEvent): void {
         event.preventDefault();
-        form.post('/work-schedules', {
+        form.submit(store(), {
             onSuccess: () => {
                 setOpen(false);
                 form.reset();
@@ -268,7 +274,7 @@ function EditScheduleDialog({ schedule }: { schedule: WorkSchedule }) {
 
     function submit(event: React.FormEvent): void {
         event.preventDefault();
-        form.put(`/work-schedules/${schedule.uuid}`, {
+        form.submit(update({ workSchedule: schedule.uuid }), {
             onSuccess: () => setOpen(false),
         });
     }
@@ -330,7 +336,7 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
             return;
         }
 
-        router.delete(`/work-schedules/${schedule.uuid}`);
+        router.delete(destroy({ workSchedule: schedule.uuid }));
     }
 
     return (
@@ -357,7 +363,7 @@ export default function WorkSchedulesIndex({ schedules }: Props) {
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row">
                             <Button asChild variant="outline">
-                                <Link href="/attendance">
+                                <Link href={attendanceIndex()}>
                                     <CalendarClock data-icon="inline-start" />
                                     Back to attendance
                                 </Link>

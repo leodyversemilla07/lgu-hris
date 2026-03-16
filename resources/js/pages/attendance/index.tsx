@@ -35,6 +35,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    create as attendanceCreate,
+    index as attendanceIndex,
+} from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 import AppLayout from '@/layouts/app-layout';
 import type { Auth, BreadcrumbItem } from '@/types';
 
@@ -189,7 +194,7 @@ export default function AttendanceIndex({
             params.employee_id = nextEmployeeId;
         }
 
-        router.get('/attendance', params, {
+        router.get(attendanceIndex.url({ query: params }), {}, {
             preserveState: true,
             replace: true,
         });
@@ -221,7 +226,7 @@ export default function AttendanceIndex({
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     {canManageAttendance ? (
                                         <Button asChild variant="outline">
-                                            <Link href="/work-schedules">
+                                            <Link href={workSchedulesIndex()}>
                                                 <CalendarDays data-icon="inline-start" />
                                                 Manage schedules
                                             </Link>
@@ -229,7 +234,7 @@ export default function AttendanceIndex({
                                     ) : null}
                                     {canManageAttendance ? (
                                         <Button asChild>
-                                            <Link href="/attendance/log">
+                                            <Link href={attendanceCreate()}>
                                                 <Plus data-icon="inline-start" />
                                                 Log attendance
                                             </Link>
@@ -425,7 +430,7 @@ export default function AttendanceIndex({
                                                         asChild
                                                         variant="outline"
                                                     >
-                                                        <Link href="/attendance/log">
+                                                        <Link href={attendanceCreate()}>
                                                             Log the first
                                                             attendance
                                                         </Link>
@@ -548,7 +553,7 @@ export default function AttendanceIndex({
                                                                             size="sm"
                                                                         >
                                                                             <Link
-                                                                                href={`/attendance/log?employee_id=${summary.employee_id}&date=${summary.year}-${String(summary.month).padStart(2, '0')}-01`}
+                                                                                href={attendanceCreate.url({ query: { employee_id: summary.employee_id, date: `${summary.year}-${String(summary.month).padStart(2, '0')}-01` } })}
                                                                             >
                                                                                 Log
                                                                             </Link>
