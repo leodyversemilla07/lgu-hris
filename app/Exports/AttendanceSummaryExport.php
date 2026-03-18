@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\AttendanceSummary;
+use App\Models\Employee;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -29,7 +30,7 @@ class AttendanceSummaryExport implements FromQuery, ShouldAutoSize, WithHeadings
             ->orderBy('year')
             ->orderBy('month')
             ->orderBy(
-                \App\Models\Employee::select('last_name')
+                Employee::select('last_name')
                     ->whereColumn('employees.id', 'attendance_summaries.employee_id')
                     ->limit(1)
             );

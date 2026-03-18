@@ -185,7 +185,7 @@ class AttendanceController extends Controller
                 ],
             );
 
-            $date = \Carbon\Carbon::parse($row['log_date']);
+            $date = Carbon::parse($row['log_date']);
             $affected[$row['employee_id']][$date->year.'-'.$date->month] = [
                 'year' => $date->year,
                 'month' => $date->month,

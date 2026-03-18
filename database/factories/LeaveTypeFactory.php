@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\LeaveType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LeaveType>
+ * @extends Factory<LeaveType>
  */
 class LeaveTypeFactory extends Factory
 {

@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Models\Employee;
+use App\Models\EmployeeHistory;
 use App\Models\PersonnelMovement;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EmployeeHistory>
+ * @extends Factory<EmployeeHistory>
  */
 class EmployeeHistoryFactory extends Factory
 {

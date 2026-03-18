@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\EmploymentStatus;
 use App\Models\EmploymentType;
 use App\Models\Position;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -74,7 +75,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow, WithValidation
                         'civil_status' => trim($row['civil_status'] ?? '') ?: null,
                         'email' => trim($row['email'] ?? '') ?: null,
                         'phone' => trim($row['phone'] ?? '') ?: null,
-                        'birth_date' => $row['birth_date'] ? \Carbon\Carbon::parse($row['birth_date'])->toDateString() : null,
+                        'birth_date' => $row['birth_date'] ? Carbon::parse($row['birth_date'])->toDateString() : null,
                         'address_street' => trim($row['address_street'] ?? '') ?: null,
                         'address_city' => trim($row['address_city'] ?? '') ?: null,
                         'address_province' => trim($row['address_province'] ?? '') ?: null,
@@ -87,7 +88,7 @@ class EmployeeImport implements ToCollection, WithHeadingRow, WithValidation
                         'emergency_contact_name' => trim($row['emergency_contact_name'] ?? '') ?: null,
                         'emergency_contact_relationship' => trim($row['emergency_contact_relationship'] ?? '') ?: null,
                         'emergency_contact_phone' => trim($row['emergency_contact_phone'] ?? '') ?: null,
-                        'hired_at' => $row['hired_at'] ? \Carbon\Carbon::parse($row['hired_at'])->toDateString() : null,
+                        'hired_at' => $row['hired_at'] ? Carbon::parse($row['hired_at'])->toDateString() : null,
                         'department_id' => $deptId,
                         'position_id' => $posId,
                         'employment_type_id' => $typeId,

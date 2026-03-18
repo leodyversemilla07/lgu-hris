@@ -44,7 +44,7 @@ test('backup command creates an archive for sqlite and private files', function 
 
     expect($archives)->toHaveCount(1);
 
-    $zip = new \ZipArchive;
+    $zip = new ZipArchive;
     $zip->open($archives[0]->getPathname());
 
     expect($zip->locateName('manifest.json'))->not->toBe(false);

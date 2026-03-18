@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\EmployeeDocumentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmployeeDocument extends Model
 {
-    /** @use HasFactory<\Database\Factories\EmployeeDocumentFactory> */
+    /** @use HasFactory<EmployeeDocumentFactory> */
     use HasFactory, HasUuids;
 
     protected $fillable = [

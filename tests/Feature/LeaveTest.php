@@ -1,10 +1,12 @@
 <?php
 
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveApproval;
 use App\Models\LeaveBalance;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Models\Position;
 use App\Models\User;
 use Database\Seeders\LeaveTypeSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -326,7 +328,7 @@ test('department head can approve a leave request', function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(LeaveTypeSeeder::class);
 
-    $department = \App\Models\Department::factory()->create();
+    $department = Department::factory()->create();
 
     $deptHead = User::factory()->create([
         'managed_department_id' => $department->id,
@@ -335,7 +337,7 @@ test('department head can approve a leave request', function () {
 
     $employee = Employee::factory()->create([
         'department_id' => $department->id,
-        'position_id' => \App\Models\Position::factory()->create(['department_id' => $department->id])->id,
+        'position_id' => Position::factory()->create(['department_id' => $department->id])->id,
     ]);
     $leaveType = LeaveType::where('code', 'VL')->first();
 
@@ -358,8 +360,8 @@ test('department head cannot approve a leave request outside their managed depar
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(LeaveTypeSeeder::class);
 
-    $managedDepartment = \App\Models\Department::factory()->create();
-    $otherDepartment = \App\Models\Department::factory()->create();
+    $managedDepartment = Department::factory()->create();
+    $otherDepartment = Department::factory()->create();
 
     $deptHead = User::factory()->create([
         'managed_department_id' => $managedDepartment->id,
@@ -368,7 +370,7 @@ test('department head cannot approve a leave request outside their managed depar
 
     $employee = Employee::factory()->create([
         'department_id' => $otherDepartment->id,
-        'position_id' => \App\Models\Position::factory()->create(['department_id' => $otherDepartment->id])->id,
+        'position_id' => Position::factory()->create(['department_id' => $otherDepartment->id])->id,
     ]);
     $leaveType = LeaveType::where('code', 'VL')->first();
 
@@ -623,7 +625,7 @@ test('department head queue excludes draft leave requests', function () {
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(LeaveTypeSeeder::class);
 
-    $department = \App\Models\Department::factory()->create();
+    $department = Department::factory()->create();
 
     $deptHead = User::factory()->create([
         'managed_department_id' => $department->id,
@@ -632,7 +634,7 @@ test('department head queue excludes draft leave requests', function () {
 
     $employee = Employee::factory()->create([
         'department_id' => $department->id,
-        'position_id' => \App\Models\Position::factory()->create(['department_id' => $department->id])->id,
+        'position_id' => Position::factory()->create(['department_id' => $department->id])->id,
     ]);
     $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
 
@@ -670,7 +672,7 @@ test('department head cannot view a draft leave request in their managed departm
     $this->seed(RoleAndPermissionSeeder::class);
     $this->seed(LeaveTypeSeeder::class);
 
-    $department = \App\Models\Department::factory()->create();
+    $department = Department::factory()->create();
 
     $deptHead = User::factory()->create([
         'managed_department_id' => $department->id,
@@ -679,7 +681,7 @@ test('department head cannot view a draft leave request in their managed departm
 
     $employee = Employee::factory()->create([
         'department_id' => $department->id,
-        'position_id' => \App\Models\Position::factory()->create(['department_id' => $department->id])->id,
+        'position_id' => Position::factory()->create(['department_id' => $department->id])->id,
     ]);
     $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
 

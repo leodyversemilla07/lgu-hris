@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Models\DocumentType;
 use App\Models\Employee;
+use App\Models\EmployeeDocument;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EmployeeDocument>
+ * @extends Factory<EmployeeDocument>
  */
 class EmployeeDocumentFactory extends Factory
 {

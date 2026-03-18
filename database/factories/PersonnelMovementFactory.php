@@ -4,11 +4,12 @@ namespace Database\Factories;
 
 use App\Models\Employee;
 use App\Models\MovementType;
+use App\Models\PersonnelMovement;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PersonnelMovement>
+ * @extends Factory<PersonnelMovement>
  */
 class PersonnelMovementFactory extends Factory
 {

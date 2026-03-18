@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\AttendanceLog;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttendanceLogStoreRequest extends FormRequest
@@ -19,7 +20,7 @@ class AttendanceLogStoreRequest extends FormRequest
                 'required',
                 'date',
                 function ($attr, $value, $fail) {
-                    $exists = \App\Models\AttendanceLog::query()
+                    $exists = AttendanceLog::query()
                         ->where('employee_id', $this->input('employee_id'))
                         ->whereDate('log_date', $value)
                         ->exists();
