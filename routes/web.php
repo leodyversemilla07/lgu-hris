@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\BiometricDeviceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EmployeeCompensationController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
+// App Routes
 Route::get('install', [InstallationController::class, 'index'])->name('install.index');
 Route::get('install/requirements', [InstallationController::class, 'checkRequirements'])->name('install.requirements');
 Route::get('install/database', [InstallationController::class, 'database'])->name('install.database');
@@ -38,6 +40,13 @@ Route::inertia('/', 'welcome', [
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::middleware('permission:settings.manage')->group(function () {
+        Route::get('settings/biometrics', [BiometricDeviceController::class, 'index'])->name('biometrics.index');
+        Route::post('settings/biometrics', [BiometricDeviceController::class, 'store'])->name('biometrics.store');
+        Route::put('settings/biometrics/{device}', [BiometricDeviceController::class, 'update'])->name('biometrics.update');
+        Route::delete('settings/biometrics/{device}', [BiometricDeviceController::class, 'destroy'])->name('biometrics.destroy');
+    });
 
     Route::get('employees', [EmployeeController::class, 'index'])
         ->middleware('permission:employees.view')
