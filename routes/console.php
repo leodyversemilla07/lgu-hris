@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('hris:backup')
     ->dailyAt((string) config('hris.backup.schedule_time', '01:00'))
     ->withoutOverlapping();
+
+Schedule::command('hris:add-monthly-leave-credits')
+    ->monthlyOn(1, '00:00')
+    ->withoutOverlapping();

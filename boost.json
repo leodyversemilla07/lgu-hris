@@ -2,7 +2,8 @@
     "agents": [
         "codex",
         "copilot",
-        "opencode"
+        "opencode",
+        "gemini"
     ],
     "guidelines": true,
     "packages": [

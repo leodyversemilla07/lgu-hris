@@ -4,6 +4,7 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\BiometricDeviceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DtrExportController;
 use App\Http\Controllers\EmployeeCompensationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExportController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PersonnelMovementController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('employees/{employee}', [EmployeeController::class, 'show'])
         ->middleware('permission:employees.view')
         ->name('employees.show');
+    Route::get('employees/{employee}/dtr/export', [DtrExportController::class, 'export'])
+        ->name('employees.dtr.export');
+    Route::get('employees/{employee}/service-record/export', [ServiceRecordController::class, 'export'])
+        ->name('employees.service-record.export');
     Route::get('employees/{employee}/edit', [EmployeeController::class, 'edit'])
         ->middleware('permission:employees.manage')
         ->name('employees.edit');
