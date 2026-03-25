@@ -17,7 +17,7 @@ class ServiceRecordController extends Controller
      */
     public function export(Request $request, Employee $employee)
     {
-        $this->authorize('view', $employee);
+        $this->authorize('exportServiceRecord', $employee);
 
         $pdf = $this->serviceRecordService->generateServiceRecord($employee);
 

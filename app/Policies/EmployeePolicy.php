@@ -59,6 +59,20 @@ class EmployeePolicy
         return $this->update($user, $employee);
     }
 
+    public function exportDtr(User $user, Employee $employee): bool
+    {
+        return $this->view($user, $employee);
+    }
+
+    public function exportServiceRecord(User $user, Employee $employee): bool
+    {
+        if ($user->hasRole('Employee') && $this->ownsEmployee($user, $employee)) {
+            return true;
+        }
+
+        return $user->can('reports.export');
+    }
+
     private function managesEmployee(User $user, Employee $employee): bool
     {
         return $user->managed_department_id !== null

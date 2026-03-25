@@ -17,6 +17,8 @@ class DtrExportController extends Controller
      */
     public function export(Request $request, Employee $employee)
     {
+        $this->authorize('exportDtr', $employee);
+
         $year = $request->integer('year', now()->year);
         $month = $request->integer('month', now()->month);
 
