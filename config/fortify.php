@@ -88,7 +88,7 @@ return [
 
     'prefix' => '',
 
-    'domain' => null,
+    'domain' => '{tenant}.' . env('CENTRAL_DOMAIN', 'yourhris.test'),
 
     /*
     |--------------------------------------------------------------------------
