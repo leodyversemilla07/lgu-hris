@@ -29,3 +29,6 @@ yarn-error.log
 /.zed
 /.gemini
 GEMINI.md
+publish.xml
+pi-session-*.html
+*.PublishSettings
