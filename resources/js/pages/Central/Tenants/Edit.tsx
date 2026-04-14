@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
-import { centralTenantsUpdate } from '@/routes/central-tenants-update';
-import { centralTenantsShow } from '@/routes/central-tenants-show';
+import {
+    show as centralTenantsShow,
+    update as centralTenantsUpdate,
+} from '@/actions/App/Http/Controllers/Central/TenantController';
 
 type Tenant = {
     id: string;
@@ -38,12 +40,8 @@ export default function TenantsEdit({ tenant }: Props) {
                 </div>
 
                 <div className="rounded-md border bg-card p-6 shadow-sm max-w-2xl">
-                    <Form 
-                        {...centralTenantsUpdate.form({
-                            name: tenant.name,
-                            municipality: tenant.municipality,
-                            province: tenant.province,
-                        }, { tenant: tenant.id })} 
+                    <Form
+                        {...centralTenantsUpdate.form({ tenant: tenant.id })}
                         className="space-y-6"
                     >
                         {({ processing, errors }) => (

@@ -17,8 +17,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
-import { centralHome } from '@/routes/central-home';
-import { centralTenantsIndex } from '@/routes/central-tenants-index';
+import { home as centralHome } from '@/routes';
+import { index as centralTenantsIndex } from '@/actions/App/Http/Controllers/Central/TenantController';
 
 type SidebarModule = {
     title: string;

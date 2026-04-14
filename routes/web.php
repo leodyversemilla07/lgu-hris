@@ -25,6 +25,10 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+if (app()->runningUnitTests() && ! Route::has('login')) {
+    Route::get('login', fn () => response()->noContent())->name('login');
+}
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

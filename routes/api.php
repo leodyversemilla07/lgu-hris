@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\BiometricWebhookController;
 use Illuminate\Support\Facades\Route;
+use Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +18,10 @@ use Illuminate\Support\Facades\Route;
 
 // Biometric Device Integration Endpoints
 // No Auth/CSRF required for hardware compatibility
-Route::prefix('biometrics')->group(function () {
+Route::middleware([
+    InitializeTenancyBySubdomain::class,
+    PreventAccessFromCentralDomains::class,
+])->prefix('biometrics')->group(function (): void {
     Route::match(['GET', 'POST'], 'zkteco', [BiometricWebhookController::class, 'zkteco']);
     Route::post('hikvision', [BiometricWebhookController::class, 'hikvision']);
 });

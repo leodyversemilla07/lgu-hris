@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -32,7 +33,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $notifications = $user
+        $isTenantUser = $user instanceof User;
+
+        $notifications = $isTenantUser
             ? [
                 'unread_count' => $user->unreadNotifications()->count(),
                 'recent' => $user->notifications()
@@ -66,15 +69,15 @@ class HandleInertiaRequests extends Middleware
                         'name',
                         'email',
                         'email_verified_at',
-                        'two_factor_confirmed_at',
                         'created_at',
                         'updated_at',
                     ]),
-                    'avatar' => $user->avatar,
-                    'two_factor_enabled' => ! is_null($user->two_factor_secret),
-                    'roles' => $user->getRoleNames()->values()->all(),
-                    'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
-                    'primary_role' => $user->getRoleNames()->first(),
+                    'avatar' => $isTenantUser ? $user->avatar : null,
+                    'two_factor_confirmed_at' => $isTenantUser ? $user->two_factor_confirmed_at : null,
+                    'two_factor_enabled' => $isTenantUser && ! is_null($user->two_factor_secret),
+                    'roles' => $isTenantUser ? $user->getRoleNames()->values()->all() : [],
+                    'permissions' => $isTenantUser ? $user->getAllPermissions()->pluck('name')->values()->all() : [],
+                    'primary_role' => $isTenantUser ? $user->getRoleNames()->first() : 'Central Admin',
                 ] : null,
             ],
             'notifications' => $notifications,

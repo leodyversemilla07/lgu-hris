@@ -2,10 +2,12 @@ import { Form, Head, Link, useForm } from '@inertiajs/react';
 import CentralLayout from '@/layouts/central/central-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { centralTenantsIndex } from '@/routes/central-tenants-index';
-import { centralTenantsEdit } from '@/routes/central-tenants-edit';
-import { centralTenantsToggle } from '@/routes/central-tenants-toggle';
-import { centralTenantsDestroy } from '@/routes/central-tenants-destroy';
+import {
+    destroy as centralTenantsDestroy,
+    edit as centralTenantsEdit,
+    index as centralTenantsIndex,
+    toggle as centralTenantsToggle,
+} from '@/actions/App/Http/Controllers/Central/TenantController';
 
 type Tenant = {
     id: string;

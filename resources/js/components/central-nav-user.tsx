@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronsUpDown, LogOut } from 'lucide-react';
-import UserInfo from '@/components/user-info';
+import { UserInfo } from '@/components/user-info';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import type { Auth } from '@/types';
-import { centralLogout } from '@/routes/central-logout';
+import { logout as centralLogout } from '@/actions/App/Http/Controllers/Central/AuthController';
 
 export function CentralNavUser() {
     const { auth } = usePage<{ auth: Auth }>().props;

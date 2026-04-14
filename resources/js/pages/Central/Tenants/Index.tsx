@@ -3,8 +3,10 @@ import CentralLayout from '@/layouts/central/central-layout';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { centralTenantsCreate } from '@/routes/central-tenants-create';
-import { centralTenantsShow } from '@/routes/central-tenants-show';
+import {
+    create as centralTenantsCreate,
+    show as centralTenantsShow,
+} from '@/actions/App/Http/Controllers/Central/TenantController';
 
 type Tenant = {
     id: string;

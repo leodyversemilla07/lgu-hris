@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
-import { centralLoginPost } from '@/routes/central-login-post';
+import { login as centralLogin } from '@/actions/App/Http/Controllers/Central/AuthController';
 
 type Props = {
     status?: string;
@@ -22,7 +22,7 @@ export default function CentralLogin({ status }: Props) {
             <Head title="Log in" />
 
             <Form
-                {...centralLoginPost.form()}
+                {...centralLogin.form()}
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >

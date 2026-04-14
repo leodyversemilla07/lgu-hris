@@ -26,7 +26,7 @@ class AuthController extends Controller
         if (Auth::guard('central')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('central.home'));
+            return redirect()->intended(route('central.tenants.index'));
         }
 
         return back()->withErrors([

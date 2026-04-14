@@ -36,6 +36,13 @@ test('deployment preflight passes for a production-ready configuration', functio
             '--force' => true,
         ])->assertSuccessful();
 
+        $this->artisan('migrate', [
+            '--database' => 'mysql',
+            '--path' => database_path('migrations/tenant'),
+            '--realpath' => true,
+            '--force' => true,
+        ])->assertSuccessful();
+
         $this->artisan('db:seed', [
             '--class' => DatabaseSeeder::class,
             '--database' => 'mysql',

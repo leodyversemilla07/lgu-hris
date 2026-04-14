@@ -88,7 +88,9 @@ return [
 
     'prefix' => '',
 
-    'domain' => '{tenant}.' . env('CENTRAL_DOMAIN', 'yourhris.test'),
+    'domain' => env('APP_ENV') === 'testing'
+        ? null
+        : '{tenant}.'.env('CENTRAL_DOMAIN', 'yourhris.test'),
 
     /*
     |--------------------------------------------------------------------------

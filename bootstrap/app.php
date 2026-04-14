@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -30,11 +31,22 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {
-            if ($request->getHost() === env('CENTRAL_DOMAIN', 'yourhris.test')) {
+            if (
+                in_array($request->getHost(), config('tenancy.central_domains', []), true)
+                && Route::has('central.login')
+            ) {
                 return route('central.login');
             }
 
-            return route('login');
+            if (Route::has('login')) {
+                return route('login');
+            }
+
+            if (Route::has('central.login')) {
+                return route('central.login');
+            }
+
+            return '/login';
         });
 
         $middleware->web(append: [

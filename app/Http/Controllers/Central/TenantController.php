@@ -16,14 +16,14 @@ class TenantController extends Controller
             ->with('domains')
             ->orderBy('name')
             ->get()
-            ->map(fn(Tenant $tenant) => [
-                'id'           => $tenant->id,
-                'name'         => $tenant->name,
+            ->map(fn (Tenant $tenant) => [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
                 'municipality' => $tenant->municipality,
-                'province'     => $tenant->province,
-                'is_active'    => $tenant->is_active,
-                'domain'       => $tenant->domains->first()?->domain,
-                'created_at'   => $tenant->created_at,
+                'province' => $tenant->province,
+                'is_active' => $tenant->is_active,
+                'domain' => $tenant->domains->first()?->domain,
+                'created_at' => $tenant->created_at,
             ]);
 
         return Inertia::render('Central/Tenants/Index', [
@@ -39,20 +39,23 @@ class TenantController extends Controller
     public function store(): RedirectResponse
     {
         $data = request()->validate([
-            'name'         => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'municipality' => ['required', 'string', 'max:255'],
-            'province'     => ['required', 'string', 'max:255'],
-            'subdomain'    => ['required', 'string', 'max:63', 'alpha_dash', 'unique:domains,domain'],
+            'province' => ['required', 'string', 'max:255'],
+            'subdomain' => ['required', 'string', 'max:63', 'alpha_dash', 'unique:domains,domain'],
         ]);
 
         $tenant = Tenant::create([
-            'name'         => $data['name'],
+            'name' => $data['name'],
             'municipality' => $data['municipality'],
-            'province'     => $data['province'],
+            'province' => $data['province'],
         ]);
 
+        $centralDomain = collect(config('tenancy.central_domains', []))
+            ->first(fn (mixed $domain): bool => is_string($domain) && str_ends_with($domain, '.test'));
+
         $tenant->domains()->create([
-            'domain' => $data['subdomain'].'.'.config('tenancy.central_domains')[2],
+            'domain' => $data['subdomain'].'.'.($centralDomain ?? config('app.domain', 'yourhris.test')),
         ]);
 
         return redirect()->route('central.tenants.index')
@@ -65,13 +68,13 @@ class TenantController extends Controller
 
         return Inertia::render('Central/Tenants/Show', [
             'tenant' => [
-                'id'           => $tenant->id,
-                'name'         => $tenant->name,
+                'id' => $tenant->id,
+                'name' => $tenant->name,
                 'municipality' => $tenant->municipality,
-                'province'     => $tenant->province,
-                'is_active'    => $tenant->is_active,
-                'domain'       => $tenant->domains->first()?->domain,
-                'created_at'   => $tenant->created_at,
+                'province' => $tenant->province,
+                'is_active' => $tenant->is_active,
+                'domain' => $tenant->domains->first()?->domain,
+                'created_at' => $tenant->created_at,
             ],
         ]);
     }
@@ -82,12 +85,12 @@ class TenantController extends Controller
 
         return Inertia::render('Central/Tenants/Edit', [
             'tenant' => [
-                'id'           => $tenant->id,
-                'name'         => $tenant->name,
+                'id' => $tenant->id,
+                'name' => $tenant->name,
                 'municipality' => $tenant->municipality,
-                'province'     => $tenant->province,
-                'is_active'    => $tenant->is_active,
-                'subdomain'    => explode('.', $tenant->domains->first()?->domain ?? '')[0] ?? '',
+                'province' => $tenant->province,
+                'is_active' => $tenant->is_active,
+                'subdomain' => explode('.', $tenant->domains->first()?->domain ?? '')[0] ?? '',
             ],
         ]);
     }
@@ -95,9 +98,9 @@ class TenantController extends Controller
     public function update(Tenant $tenant): RedirectResponse
     {
         $data = request()->validate([
-            'name'         => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'municipality' => ['required', 'string', 'max:255'],
-            'province'     => ['required', 'string', 'max:255'],
+            'province' => ['required', 'string', 'max:255'],
         ]);
 
         $tenant->update($data);

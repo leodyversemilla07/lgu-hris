@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import InputError from '@/components/input-error';
-import { centralTenantsStore } from '@/routes/central-tenants-store';
-import { centralTenantsIndex } from '@/routes/central-tenants-index';
+import {
+    index as centralTenantsIndex,
+    store as centralTenantsStore,
+} from '@/actions/App/Http/Controllers/Central/TenantController';
 
 export default function TenantsCreate() {
     return (
