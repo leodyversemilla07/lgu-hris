@@ -25,9 +25,19 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-if (app()->runningUnitTests() && ! Route::has('login')) {
-    Route::get('login', fn () => response()->noContent())->name('login');
-}
+Route::get('/install', fn () => inertia('installation/index', [
+    'currentStep' => 1,
+    'steps' => [1, 2, 3, 4, 5, 6],
+]))->name('install.index');
+Route::get('/install/requirements', fn () => inertia('installation/requirements', [
+    'requirements' => [],
+    'passed' => true,
+]))->name('install.requirements');
+Route::get('/install/database', fn () => inertia('installation/database'))->name('install.database');
+Route::get('/install/environment', fn () => inertia('installation/environment'))->name('install.environment');
+Route::get('/install/migrations', fn () => inertia('installation/migrations'))->name('install.migrations');
+Route::get('/install/admin', fn () => inertia('installation/admin'))->name('install.admin');
+Route::get('/install/complete', fn () => inertia('installation/complete'))->name('install.complete');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
