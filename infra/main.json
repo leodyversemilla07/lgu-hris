@@ -1,0 +1,354 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.41.2.15936",
+      "templateHash": "9045257058433521600"
+    }
+  },
+  "parameters": {
+    "environmentName": {
+      "type": "string",
+      "metadata": {
+        "description": "Deployment environment name."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for all resources."
+      }
+    },
+    "appName": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 24,
+      "metadata": {
+        "description": "Application name prefix used for Azure resources."
+      }
+    },
+    "centralDomain": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Central application domain, such as hris.example.gov.ph. Leave empty to use the Azure default hostname."
+      }
+    },
+    "appKey": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Laravel APP_KEY value."
+      }
+    },
+    "mysqlAdminLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Database for MySQL administrator username."
+      }
+    },
+    "mysqlAdminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Azure Database for MySQL administrator password."
+      }
+    },
+    "appServiceSku": {
+      "type": "string",
+      "defaultValue": "B1",
+      "metadata": {
+        "description": "App Service plan SKU."
+      }
+    },
+    "mysqlSkuName": {
+      "type": "string",
+      "defaultValue": "Standard_B1ms",
+      "metadata": {
+        "description": "MySQL Flexible Server SKU name."
+      }
+    },
+    "mysqlSkuTier": {
+      "type": "string",
+      "defaultValue": "Burstable",
+      "metadata": {
+        "description": "MySQL Flexible Server SKU tier."
+      }
+    },
+    "mysqlVersion": {
+      "type": "string",
+      "defaultValue": "8.0.21",
+      "metadata": {
+        "description": "MySQL version."
+      }
+    },
+    "centralDatabaseName": {
+      "type": "string",
+      "defaultValue": "lgu_hris_central",
+      "metadata": {
+        "description": "Central database name."
+      }
+    }
+  },
+  "variables": {
+    "resourceToken": "[toLower(uniqueString(subscription().id, resourceGroup().id, parameters('environmentName')))]",
+    "webAppName": "[take(format('{0}-{1}-web', parameters('appName'), variables('resourceToken')), 60)]",
+    "planName": "[take(format('{0}-{1}-plan', parameters('appName'), variables('resourceToken')), 40)]",
+    "insightsName": "[take(format('{0}-{1}-appi', parameters('appName'), variables('resourceToken')), 60)]",
+    "storageAccountName": "[format('lg{0}', variables('resourceToken'))]",
+    "mysqlServerName": "[take(format('{0}-{1}-mysql', parameters('appName'), variables('resourceToken')), 63)]",
+    "effectiveCentralDomain": "[if(empty(parameters('centralDomain')), format('{0}.azurewebsites.net', variables('webAppName')), parameters('centralDomain'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot",
+        "minimumTlsVersion": "TLS1_2",
+        "supportsHttpsTrafficOnly": true,
+        "allowBlobPublicAccess": false
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('insightsName')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": null
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('planName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('appServiceSku')]",
+        "capacity": 1
+      },
+      "kind": "linux",
+      "properties": {
+        "reserved": true
+      }
+    },
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers",
+      "apiVersion": "2023-12-30",
+      "name": "[variables('mysqlServerName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('mysqlSkuName')]",
+        "tier": "[parameters('mysqlSkuTier')]"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('mysqlAdminLogin')]",
+        "administratorLoginPassword": "[parameters('mysqlAdminPassword')]",
+        "version": "[parameters('mysqlVersion')]",
+        "availabilityZone": "1",
+        "createMode": "Create",
+        "storage": {
+          "storageSizeGB": 20,
+          "autoGrow": "Enabled",
+          "iops": 360
+        },
+        "backup": {
+          "backupRetentionDays": 7,
+          "geoRedundantBackup": "Disabled"
+        },
+        "network": {
+          "publicNetworkAccess": "Enabled"
+        },
+        "highAvailability": {
+          "mode": "Disabled"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers/firewallRules",
+      "apiVersion": "2023-12-30",
+      "name": "[format('{0}/{1}', variables('mysqlServerName'), 'AllowAzureServices')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers', variables('mysqlServerName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DBforMySQL/flexibleServers/databases",
+      "apiVersion": "2023-12-30",
+      "name": "[format('{0}/{1}', variables('mysqlServerName'), parameters('centralDatabaseName'))]",
+      "properties": {
+        "charset": "utf8mb4",
+        "collation": "utf8mb4_unicode_ci"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers', variables('mysqlServerName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('webAppName')]",
+      "location": "[parameters('location')]",
+      "kind": "app,linux",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('planName'))]",
+        "httpsOnly": true,
+        "publicNetworkAccess": "Enabled",
+        "siteConfig": {
+          "linuxFxVersion": "PHP|8.3",
+          "alwaysOn": false,
+          "minimumElasticInstanceCount": 1,
+          "appCommandLine": "bash /home/site/wwwroot/azure/startup.sh",
+          "ftpsState": "Disabled",
+          "http20Enabled": true,
+          "minTlsVersion": "1.2",
+          "use32BitWorkerProcess": false,
+          "appSettings": [
+            {
+              "name": "APP_NAME",
+              "value": "LGU HRIS"
+            },
+            {
+              "name": "APP_ENV",
+              "value": "production"
+            },
+            {
+              "name": "APP_DEBUG",
+              "value": "false"
+            },
+            {
+              "name": "APP_KEY",
+              "value": "[parameters('appKey')]"
+            },
+            {
+              "name": "APP_URL",
+              "value": "[format('https://{0}', variables('effectiveCentralDomain'))]"
+            },
+            {
+              "name": "CENTRAL_DOMAIN",
+              "value": "[variables('effectiveCentralDomain')]"
+            },
+            {
+              "name": "LOG_CHANNEL",
+              "value": "stack"
+            },
+            {
+              "name": "CACHE_STORE",
+              "value": "database"
+            },
+            {
+              "name": "SESSION_DRIVER",
+              "value": "database"
+            },
+            {
+              "name": "QUEUE_CONNECTION",
+              "value": "sync"
+            },
+            {
+              "name": "FILESYSTEM_DISK",
+              "value": "local"
+            },
+            {
+              "name": "DB_CONNECTION",
+              "value": "mysql"
+            },
+            {
+              "name": "DB_HOST",
+              "value": "[format('{0}.mysql.database.azure.com', variables('mysqlServerName'))]"
+            },
+            {
+              "name": "DB_PORT",
+              "value": "3306"
+            },
+            {
+              "name": "DB_DATABASE",
+              "value": "[parameters('centralDatabaseName')]"
+            },
+            {
+              "name": "DB_USERNAME",
+              "value": "[parameters('mysqlAdminLogin')]"
+            },
+            {
+              "name": "DB_PASSWORD",
+              "value": "[parameters('mysqlAdminPassword')]"
+            },
+            {
+              "name": "MYSQL_ATTR_SSL_CA",
+              "value": "/etc/ssl/certs/ca-certificates.crt"
+            },
+            {
+              "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
+              "value": "true"
+            },
+            {
+              "name": "ENABLE_ORYX_BUILD",
+              "value": "true"
+            },
+            {
+              "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+              "value": "true"
+            },
+            {
+              "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('insightsName')), '2020-02-02').ConnectionString]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('insightsName'))]",
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers/firewallRules', variables('mysqlServerName'), 'AllowAzureServices')]",
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers/databases', variables('mysqlServerName'), parameters('centralDatabaseName'))]",
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers', variables('mysqlServerName'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('planName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "AZURE_LOCATION": {
+      "type": "string",
+      "value": "[parameters('location')]"
+    },
+    "AZURE_WEB_APP_NAME": {
+      "type": "string",
+      "value": "[variables('webAppName')]"
+    },
+    "AZURE_WEB_APP_URL": {
+      "type": "string",
+      "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/sites', variables('webAppName')), '2023-12-01').defaultHostName)]"
+    },
+    "AZURE_CENTRAL_DOMAIN": {
+      "type": "string",
+      "value": "[variables('effectiveCentralDomain')]"
+    },
+    "AZURE_MYSQL_SERVER": {
+      "type": "string",
+      "value": "[variables('mysqlServerName')]"
+    },
+    "AZURE_MYSQL_DATABASE": {
+      "type": "string",
+      "value": "[parameters('centralDatabaseName')]"
+    },
+    "AZURE_STORAGE_ACCOUNT": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    }
+  }
+}

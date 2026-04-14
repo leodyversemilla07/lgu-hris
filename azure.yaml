@@ -1,0 +1,18 @@
+name: lgu-hris
+metadata:
+  template: manual-laravel-appservice-mysql
+infra:
+  provider: bicep
+services:
+  web:
+    project: .
+    language: php
+    host: appservice
+    hooks:
+      prepackage:
+        posix:
+          shell: sh
+          run: npm ci && npm run build
+        windows:
+          shell: pwsh
+          run: npm ci; npm run build
