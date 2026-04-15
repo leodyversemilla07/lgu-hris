@@ -26,14 +26,6 @@ import {
 } from 'lucide-react';
 import { useDeferredValue, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
-import {
-    create as createEmployee,
-    index as employeesIndex,
-    show as showEmployee,
-} from '@/actions/App/Http/Controllers/EmployeeController';
-import { template as importEmployeesTemplate, store as importEmployees } from '@/actions/App/Http/Controllers/ImportController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -90,6 +82,17 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
+import {
+    create as createEmployee,
+    index as employeesIndex,
+    show as showEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import {
+    template as importEmployeesTemplate,
+    store as importEmployees,
+} from '@/actions/App/Http/Controllers/ImportController';
 
 type EmployeeRecord = {
     id: number;
@@ -911,7 +914,9 @@ export default function EmployeesIndex({ employees }: Props) {
                                                     {employees.length === 0 ? (
                                                         <>
                                                             <Button asChild>
-                                                                <Link href={createEmployee()}>
+                                                                <Link
+                                                                    href={createEmployee()}
+                                                                >
                                                                     <Users data-icon="inline-start" />
                                                                     Add employee
                                                                 </Link>

@@ -1,3 +1,3 @@
 export default function InstallationRequirements() {
-  return <div>Installation - Requirements</div>;
+    return <div>Installation - Requirements</div>;
 }

@@ -11,12 +11,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useEffectEvent } from 'react';
 import type { ReactNode } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    create as leaveCreate,
-    index as leaveIndex,
-    store,
-} from '@/actions/App/Http/Controllers/LeaveController';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,6 +42,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    create as leaveCreate,
+    index as leaveIndex,
+    store,
+} from '@/actions/App/Http/Controllers/LeaveController';
 
 type EmployeeOption = {
     value: string;
@@ -197,7 +197,7 @@ export default function LeaveCreate({
     const balance =
         form.data.employee_id && form.data.leave_type_id
             ? (balances[form.data.employee_id]?.[form.data.leave_type_id] ??
-                null)
+              null)
             : null;
 
     const syncRequestedDays = useEffectEvent(
@@ -665,7 +665,9 @@ export default function LeaveCreate({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href={leaveIndex()}>Cancel</Link>
+                                            <Link href={leaveIndex()}>
+                                                Cancel
+                                            </Link>
                                         </Button>
                                     </CardFooter>
                                 </Card>

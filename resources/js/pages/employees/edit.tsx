@@ -10,13 +10,6 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    edit as editEmployee,
-    index as employeesIndex,
-    show as showEmployee,
-    update as updateEmployee,
-} from '@/actions/App/Http/Controllers/EmployeeController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -46,6 +39,13 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    edit as editEmployee,
+    index as employeesIndex,
+    show as showEmployee,
+    update as updateEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 
 type Option = {
     value: string;
@@ -370,7 +370,9 @@ export default function EditEmployee({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href={showEmployee(employee.uuid)}>
+                                        <Link
+                                            href={showEmployee(employee.uuid)}
+                                        >
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to profile
                                         </Link>
@@ -1317,7 +1319,11 @@ export default function EditEmployee({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href={showEmployee(employee.uuid)}>
+                                            <Link
+                                                href={showEmployee(
+                                                    employee.uuid,
+                                                )}
+                                            >
                                                 Cancel
                                             </Link>
                                         </Button>

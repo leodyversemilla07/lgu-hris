@@ -1,9 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Bell } from 'lucide-react';
-import {
-    markAllAsRead,
-    markAsRead,
-} from '@/actions/App/Http/Controllers/NotificationController';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +13,10 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import type { SharedNotifications } from '@/types';
+import {
+    markAllAsRead,
+    markAsRead,
+} from '@/actions/App/Http/Controllers/NotificationController';
 
 export function AppSidebarHeader({
     breadcrumbs = [],
@@ -91,7 +91,9 @@ export function AppSidebarHeader({
                                         <div className="flex items-center gap-3 text-xs">
                                             {notification.read_at === null ? (
                                                 <Link
-                                                    href={markAsRead.url(notification.id)}
+                                                    href={markAsRead.url(
+                                                        notification.id,
+                                                    )}
                                                     method="patch"
                                                     as="button"
                                                     className="font-medium text-primary"

@@ -1,3 +1,3 @@
 export default function InstallationComplete() {
-  return <div>Installation - Complete</div>;
+    return <div>Installation - Complete</div>;
 }

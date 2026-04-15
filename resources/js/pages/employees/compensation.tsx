@@ -10,12 +10,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { store as storeEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
-import {
-    index as employeesIndex,
-    show as showEmployee,
-} from '@/actions/App/Http/Controllers/EmployeeController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -46,6 +40,12 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { store as storeEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    index as employeesIndex,
+    show as showEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 
 type StepOption = {
     value: string;
@@ -329,7 +329,9 @@ export default function EmployeeCompensation({
 
                                 <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap xl:justify-end">
                                     <Button asChild variant="outline">
-                                        <Link href={showEmployee(employee.uuid)}>
+                                        <Link
+                                            href={showEmployee(employee.uuid)}
+                                        >
                                             <ArrowLeft data-icon="inline-start" />
                                             Back to employee
                                         </Link>
@@ -679,7 +681,11 @@ export default function EmployeeCompensation({
                                             className="w-full"
                                             asChild
                                         >
-                                            <Link href={showEmployee(employee.uuid)}>
+                                            <Link
+                                                href={showEmployee(
+                                                    employee.uuid,
+                                                )}
+                                            >
                                                 Cancel
                                             </Link>
                                         </Button>

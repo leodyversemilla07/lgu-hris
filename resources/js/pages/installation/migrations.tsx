@@ -1,3 +1,3 @@
 export default function InstallationMigrations() {
-  return <div>Installation - Migrations</div>;
+    return <div>Installation - Migrations</div>;
 }

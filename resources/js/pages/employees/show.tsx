@@ -20,25 +20,6 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    destroy as destroyDocument,
-    download as downloadDocument,
-    store as storeDocument,
-} from '@/actions/App/Http/Controllers/DocumentController';
-import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
-import {
-    archive as archiveEmployee,
-    edit as editEmployee,
-    index as employeesIndex,
-    linkUser as linkEmployeeUser,
-    restore as restoreEmployee,
-    show as showEmployeeAction,
-} from '@/actions/App/Http/Controllers/EmployeeController';
-import {
-    create as createPersonnelMovement,
-    show as showPersonnelMovement,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -84,6 +65,25 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy as destroyDocument,
+    download as downloadDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    archive as archiveEmployee,
+    edit as editEmployee,
+    index as employeesIndex,
+    linkUser as linkEmployeeUser,
+    restore as restoreEmployee,
+    show as showEmployeeAction,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import {
+    create as createPersonnelMovement,
+    show as showPersonnelMovement,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 
 type EmployeeDetail = {
     id: number;
@@ -362,7 +362,9 @@ export default function EmployeeShow({
                                         </Link>
                                     </Button>
                                     <Button asChild>
-                                        <Link href={editEmployee(employee.uuid)}>
+                                        <Link
+                                            href={editEmployee(employee.uuid)}
+                                        >
                                             <Pencil data-icon="inline-start" />
                                             Edit employee
                                         </Link>
@@ -818,7 +820,10 @@ export default function EmployeeShow({
                                                         User account
                                                     </Label>
                                                     <Select
-                                                        value={linkUserForm.data.user_id ?? '0'}
+                                                        value={
+                                                            linkUserForm.data
+                                                                .user_id ?? '0'
+                                                        }
                                                         onValueChange={(
                                                             value,
                                                         ) =>
@@ -1209,7 +1214,9 @@ export default function EmployeeShow({
                                                                             size="sm"
                                                                         >
                                                                             <a
-                                                                                href={downloadDocument.url(document.uuid)}
+                                                                                href={downloadDocument.url(
+                                                                                    document.uuid,
+                                                                                )}
                                                                             >
                                                                                 <Download data-icon="inline-start" />
                                                                                 Download
@@ -1290,7 +1297,14 @@ export default function EmployeeShow({
                                         <CardAction>
                                             <Button asChild size="sm">
                                                 <Link
-                                                    href={createPersonnelMovement.url({ query: { employee_id: employee.id } })}
+                                                    href={createPersonnelMovement.url(
+                                                        {
+                                                            query: {
+                                                                employee_id:
+                                                                    employee.id,
+                                                            },
+                                                        },
+                                                    )}
                                                 >
                                                     <Plus data-icon="inline-start" />
                                                     Record movement
@@ -1388,7 +1402,9 @@ export default function EmployeeShow({
                                                                     size="sm"
                                                                 >
                                                                     <Link
-                                                                        href={showPersonnelMovement(movement.uuid)}
+                                                                        href={showPersonnelMovement(
+                                                                            movement.uuid,
+                                                                        )}
                                                                     >
                                                                         View
                                                                         details
@@ -1548,7 +1564,9 @@ export default function EmployeeShow({
                                         <CardAction>
                                             <Button asChild size="sm">
                                                 <Link
-                                                    href={createEmployeeCompensation(employee.uuid)}
+                                                    href={createEmployeeCompensation(
+                                                        employee.uuid,
+                                                    )}
                                                 >
                                                     <Plus data-icon="inline-start" />
                                                     Update salary grade
@@ -1578,7 +1596,9 @@ export default function EmployeeShow({
                                                         variant="outline"
                                                     >
                                                         <Link
-                                                            href={createEmployeeCompensation(employee.uuid)}
+                                                            href={createEmployeeCompensation(
+                                                                employee.uuid,
+                                                            )}
                                                         >
                                                             Assign salary grade
                                                         </Link>

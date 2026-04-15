@@ -13,13 +13,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    index as referenceDataIndex,
-    destroy as destroyReferenceData,
-    store as storeReferenceData,
-    update as updateReferenceData,
-} from '@/actions/App/Http/Controllers/ReferenceDataController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +54,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    index as referenceDataIndex,
+    destroy as destroyReferenceData,
+    store as storeReferenceData,
+    update as updateReferenceData,
+} from '@/actions/App/Http/Controllers/ReferenceDataController';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboardIndex.url() },

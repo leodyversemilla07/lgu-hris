@@ -8,12 +8,6 @@ import {
     Users,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    create as movementsCreate,
-    index as movementsIndex,
-    show as movementsShow,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +55,12 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    create as movementsCreate,
+    index as movementsIndex,
+    show as movementsShow,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 
 type MovementRecord = {
     id: number;
@@ -230,10 +230,14 @@ export default function PersonnelMovementsIndex({
             params.movement_type_id = typeId;
         }
 
-        router.get(movementsIndex.url({ query: params }), {}, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            movementsIndex.url({ query: params }),
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }
 
     function resetFilters(): void {
@@ -515,7 +519,14 @@ export default function PersonnelMovementsIndex({
                                                                         variant="ghost"
                                                                         size="sm"
                                                                     >
-                                                                        <Link href={movementsShow({ personnelMovement: movement.uuid })}>
+                                                                        <Link
+                                                                            href={movementsShow(
+                                                                                {
+                                                                                    personnelMovement:
+                                                                                        movement.uuid,
+                                                                                },
+                                                                            )}
+                                                                        >
                                                                             View
                                                                         </Link>
                                                                     </Button>
@@ -547,7 +558,9 @@ export default function PersonnelMovementsIndex({
                                                 <div className="flex flex-wrap justify-center gap-2">
                                                     {movements.length === 0 ? (
                                                         <Button asChild>
-                                                            <Link href={movementsCreate()}>
+                                                            <Link
+                                                                href={movementsCreate()}
+                                                            >
                                                                 <Plus data-icon="inline-start" />
                                                                 Record movement
                                                             </Link>

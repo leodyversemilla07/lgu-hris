@@ -9,14 +9,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    approve as approveLeave,
-    cancel as cancelLeave,
-    index as leaveIndex,
-    show as leaveShow,
-    submit as submitLeave,
-} from '@/actions/App/Http/Controllers/LeaveController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -44,6 +36,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    approve as approveLeave,
+    cancel as cancelLeave,
+    index as leaveIndex,
+    show as leaveShow,
+    submit as submitLeave,
+} from '@/actions/App/Http/Controllers/LeaveController';
 
 type LeaveRequestDetail = {
     id: number;

@@ -11,8 +11,6 @@ import {
     Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { index as reportsIndex } from '@/actions/App/Http/Controllers/ReportController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -40,6 +38,8 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as reportsIndex } from '@/actions/App/Http/Controllers/ReportController';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboardIndex.url() },

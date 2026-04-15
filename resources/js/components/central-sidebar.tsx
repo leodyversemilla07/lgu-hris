@@ -1,12 +1,9 @@
-import { Link, usePage } from '@inertiajs/react';
-import {
-    LayoutGrid,
-    Building2,
-} from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { LayoutGrid, Building2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavMain } from '@/components/nav-main';
 import { CentralNavUser } from '@/components/central-nav-user';
+import { NavMain } from '@/components/nav-main';
 import {
     Sidebar,
     SidebarContent,
@@ -17,8 +14,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
-import { home as centralHome } from '@/routes';
 import { index as centralTenantsIndex } from '@/actions/App/Http/Controllers/Central/TenantController';
+import { home as centralHome } from '@/routes';
 
 type SidebarModule = {
     title: string;
@@ -40,11 +37,13 @@ const sidebarModules: SidebarModule[] = [
 ];
 
 export function CentralSidebar() {
-    const mainNavItems: NavItem[] = sidebarModules.map(({ title, href, icon }) => ({
-        title,
-        href,
-        icon,
-    }));
+    const mainNavItems: NavItem[] = sidebarModules.map(
+        ({ title, href, icon }) => ({
+            title,
+            href,
+            icon,
+        }),
+    );
 
     return (
         <Sidebar collapsible="icon" variant="inset">

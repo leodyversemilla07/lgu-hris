@@ -1,7 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Clock3 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 
 type Props = {
     title: string;

@@ -8,12 +8,6 @@ import {
     WalletCards,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    index as leaveBalancesIndex,
-    upsert as upsertLeaveBalance,
-} from '@/actions/App/Http/Controllers/LeaveBalanceController';
-import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -53,6 +47,12 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    index as leaveBalancesIndex,
+    upsert as upsertLeaveBalance,
+} from '@/actions/App/Http/Controllers/LeaveBalanceController';
+import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
 
 type BalanceRow = {
     employee_id: string;

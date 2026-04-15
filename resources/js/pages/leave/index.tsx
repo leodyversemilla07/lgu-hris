@@ -9,13 +9,6 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { index as leaveBalancesIndex } from '@/actions/App/Http/Controllers/LeaveBalanceController';
-import {
-    create as leaveCreate,
-    index as leaveIndex,
-    show as leaveShow,
-} from '@/actions/App/Http/Controllers/LeaveController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,6 +56,13 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as leaveBalancesIndex } from '@/actions/App/Http/Controllers/LeaveBalanceController';
+import {
+    create as leaveCreate,
+    index as leaveIndex,
+    show as leaveShow,
+} from '@/actions/App/Http/Controllers/LeaveController';
 
 type LeaveRequestRecord = {
     id: number;
@@ -226,10 +226,14 @@ export default function LeaveIndex({
             params.employee_id = employeeId;
         }
 
-        router.get(leaveIndex.url({ query: params }), {}, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            leaveIndex.url({ query: params }),
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }
 
     function handleStatusChange(value: string): void {
@@ -542,8 +546,8 @@ export default function LeaveIndex({
                                                         (leaveRequest) => {
                                                             const status =
                                                                 statusConfig[
-                                                                leaveRequest
-                                                                    .status
+                                                                    leaveRequest
+                                                                        .status
                                                                 ];
 
                                                             return (
@@ -584,7 +588,7 @@ export default function LeaveIndex({
                                                                             )}{' '}
                                                                             day
                                                                             {leaveRequest.days_requested !==
-                                                                                1
+                                                                            1
                                                                                 ? 's'
                                                                                 : ''}
                                                                         </Badge>
@@ -596,16 +600,16 @@ export default function LeaveIndex({
                                                                             }
                                                                         >
                                                                             {leaveRequest.status ===
-                                                                                'rejected' ? (
+                                                                            'rejected' ? (
                                                                                 <XCircle />
                                                                             ) : leaveRequest.status ===
-                                                                                'approved' ? (
+                                                                              'approved' ? (
                                                                                 <CheckCircle2 />
                                                                             ) : leaveRequest.status ===
-                                                                                'submitted' ? (
+                                                                              'submitted' ? (
                                                                                 <Clock3 />
                                                                             ) : leaveRequest.status ===
-                                                                                'draft' ? (
+                                                                              'draft' ? (
                                                                                 <FileText />
                                                                             ) : (
                                                                                 <CalendarDays />
@@ -627,7 +631,9 @@ export default function LeaveIndex({
                                                                             size="sm"
                                                                         >
                                                                             <Link
-                                                                                href={leaveShow(leaveRequest.uuid)}
+                                                                                href={leaveShow(
+                                                                                    leaveRequest.uuid,
+                                                                                )}
                                                                             >
                                                                                 View
                                                                             </Link>
@@ -660,9 +666,11 @@ export default function LeaveIndex({
                                             <EmptyContent>
                                                 <div className="flex flex-wrap justify-center gap-2">
                                                     {leaveRequests.length ===
-                                                        0 ? (
+                                                    0 ? (
                                                         <Button asChild>
-                                                            <Link href={leaveCreate()}>
+                                                            <Link
+                                                                href={leaveCreate()}
+                                                            >
                                                                 <Plus data-icon="inline-start" />
                                                                 File leave
                                                             </Link>
@@ -711,7 +719,7 @@ export default function LeaveIndex({
                                                 {numberFormatter.format(
                                                     Math.min(
                                                         pageStartIndex +
-                                                        paginatedLeaveRequests.length,
+                                                            paginatedLeaveRequests.length,
                                                         visibleLeaveRequests.length,
                                                     ),
                                                 )}{' '}
@@ -724,89 +732,89 @@ export default function LeaveIndex({
 
                                             {visibleLeaveRequests.length >
                                                 ITEMS_PER_PAGE && (
-                                                    <Pagination className="md:justify-end">
-                                                        <PaginationContent>
-                                                            <PaginationItem>
-                                                                <PaginationPrevious
-                                                                    href="#"
-                                                                    onClick={(
-                                                                        event,
-                                                                    ) => {
-                                                                        event.preventDefault();
-                                                                        goToPage(
-                                                                            page -
+                                                <Pagination className="md:justify-end">
+                                                    <PaginationContent>
+                                                        <PaginationItem>
+                                                            <PaginationPrevious
+                                                                href="#"
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
+                                                                    event.preventDefault();
+                                                                    goToPage(
+                                                                        page -
                                                                             1,
-                                                                        );
-                                                                    }}
-                                                                    aria-disabled={
-                                                                        page === 1
-                                                                    }
-                                                                    className={
-                                                                        page === 1
-                                                                            ? 'pointer-events-none opacity-50'
-                                                                            : undefined
-                                                                    }
-                                                                />
-                                                            </PaginationItem>
-                                                            {paginationItems().map(
-                                                                (item, index) => (
-                                                                    <PaginationItem
-                                                                        key={`${item}-${index}`}
-                                                                    >
-                                                                        {item ===
-                                                                            'ellipsis' ? (
-                                                                            <PaginationEllipsis />
-                                                                        ) : (
-                                                                            <PaginationLink
-                                                                                href="#"
-                                                                                isActive={
-                                                                                    item ===
-                                                                                    page
-                                                                                }
-                                                                                onClick={(
-                                                                                    event,
-                                                                                ) => {
-                                                                                    event.preventDefault();
-                                                                                    goToPage(
-                                                                                        item,
-                                                                                    );
-                                                                                }}
-                                                                            >
-                                                                                {
-                                                                                    item
-                                                                                }
-                                                                            </PaginationLink>
-                                                                        )}
-                                                                    </PaginationItem>
-                                                                ),
-                                                            )}
-                                                            <PaginationItem>
-                                                                <PaginationNext
-                                                                    href="#"
-                                                                    onClick={(
-                                                                        event,
-                                                                    ) => {
-                                                                        event.preventDefault();
-                                                                        goToPage(
-                                                                            page +
+                                                                    );
+                                                                }}
+                                                                aria-disabled={
+                                                                    page === 1
+                                                                }
+                                                                className={
+                                                                    page === 1
+                                                                        ? 'pointer-events-none opacity-50'
+                                                                        : undefined
+                                                                }
+                                                            />
+                                                        </PaginationItem>
+                                                        {paginationItems().map(
+                                                            (item, index) => (
+                                                                <PaginationItem
+                                                                    key={`${item}-${index}`}
+                                                                >
+                                                                    {item ===
+                                                                    'ellipsis' ? (
+                                                                        <PaginationEllipsis />
+                                                                    ) : (
+                                                                        <PaginationLink
+                                                                            href="#"
+                                                                            isActive={
+                                                                                item ===
+                                                                                page
+                                                                            }
+                                                                            onClick={(
+                                                                                event,
+                                                                            ) => {
+                                                                                event.preventDefault();
+                                                                                goToPage(
+                                                                                    item,
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                item
+                                                                            }
+                                                                        </PaginationLink>
+                                                                    )}
+                                                                </PaginationItem>
+                                                            ),
+                                                        )}
+                                                        <PaginationItem>
+                                                            <PaginationNext
+                                                                href="#"
+                                                                onClick={(
+                                                                    event,
+                                                                ) => {
+                                                                    event.preventDefault();
+                                                                    goToPage(
+                                                                        page +
                                                                             1,
-                                                                        );
-                                                                    }}
-                                                                    aria-disabled={
-                                                                        page ===
-                                                                        totalPages
-                                                                    }
-                                                                    className={
-                                                                        page ===
-                                                                            totalPages
-                                                                            ? 'pointer-events-none opacity-50'
-                                                                            : undefined
-                                                                    }
-                                                                />
-                                                            </PaginationItem>
-                                                        </PaginationContent>
-                                                    </Pagination>
-                                                )}
+                                                                    );
+                                                                }}
+                                                                aria-disabled={
+                                                                    page ===
+                                                                    totalPages
+                                                                }
+                                                                className={
+                                                                    page ===
+                                                                    totalPages
+                                                                        ? 'pointer-events-none opacity-50'
+                                                                        : undefined
+                                                                }
+                                                            />
+                                                        </PaginationItem>
+                                                    </PaginationContent>
+                                                </Pagination>
+                                            )}
                                         </div>
                                     )}
                                 </CardContent>

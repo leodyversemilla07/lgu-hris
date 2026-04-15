@@ -13,15 +13,6 @@ import {
     Users,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    destroy as destroyDocument,
-    index as documentsIndex,
-    download as downloadDocument,
-    preview as previewDocument,
-    store as storeDocument,
-} from '@/actions/App/Http/Controllers/DocumentController';
-import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -83,6 +74,15 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy as destroyDocument,
+    index as documentsIndex,
+    download as downloadDocument,
+    preview as previewDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 
 type DocumentVersionRecord = {
     id: number;
@@ -882,7 +882,9 @@ export default function DocumentsIndex({
                                                                                             >
                                                                                                 {version.is_previewable && (
                                                                                                     <a
-                                                                                                        href={previewDocument.url(version.uuid)}
+                                                                                                        href={previewDocument.url(
+                                                                                                            version.uuid,
+                                                                                                        )}
                                                                                                         target="_blank"
                                                                                                         rel="noreferrer"
                                                                                                         className="inline-flex items-center gap-1 hover:text-foreground"
@@ -892,7 +894,9 @@ export default function DocumentsIndex({
                                                                                                     </a>
                                                                                                 )}
                                                                                                 <a
-                                                                                                    href={downloadDocument.url(version.uuid)}
+                                                                                                    href={downloadDocument.url(
+                                                                                                        version.uuid,
+                                                                                                    )}
                                                                                                     className="inline-flex items-center gap-2 hover:text-foreground"
                                                                                                 >
                                                                                                     <Download className="size-3" />
@@ -942,7 +946,9 @@ export default function DocumentsIndex({
                                                                                 size="sm"
                                                                             >
                                                                                 <a
-                                                                                    href={previewDocument.url(document.uuid)}
+                                                                                    href={previewDocument.url(
+                                                                                        document.uuid,
+                                                                                    )}
                                                                                     target="_blank"
                                                                                     rel="noreferrer"
                                                                                 >
@@ -958,7 +964,9 @@ export default function DocumentsIndex({
                                                                             size="sm"
                                                                         >
                                                                             <a
-                                                                                href={downloadDocument.url(document.uuid)}
+                                                                                href={downloadDocument.url(
+                                                                                    document.uuid,
+                                                                                )}
                                                                             >
                                                                                 <Download data-icon="inline-start" />
                                                                                 Download
@@ -1059,7 +1067,9 @@ export default function DocumentsIndex({
                                                                 asChild
                                                                 variant="outline"
                                                             >
-                                                                <Link href={employeesIndex()}>
+                                                                <Link
+                                                                    href={employeesIndex()}
+                                                                >
                                                                     <Users data-icon="inline-start" />
                                                                     View
                                                                     employees

@@ -1,9 +1,9 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import CentralLayout from '@/layouts/central/central-layout';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
+import CentralLayout from '@/layouts/central/central-layout';
 import {
     index as centralTenantsIndex,
     store as centralTenantsStore,
@@ -11,10 +11,12 @@ import {
 
 export default function TenantsCreate() {
     return (
-        <CentralLayout breadcrumbs={[
-            { title: 'Tenants', href: '/tenants' },
-            { title: 'Create LGU', href: '/tenants/create' },
-        ]}>
+        <CentralLayout
+            breadcrumbs={[
+                { title: 'Tenants', href: '/tenants' },
+                { title: 'Create LGU', href: '/tenants/create' },
+            ]}
+        >
             <Head title="Create LGU Tenant" />
 
             <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
@@ -25,7 +27,7 @@ export default function TenantsCreate() {
                     </Button>
                 </div>
 
-                <div className="rounded-md border bg-card p-6 shadow-sm max-w-2xl">
+                <div className="max-w-2xl rounded-md border bg-card p-6 shadow-sm">
                     <Form {...centralTenantsStore.form()} className="space-y-6">
                         {({ processing, errors }) => (
                             <>
@@ -42,7 +44,9 @@ export default function TenantsCreate() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="municipality">Municipality / City</Label>
+                                    <Label htmlFor="municipality">
+                                        Municipality / City
+                                    </Label>
                                     <Input
                                         id="municipality"
                                         name="municipality"
@@ -73,17 +77,22 @@ export default function TenantsCreate() {
                                             required
                                             className="w-1/2"
                                         />
-                                        <span className="text-muted-foreground">.yourhris.test</span>
+                                        <span className="text-muted-foreground">
+                                            .yourhris.test
+                                        </span>
                                     </div>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        Letters, numbers, and dashes only. No spaces.
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        Letters, numbers, and dashes only. No
+                                        spaces.
                                     </p>
                                     <InputError message={errors.subdomain} />
                                 </div>
 
-                                <div className="flex justify-end mt-4">
+                                <div className="mt-4 flex justify-end">
                                     <Button type="submit" disabled={processing}>
-                                        {processing ? 'Provisioning Database...' : 'Register LGU'}
+                                        {processing
+                                            ? 'Provisioning Database...'
+                                            : 'Register LGU'}
                                     </Button>
                                 </div>
                             </>

@@ -1,12 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CalendarDays, Clock3, FileText, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
-import {
-    create as attendanceCreate,
-    index as attendanceIndex,
-} from '@/actions/App/Http/Controllers/AttendanceController';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +37,12 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { Auth, BreadcrumbItem } from '@/types';
+import {
+    create as attendanceCreate,
+    index as attendanceIndex,
+} from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 
 type Summary = {
     id: number;
@@ -195,10 +195,14 @@ export default function AttendanceIndex({
             params.employee_id = nextEmployeeId;
         }
 
-        router.get(attendanceIndex.url({ query: params }), {}, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            attendanceIndex.url({ query: params }),
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     }
 
     return (
@@ -431,7 +435,9 @@ export default function AttendanceIndex({
                                                         asChild
                                                         variant="outline"
                                                     >
-                                                        <Link href={attendanceCreate()}>
+                                                        <Link
+                                                            href={attendanceCreate()}
+                                                        >
                                                             Log the first
                                                             attendance
                                                         </Link>
@@ -554,7 +560,15 @@ export default function AttendanceIndex({
                                                                             size="sm"
                                                                         >
                                                                             <Link
-                                                                                href={attendanceCreate.url({ query: { employee_id: summary.employee_id, date: `${summary.year}-${String(summary.month).padStart(2, '0')}-01` } })}
+                                                                                href={attendanceCreate.url(
+                                                                                    {
+                                                                                        query: {
+                                                                                            employee_id:
+                                                                                                summary.employee_id,
+                                                                                            date: `${summary.year}-${String(summary.month).padStart(2, '0')}-01`,
+                                                                                        },
+                                                                                    },
+                                                                                )}
                                                                             >
                                                                                 Log
                                                                             </Link>

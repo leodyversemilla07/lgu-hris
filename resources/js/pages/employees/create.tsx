@@ -10,12 +10,6 @@ import {
     ShieldCheck,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    create as createEmployee,
-    index as employeesIndex,
-    store as storeEmployee,
-} from '@/actions/App/Http/Controllers/EmployeeController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -45,6 +39,12 @@ import {
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    create as createEmployee,
+    index as employeesIndex,
+    store as storeEmployee,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 
 type Option = {
     value: string;

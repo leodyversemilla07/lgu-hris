@@ -11,15 +11,6 @@ import {
     WalletCards,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
-import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
-import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
-import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
-import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
-import { index as reportsIndex } from '@/actions/App/Http/Controllers/ReportController';
-import { index as accessControlIndex } from '@/actions/App/Http/Controllers/UserController';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -33,6 +24,15 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import type { Auth, NavItem } from '@/types';
+import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
+import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
+import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
+import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
+import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
+import { index as reportsIndex } from '@/actions/App/Http/Controllers/ReportController';
+import { index as accessControlIndex } from '@/actions/App/Http/Controllers/UserController';
 
 type SidebarModule = {
     title: string;
