@@ -25,7 +25,7 @@ class DtrExportController extends Controller
         $pdf = $this->dtrService->generateCscForm48($employee, $year, $month);
 
         $filename = "DTR_{$employee->last_name}_{$year}_{$month}.pdf";
-        
+
         return $pdf->download($filename);
     }
 }

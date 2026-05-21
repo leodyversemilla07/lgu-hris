@@ -2,12 +2,9 @@
 
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-
-uses(RefreshDatabase::class);
 
 test('deployment preflight passes for a production-ready configuration', function () {
     $databasePath = database_path('preflight-test.sqlite');
@@ -33,13 +30,6 @@ test('deployment preflight passes for a production-ready configuration', functio
     try {
         $this->artisan('migrate:fresh', [
             '--database' => 'mysql',
-            '--force' => true,
-        ])->assertSuccessful();
-
-        $this->artisan('migrate', [
-            '--database' => 'mysql',
-            '--path' => database_path('migrations/tenant'),
-            '--realpath' => true,
             '--force' => true,
         ])->assertSuccessful();
 

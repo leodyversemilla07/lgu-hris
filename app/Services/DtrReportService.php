@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AttendanceLog;
 use App\Models\Employee;
-use App\Models\WorkSchedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -13,19 +12,16 @@ class DtrReportService
 {
     /**
      * Generate the official CSC Form 48 (DTR) PDF
-     * 
-     * @param Employee $employee
-     * @param int $year
-     * @param int $month
+     *
      * @return \Barryvdh\DomPDF\PDF
      */
     public function generateCscForm48(Employee $employee, int $year, int $month)
     {
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
-        
+
         $days = $this->getMonthlyAttendance($employee, $year, $month);
-        
+
         $totals = [
             'late' => $days->sum('late_minutes'),
             'undertime' => $days->sum('undertime_minutes'),
@@ -53,7 +49,7 @@ class DtrReportService
     {
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
-        
+
         $logs = AttendanceLog::where('employee_id', $employee->id)
             ->whereBetween('log_date', [$startDate, $endDate])
             ->get()
@@ -65,7 +61,7 @@ class DtrReportService
         for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
             $dateStr = $date->format('Y-m-d');
             $log = $logs->get($dateStr);
-            
+
             $attendance->push([
                 'day' => $date->day,
                 'date' => $date->copy(),

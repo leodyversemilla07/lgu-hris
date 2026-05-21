@@ -12,8 +12,6 @@ abstract class TestCase extends BaseTestCase
 
         if (app()->runningUnitTests()) {
             $this->artisan('migrate', [
-                '--path' => database_path('migrations/tenant'),
-                '--realpath' => true,
                 '--force' => true,
             ]);
         }

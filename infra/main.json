@@ -30,11 +30,11 @@
         "description": "Application name prefix used for Azure resources."
       }
     },
-    "centralDomain": {
+    "appDomain": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Central application domain, such as hris.example.gov.ph. Leave empty to use the Azure default hostname."
+        "description": "Application domain, such as hris.example.gov.ph. Leave empty to use the Azure default hostname."
       }
     },
     "appKey": {
@@ -83,11 +83,11 @@
         "description": "MySQL version."
       }
     },
-    "centralDatabaseName": {
+    "databaseName": {
       "type": "string",
-      "defaultValue": "lgu_hris_central",
+      "defaultValue": "lgu_hris",
       "metadata": {
-        "description": "Central database name."
+        "description": "Database name."
       }
     }
   },
@@ -98,7 +98,7 @@
     "insightsName": "[take(format('{0}-{1}-appi', parameters('appName'), variables('resourceToken')), 60)]",
     "storageAccountName": "[format('lg{0}', variables('resourceToken'))]",
     "mysqlServerName": "[take(format('{0}-{1}-mysql', parameters('appName'), variables('resourceToken')), 63)]",
-    "effectiveCentralDomain": "[if(empty(parameters('centralDomain')), format('{0}.azurewebsites.net', variables('webAppName')), parameters('centralDomain'))]"
+    "effectiveAppDomain": "[if(empty(parameters('appDomain')), format('{0}.azurewebsites.net', variables('webAppName')), parameters('appDomain'))]"
   },
   "resources": [
     {
@@ -189,7 +189,7 @@
     {
       "type": "Microsoft.DBforMySQL/flexibleServers/databases",
       "apiVersion": "2023-12-30",
-      "name": "[format('{0}/{1}', variables('mysqlServerName'), parameters('centralDatabaseName'))]",
+      "name": "[format('{0}/{1}', variables('mysqlServerName'), parameters('databaseName'))]",
       "properties": {
         "charset": "utf8mb4",
         "collation": "utf8mb4_unicode_ci"
@@ -239,11 +239,7 @@
             },
             {
               "name": "APP_URL",
-              "value": "[format('https://{0}', variables('effectiveCentralDomain'))]"
-            },
-            {
-              "name": "CENTRAL_DOMAIN",
-              "value": "[variables('effectiveCentralDomain')]"
+              "value": "[format('https://{0}', variables('effectiveAppDomain'))]"
             },
             {
               "name": "LOG_CHANNEL",
@@ -279,7 +275,7 @@
             },
             {
               "name": "DB_DATABASE",
-              "value": "[parameters('centralDatabaseName')]"
+              "value": "[parameters('databaseName')]"
             },
             {
               "name": "DB_USERNAME",
@@ -315,7 +311,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Insights/components', variables('insightsName'))]",
         "[resourceId('Microsoft.DBforMySQL/flexibleServers/firewallRules', variables('mysqlServerName'), 'AllowAzureServices')]",
-        "[resourceId('Microsoft.DBforMySQL/flexibleServers/databases', variables('mysqlServerName'), parameters('centralDatabaseName'))]",
+        "[resourceId('Microsoft.DBforMySQL/flexibleServers/databases', variables('mysqlServerName'), parameters('databaseName'))]",
         "[resourceId('Microsoft.DBforMySQL/flexibleServers', variables('mysqlServerName'))]",
         "[resourceId('Microsoft.Web/serverfarms', variables('planName'))]"
       ]
@@ -336,15 +332,11 @@
     },
     "AZURE_CENTRAL_DOMAIN": {
       "type": "string",
-      "value": "[variables('effectiveCentralDomain')]"
-    },
-    "AZURE_MYSQL_SERVER": {
-      "type": "string",
       "value": "[variables('mysqlServerName')]"
     },
     "AZURE_MYSQL_DATABASE": {
       "type": "string",
-      "value": "[parameters('centralDatabaseName')]"
+      "value": "[parameters('databaseName')]"
     },
     "AZURE_STORAGE_ACCOUNT": {
       "type": "string",

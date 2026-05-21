@@ -9,8 +9,8 @@ param location string = resourceGroup().location
 @maxLength(24)
 param appName string
 
-@description('Central application domain, such as hris.example.gov.ph. Leave empty to use the Azure default hostname.')
-param centralDomain string = ''
+@description('Application domain, such as hris.example.gov.ph. Leave empty to use the Azure default hostname.')
+param appDomain string = ''
 
 @description('Laravel APP_KEY value.')
 @secure()
@@ -35,8 +35,8 @@ param mysqlSkuTier string = 'Burstable'
 @description('MySQL version.')
 param mysqlVersion string = '8.0.21'
 
-@description('Central database name.')
-param centralDatabaseName string = 'lgu_hris_central'
+@description('Database name.')
+param databaseName string = 'lgu_hris'
 
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroup().id, environmentName))
 var webAppName = take('${appName}-${resourceToken}-web', 60)
@@ -44,7 +44,7 @@ var planName = take('${appName}-${resourceToken}-plan', 40)
 var insightsName = take('${appName}-${resourceToken}-appi', 60)
 var storageAccountName = 'lg${resourceToken}'
 var mysqlServerName = take('${appName}-${resourceToken}-mysql', 63)
-var effectiveCentralDomain = empty(centralDomain) ? '${webAppName}.azurewebsites.net' : centralDomain
+var effectiveAppDomain = empty(appDomain) ? '${webAppName}.azurewebsites.net' : appDomain
 
 resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: storageAccountName
@@ -126,7 +126,7 @@ resource mysqlAllowAzureServices 'Microsoft.DBforMySQL/flexibleServers/firewallR
 
 resource mysqlDatabase 'Microsoft.DBforMySQL/flexibleServers/databases@2023-12-30' = {
   parent: mysqlServer
-  name: centralDatabaseName
+  name: databaseName
   properties: {
     charset: 'utf8mb4'
     collation: 'utf8mb4_unicode_ci'
@@ -172,11 +172,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'APP_URL'
-          value: 'https://${effectiveCentralDomain}'
-        }
-        {
-          name: 'CENTRAL_DOMAIN'
-          value: effectiveCentralDomain
+          value: 'https://${effectiveAppDomain}'
         }
         {
           name: 'LOG_CHANNEL'
@@ -212,7 +208,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'DB_DATABASE'
-          value: centralDatabaseName
+          value: databaseName
         }
         {
           name: 'DB_USERNAME'
@@ -254,7 +250,6 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
 output AZURE_LOCATION string = location
 output AZURE_WEB_APP_NAME string = webApp.name
 output AZURE_WEB_APP_URL string = 'https://${webApp.properties.defaultHostName}'
-output AZURE_CENTRAL_DOMAIN string = effectiveCentralDomain
 output AZURE_MYSQL_SERVER string = mysqlServer.name
-output AZURE_MYSQL_DATABASE string = centralDatabaseName
+output AZURE_MYSQL_DATABASE string = databaseName
 output AZURE_STORAGE_ACCOUNT string = storage.name

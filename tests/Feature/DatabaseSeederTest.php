@@ -21,11 +21,8 @@ use App\Models\User;
 use App\Models\WorkSchedule;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoDatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-
-uses(RefreshDatabase::class);
 
 test('database seeder populates production-safe reference data only', function () {
     $this->seed(DatabaseSeeder::class);

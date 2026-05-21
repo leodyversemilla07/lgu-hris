@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Employee;
-use App\Models\EmployeeHistory;
-use App\Models\PersonnelMovement;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 
@@ -12,8 +10,7 @@ class ServiceRecordReportService
 {
     /**
      * Generate the official Service Record PDF
-     * 
-     * @param Employee $employee
+     *
      * @return \Barryvdh\DomPDF\PDF
      */
     public function generateServiceRecord(Employee $employee)

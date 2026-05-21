@@ -22,7 +22,7 @@ class ServiceRecordController extends Controller
         $pdf = $this->serviceRecordService->generateServiceRecord($employee);
 
         $filename = "ServiceRecord_{$employee->last_name}.pdf";
-        
+
         return $pdf->download($filename);
     }
 }

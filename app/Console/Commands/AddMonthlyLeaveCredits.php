@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AuditLog;
 use App\Models\Employee;
 use App\Models\EmploymentType;
 use App\Models\LeaveBalance;
 use App\Models\LeaveType;
-use App\Models\AuditLog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -36,10 +36,10 @@ class AddMonthlyLeaveCredits extends Command
         $month = now()->month;
         $today = now()->format('Y-m-d');
 
-        $this->info("Starting monthly leave credit addition for {$year}-" . str_pad($month, 2, '0', STR_PAD_LEFT));
+        $this->info("Starting monthly leave credit addition for {$year}-".str_pad($month, 2, '0', STR_PAD_LEFT));
 
         // 1. Check if we've already run this month (unless forced)
-        if (!$this->option('force')) {
+        if (! $this->option('force')) {
             $alreadyRun = DB::table('audit_logs')
                 ->where('event', 'monthly_leave_credits_added')
                 ->whereYear('created_at', $year)
@@ -47,23 +47,26 @@ class AddMonthlyLeaveCredits extends Command
                 ->exists();
 
             if ($alreadyRun) {
-                $this->warn("Monthly leave credits have already been added for this month.");
+                $this->warn('Monthly leave credits have already been added for this month.');
+
                 return self::SUCCESS;
             }
         }
 
         // 2. Get required reference IDs
         $permanentType = EmploymentType::where('name', 'Permanent')->first();
-        if (!$permanentType) {
-            $this->error("Permanent employment type not found. Please seed the database.");
+        if (! $permanentType) {
+            $this->error('Permanent employment type not found. Please seed the database.');
+
             return self::FAILURE;
         }
 
         $vlType = LeaveType::where('code', 'VL')->first();
         $slType = LeaveType::where('code', 'SL')->first();
 
-        if (!$vlType || !$slType) {
-            $this->error("VL or SL leave types not found. Please seed the database.");
+        if (! $vlType || ! $slType) {
+            $this->error('VL or SL leave types not found. Please seed the database.');
+
             return self::FAILURE;
         }
 
@@ -74,7 +77,8 @@ class AddMonthlyLeaveCredits extends Command
             ->get();
 
         if ($employees->isEmpty()) {
-            $this->warn("No active permanent employees found.");
+            $this->warn('No active permanent employees found.');
+
             return self::SUCCESS;
         }
 

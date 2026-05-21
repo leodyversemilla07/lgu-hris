@@ -2,26 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that's loaded on the first page visit.
-     *
-     * @see https://inertiajs.com/server-side-setup#root-template
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determines the current asset version.
-     *
-     * @see https://inertiajs.com/asset-versioning
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
@@ -33,9 +20,8 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $isTenantUser = $user instanceof User;
 
-        $notifications = $isTenantUser
+        $notifications = $user
             ? [
                 'unread_count' => $user->unreadNotifications()->count(),
                 'recent' => $user->notifications()
@@ -72,12 +58,12 @@ class HandleInertiaRequests extends Middleware
                         'created_at',
                         'updated_at',
                     ]),
-                    'avatar' => $isTenantUser ? $user->avatar : null,
-                    'two_factor_confirmed_at' => $isTenantUser ? $user->two_factor_confirmed_at : null,
-                    'two_factor_enabled' => $isTenantUser && ! is_null($user->two_factor_secret),
-                    'roles' => $isTenantUser ? $user->getRoleNames()->values()->all() : [],
-                    'permissions' => $isTenantUser ? $user->getAllPermissions()->pluck('name')->values()->all() : [],
-                    'primary_role' => $isTenantUser ? $user->getRoleNames()->first() : 'Central Admin',
+                    'avatar' => $user->avatar,
+                    'two_factor_confirmed_at' => $user->two_factor_confirmed_at,
+                    'two_factor_enabled' => ! is_null($user->two_factor_secret),
+                    'roles' => $user->getRoleNames()->values()->all(),
+                    'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+                    'primary_role' => $user->getRoleNames()->first(),
                 ] : null,
             ],
             'notifications' => $notifications,
