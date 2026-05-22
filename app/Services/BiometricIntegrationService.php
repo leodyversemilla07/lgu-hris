@@ -13,10 +13,18 @@ use Illuminate\Support\Str;
 class BiometricIntegrationService
 {
     /**
-     * Poll a device for new logs via TCP/IP (ZKTeco Protocol)
-     *
-     * NOTE: This is a simplified implementation of the ZKTeco UDP/TCP protocol.
-     * In a full production environment, we'd use a dedicated library or a C++ bridge.
+     * ZKTeco command codes (simplified subset)
+     */
+    private const CMD_CONNECT = 1000;
+
+    private const CMD_DISCONNECT = 1001;
+
+    private const CMD_GET_ATT_LOG = 1500;
+
+    private const CMD_ACK_OK = 2000;
+
+    /**
+     * Sync attendance logs from a device via TCP
      */
     public function syncDevice(BiometricDevice $device): int
     {
@@ -24,7 +32,6 @@ class BiometricIntegrationService
             return 0;
         }
 
-        // 1. Connect to device
         $socket = @fsockopen($device->ip_address, $device->port, $errno, $errstr, 5);
 
         if (! $socket) {
@@ -33,33 +40,130 @@ class BiometricIntegrationService
             return 0;
         }
 
-        // 2. Send 'Get Logs' command (ZKTeco binary packet)
-        // This is a placeholder for the binary handshake and data retrieval
-        // Real implementation would involve pack('v*', ...) and checksums
-
-        // For the sake of this implementation, we assume we've received $logs
         $newLogsCount = 0;
 
-        // 3. Process logs (Mocking the data retrieval loop)
-        /*
-        foreach ($logs as $log) {
-            $this->processLog($device, $log['uid'], $log['timestamp'], $log['type']);
-            $newLogsCount++;
-        }
-        */
+        try {
+            $this->sendCommand($socket, self::CMD_CONNECT);
+            $this->readResponse($socket);
 
-        $device->update(['last_sync_at' => now()]);
-        fclose($socket);
+            $this->sendCommand($socket, self::CMD_GET_ATT_LOG);
+            $rawData = $this->readResponse($socket);
+
+            $logs = $this->parseAttendanceLogs($rawData);
+
+            foreach ($logs as $log) {
+                try {
+                    $timestamp = Carbon::parse($log['timestamp']);
+
+                    $this->processLog(
+                        device: $device,
+                        externalId: $log['uid'],
+                        timestamp: $timestamp,
+                        punchType: $log['type'],
+                        verifyMode: $log['verify_mode'] ?? null,
+                        payload: $log,
+                    );
+
+                    $newLogsCount++;
+                } catch (\Exception $e) {
+                    Log::warning("Failed to process log entry: {$e->getMessage()}");
+                }
+            }
+
+            $this->sendCommand($socket, self::CMD_DISCONNECT);
+        } catch (\Exception $e) {
+            Log::error("Biometric sync error for {$device->name}: {$e->getMessage()}");
+        } finally {
+            $device->update(['last_sync_at' => now()]);
+            fclose($socket);
+        }
 
         return $newLogsCount;
     }
 
     /**
-     * Standard processing logic for both Push and Poll
+     * Parse ZKTeco attendance log binary data into structured records.
+     *
+     * Each record is 40 bytes:
+     *   - 4 bytes: UID (employee ID number on the device)
+     *   - 4 bytes: Verify mode
+     *   - 4 bytes: IO mode (0=check-in, 1=check-out, etc.)
+     *   - 4 bytes: Work code
+     *   - 4 bytes: Reserved
+     *   - 16 bytes: Timestamp (YYYYMMDDHHMMSS format in ASCII)
+     *   - 4 bytes: Reserved
+     */
+    private function parseAttendanceLogs(string $rawData): array
+    {
+        $logs = [];
+        $recordSize = 40;
+        $length = strlen($rawData);
+
+        for ($offset = 0; $offset + $recordSize <= $length; $offset += $recordSize) {
+            $record = substr($rawData, $offset, $recordSize);
+
+            $uid = unpack('V', substr($record, 0, 4))[1];
+            $verifyMode = unpack('V', substr($record, 4, 4))[1];
+            $ioMode = unpack('V', substr($record, 8, 4))[1];
+            $timestampRaw = trim(substr($record, 16, 16));
+
+            if ($uid === 0 || empty($timestampRaw) || $timestampRaw === '0') {
+                continue;
+            }
+
+            try {
+                $timestamp = Carbon::createFromFormat('YmdHis', $timestampRaw);
+            } catch (\Exception) {
+                continue;
+            }
+
+            $logs[] = [
+                'uid' => (string) $uid,
+                'verify_mode' => (string) $verifyMode,
+                'type' => $ioMode === 0 ? '0' : '1',
+                'timestamp' => $timestamp->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        return $logs;
+    }
+
+    /**
+     * Send a command packet (ZKTeco standard header + command code)
+     */
+    private function sendCommand($socket, int $command): void
+    {
+        $buf = pack('V*', 0, 0, 0, 0, 0, 0, 0, 0, 0, $command, 0, 0, 0, 0, 0, 0, 0);
+        fwrite($socket, $buf);
+    }
+
+    /**
+     * Read response from the device, returning the payload portion
+     */
+    private function readResponse($socket): string
+    {
+        $header = fread($socket, 8);
+
+        if ($header === false || strlen($header) < 8) {
+            return '';
+        }
+
+        $headerData = unpack('Vsize/Vcommand', $header);
+
+        $payloadSize = max(0, ($headerData['size'] ?? 0) - 8);
+
+        if ($payloadSize > 0) {
+            return fread($socket, $payloadSize) ?: '';
+        }
+
+        return '';
+    }
+
+    /**
+     * Process a single attendance log record
      */
     public function processLog(BiometricDevice $device, string $externalId, Carbon $timestamp, string $punchType, ?string $verifyMode = null, array $payload = []): void
     {
-        // 1. Check if we already have this log to prevent duplicates
         $exists = BiometricRawLog::query()->where('biometric_device_id', $device->id)
             ->where('employee_external_id', $externalId)
             ->where('timestamp', $timestamp)
@@ -69,7 +173,6 @@ class BiometricIntegrationService
             return;
         }
 
-        // 2. Save Raw Log
         $rawLog = BiometricRawLog::query()->create([
             'biometric_device_id' => $device->id,
             'employee_external_id' => $externalId,
@@ -79,7 +182,6 @@ class BiometricIntegrationService
             'raw_payload' => $payload,
         ]);
 
-        // 3. Sync to Attendance System
         $employee = Employee::query()->where('employee_number', $externalId)->first();
 
         if ($employee) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LeaveApprovalRequest;
 use App\Http\Requests\LeaveRequestStoreRequest;
+use App\Http\Requests\LeaveRequestUpdateRequest;
 use App\Mail\LeaveRequestActioned;
 use App\Mail\LeaveRequestSubmitted;
 use App\Models\Employee;
@@ -210,6 +211,79 @@ class LeaveController extends Controller
         return to_route('leave.show', $leaveRequest);
     }
 
+    public function edit(Request $request, LeaveRequest $leaveRequest): Response
+    {
+        $this->authorize('update', $leaveRequest);
+
+        $year = now()->year;
+        $user = $request->user();
+        $employeeQuery = Employee::query()
+            ->where('is_active', true)
+            ->orderBy('last_name');
+
+        if ($user->hasRole('Employee')) {
+            $employeeId = $user->employee?->id;
+
+            if ($employeeId !== null) {
+                $employeeQuery->whereKey($employeeId);
+            } else {
+                $employeeQuery->whereRaw('1 = 0');
+            }
+        }
+
+        $employees = $employeeQuery
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'employee_number'])
+            ->map(fn (Employee $employee): array => [
+                'value' => (string) $employee->id,
+                'label' => "{$employee->last_name}, {$employee->first_name}",
+                'employee_number' => $employee->employee_number,
+            ]);
+
+        $leaveTypes = LeaveType::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'max_days_per_year', 'requires_approval'])
+            ->map(fn (LeaveType $leaveType): array => [
+                'value' => (string) $leaveType->id,
+                'label' => $leaveType->name,
+                'max_days_per_year' => $leaveType->max_days_per_year,
+                'requires_approval' => $leaveType->requires_approval,
+            ]);
+
+        $balances = LeaveBalance::query()
+            ->where('employee_id', $leaveRequest->employee_id)
+            ->where('year', $year)
+            ->get()
+            ->groupBy('employee_id')
+            ->map(fn ($rows) => $rows->keyBy('leave_type_id')
+                ->map(fn (LeaveBalance $balance): array => [
+                    'total_days' => (float) $balance->total_days,
+                    'used_days' => (float) $balance->used_days,
+                    'remaining_days' => $balance->remainingDays(),
+                ]));
+
+        return Inertia::render('leave/edit', [
+            'leaveRequest' => $this->mapLeaveRequestDetail($leaveRequest->load(['employee', 'leaveType', 'actionedBy', 'approvals.actedBy'])),
+            'employees' => $employees,
+            'leaveTypes' => $leaveTypes,
+            'balances' => $balances,
+            'year' => $year,
+        ]);
+    }
+
+    public function update(LeaveRequestUpdateRequest $request, LeaveRequest $leaveRequest): RedirectResponse
+    {
+        $this->authorize('update', $leaveRequest);
+
+        abort_unless($leaveRequest->isDraft(), 422, 'Only draft requests can be edited.');
+
+        $leaveRequest->update(
+            $request->validated(),
+        );
+
+        return to_route('leave.show', $leaveRequest);
+    }
+
     public function show(Request $request, LeaveRequest $leaveRequest): Response
     {
         $this->authorize('view', $leaveRequest);
@@ -231,6 +305,7 @@ class LeaveController extends Controller
                 ]),
             'canApprove' => $user->can('approve', $leaveRequest),
             'canSubmit' => $leaveRequest->isDraft() && $user->can('submit', $leaveRequest),
+            'canEdit' => $leaveRequest->isDraft() && $user->can('update', $leaveRequest),
             'canCancel' => $leaveRequest->canBeCancelled() && $user->can('cancel', $leaveRequest),
         ]);
     }

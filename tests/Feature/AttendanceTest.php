@@ -531,3 +531,129 @@ test('compensation appears on employee show page', function () {
             ->whereNot('compensation', null)
         );
 });
+
+// ─── Attendance Log Edit / Update / Destroy ──────────────────────────────
+
+test('hr staff can view the attendance log edit page', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $log = AttendanceLog::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('attendance.edit', $log))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('attendance/log')
+            ->has('log')
+            ->has('employees')
+            ->where('log.id', $log->id)
+        );
+});
+
+test('employee role cannot access attendance log edit page', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    $log = AttendanceLog::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('attendance.edit', $log))
+        ->assertForbidden();
+});
+
+test('hr staff can update an attendance log', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $log = AttendanceLog::factory()->create([
+        'status' => 'present',
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+        'minutes_late' => 0,
+        'minutes_undertime' => 0,
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('attendance.update', $log), [
+            'time_in' => '09:00',
+            'time_out' => '18:00',
+            'remarks' => 'Adjusted schedule',
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    expect($log->fresh()->time_in)->toBe('09:00');
+    expect($log->fresh()->time_out)->toBe('18:00');
+    expect($log->fresh()->remarks)->toBe('Adjusted schedule');
+    expect($log->fresh()->minutes_late)->toBeGreaterThan(0);
+});
+
+test('hr staff can update the status of an attendance log', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $log = AttendanceLog::factory()->create([
+        'status' => 'present',
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('attendance.update', $log), [
+            'status' => 'absent',
+            'time_in' => null,
+            'time_out' => null,
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    expect($log->fresh()->status)->toBe('absent');
+    expect($log->fresh()->time_in)->toBeNull();
+    expect($log->fresh()->time_out)->toBeNull();
+});
+
+test('hr staff can delete an attendance log', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $log = AttendanceLog::factory()->create();
+
+    $this->actingAs($user)
+        ->delete(route('attendance.destroy', $log))
+        ->assertRedirect(route('attendance.index'));
+
+    expect(AttendanceLog::find($log->id))->toBeNull();
+});
+
+test('deleting an attendance log recomputes the summary', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $log = AttendanceLog::factory()->create([
+        'status' => 'present',
+    ]);
+
+    $this->actingAs($user)
+        ->delete(route('attendance.destroy', $log))
+        ->assertRedirect(route('attendance.index'));
+
+    $summary = AttendanceSummary::query()
+        ->where('employee_id', $log->employee_id)
+        ->where('year', $log->log_date->year)
+        ->where('month', $log->log_date->month)
+        ->first();
+
+    expect($summary)->not->toBeNull();
+    expect($summary->days_present)->toBe(0);
+});

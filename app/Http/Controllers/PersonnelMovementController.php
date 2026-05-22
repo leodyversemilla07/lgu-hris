@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PersonnelMovementStoreRequest;
+use App\Http\Requests\PersonnelMovementUpdateRequest;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\EmploymentStatus;
@@ -151,6 +152,104 @@ class PersonnelMovementController extends Controller
         ]);
 
         return to_route('personnel-movements.show', $movement);
+    }
+
+    public function edit(Request $request, PersonnelMovement $personnelMovement): Response
+    {
+        $personnelMovement->load(['employee', 'movementType']);
+
+        if ($request->user()->hasRole('Department Head')) {
+            abort_unless(
+                $request->user()->managed_department_id !== null
+                && $personnelMovement->employee?->department_id === $request->user()->managed_department_id,
+                403,
+            );
+        }
+
+        return Inertia::render('personnel-movements/edit', [
+            'movement' => $this->mapMovementDetail($personnelMovement),
+            'employees' => Employee::query()
+                ->where('is_active', true)
+                ->orderBy('last_name')
+                ->get(['id', 'first_name', 'last_name', 'employee_number',
+                    'department_id', 'position_id', 'employment_status_id'])
+                ->map(fn (Employee $employee): array => [
+                    'value' => (string) $employee->id,
+                    'label' => "{$employee->last_name}, {$employee->first_name}",
+                    'employee_number' => $employee->employee_number,
+                    'department_id' => (string) $employee->department_id,
+                    'position_id' => (string) $employee->position_id,
+                    'employment_status_id' => (string) $employee->employment_status_id,
+                ]),
+            'movementTypes' => MovementType::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (MovementType $movementType): array => [
+                    'value' => (string) $movementType->id,
+                    'label' => $movementType->name,
+                ]),
+            'departments' => Department::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (Department $department): array => [
+                    'value' => (string) $department->id,
+                    'label' => $department->name,
+                ]),
+            'positions' => Position::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (Position $position): array => [
+                    'value' => (string) $position->id,
+                    'label' => $position->name,
+                ]),
+            'employmentStatuses' => EmploymentStatus::query()
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (EmploymentStatus $employmentStatus): array => [
+                    'value' => (string) $employmentStatus->id,
+                    'label' => $employmentStatus->name,
+                ]),
+        ]);
+    }
+
+    public function update(PersonnelMovementUpdateRequest $request, PersonnelMovement $personnelMovement): RedirectResponse
+    {
+        $data = $request->safe()->all();
+
+        foreach (['from_department_id', 'to_department_id', 'from_position_id', 'to_position_id', 'from_employment_status_id', 'to_employment_status_id'] as $fk) {
+            if (array_key_exists($fk, $data)) {
+                $data[$fk] = ($data[$fk] !== null && $data[$fk] !== 'none' && $data[$fk] !== '')
+                    ? (int) $data[$fk]
+                    : null;
+            }
+        }
+
+        if (array_key_exists('effective_date', $data)) {
+            $data['effective_date'] = $request->date('effective_date');
+        }
+
+        $personnelMovement->update($data);
+
+        return to_route('personnel-movements.show', $personnelMovement);
+    }
+
+    public function destroy(Request $request, PersonnelMovement $personnelMovement): RedirectResponse
+    {
+        if ($request->user()->hasRole('Department Head')) {
+            abort_unless(
+                $request->user()->managed_department_id !== null
+                && $personnelMovement->employee?->department_id === $request->user()->managed_department_id,
+                403,
+            );
+        }
+
+        $personnelMovement->delete();
+
+        return to_route('personnel-movements.index');
     }
 
     public function show(Request $request, PersonnelMovement $personnelMovement): Response

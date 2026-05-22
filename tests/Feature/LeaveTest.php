@@ -739,3 +739,184 @@ test('leave show page includes approval history entries', function () {
             ->where('approvalHistory.1.action', 'submitted')
         );
 });
+
+test('employee can view the edit page for their draft leave request', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    $employee = Employee::factory()->create([
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    $leaveRequest = LeaveRequest::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'status' => 'draft',
+        'submitted_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.edit', $leaveRequest))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leave/edit')
+            ->where('leaveRequest.id', $leaveRequest->id)
+            ->where('leaveRequest.status', 'draft')
+        );
+});
+
+test('employee cannot edit a submitted leave request', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    $employee = Employee::factory()->create([
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    $leaveRequest = LeaveRequest::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'status' => 'submitted',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.edit', $leaveRequest))
+        ->assertForbidden();
+});
+
+test('employee cannot edit another employees draft leave request', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    Employee::factory()->create([
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    $leaveRequest = LeaveRequest::factory()->create([
+        'leave_type_id' => $leaveType->id,
+        'status' => 'draft',
+        'submitted_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.edit', $leaveRequest))
+        ->assertForbidden();
+});
+
+test('employee can update their draft leave request', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    $employee = Employee::factory()->create([
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    $leaveRequest = LeaveRequest::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'start_date' => '2026-04-01',
+        'end_date' => '2026-04-03',
+        'days_requested' => 3,
+        'reason' => 'Original reason',
+        'status' => 'draft',
+        'submitted_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('leave.update', $leaveRequest), [
+            'reason' => 'Updated reason',
+            'days_requested' => 5,
+        ])
+        ->assertRedirect(route('leave.show', $leaveRequest));
+
+    expect($leaveRequest->fresh()->reason)->toBe('Updated reason');
+    expect((float) $leaveRequest->fresh()->days_requested)->toBe(5.0);
+    expect($leaveRequest->fresh()->status)->toBe('draft');
+});
+
+test('cannot update a submitted leave request', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $approver = User::factory()->create();
+    $approver->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create([
+        'is_active' => true,
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    $leaveRequest = LeaveRequest::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'status' => 'submitted',
+    ]);
+
+    $this->actingAs($approver)
+        ->patch(route('leave.update', $leaveRequest), [
+            'reason' => 'Should not update',
+        ])
+        ->assertForbidden();
+});
+
+test('hr staff can edit a draft leave request for any employee', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+    $this->seed(LeaveTypeSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $employee = Employee::factory()->create([
+        'is_active' => true,
+    ]);
+    $leaveType = LeaveType::where('code', 'VL')->firstOrFail();
+
+    $leaveRequest = LeaveRequest::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $leaveType->id,
+        'start_date' => '2026-05-01',
+        'end_date' => '2026-05-02',
+        'days_requested' => 2,
+        'status' => 'draft',
+        'submitted_at' => null,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('leave.edit', $leaveRequest))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('leave/edit')
+            ->where('leaveRequest.status', 'draft')
+        );
+
+    $this->actingAs($user)
+        ->patch(route('leave.update', $leaveRequest), [
+            'start_date' => '2026-05-03',
+            'end_date' => '2026-05-05',
+            'days_requested' => 3,
+        ])
+        ->assertRedirect(route('leave.show', $leaveRequest));
+
+    expect($leaveRequest->fresh()->start_date->format('Y-m-d'))->toBe('2026-05-03');
+});

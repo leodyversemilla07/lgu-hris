@@ -15,3 +15,7 @@ Schedule::command('hris:backup')
 Schedule::command('hris:add-monthly-leave-credits')
     ->monthlyOn(1, '00:00')
     ->withoutOverlapping();
+
+Schedule::command('hris:sync-biometrics')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping();

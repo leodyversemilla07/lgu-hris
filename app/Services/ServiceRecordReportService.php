@@ -30,11 +30,14 @@ class ServiceRecordReportService
 
         $careerHistory = $this->getCareerHistory($employee);
 
+        $certifiedBy = config('hris.service_record.certified_by', 'MUNICIPAL MAYOR');
+        $hrmoName = config('hris.service_record.hrmo_name', 'HRM OFFICER');
+
         $data = [
             'employee' => $employee,
             'careerHistory' => $careerHistory,
-            'certifiedBy' => 'MUNICIPAL MAYOR', // Typical LGU authority
-            'hrmoName' => 'HRM OFFICER',
+            'certifiedBy' => $certifiedBy,
+            'hrmoName' => $hrmoName,
         ];
 
         return Pdf::loadView('reports.service-record', $data)

@@ -42,6 +42,23 @@ class LeaveRequestPolicy
         return $user->can('leave.file');
     }
 
+    public function update(User $user, LeaveRequest $leaveRequest): bool
+    {
+        if (! $user->can('leave.file')) {
+            return false;
+        }
+
+        if (! $leaveRequest->isDraft()) {
+            return false;
+        }
+
+        if ($user->hasRole('HR Staff')) {
+            return true;
+        }
+
+        return $this->ownsLeaveRequest($user, $leaveRequest);
+    }
+
     public function submit(User $user, LeaveRequest $leaveRequest): bool
     {
         if (! $user->can('leave.file')) {

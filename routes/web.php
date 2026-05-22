@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeCompensationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\InstallationController;
 use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\NotificationController;
@@ -18,26 +19,36 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ServiceRecordController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkScheduleController;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::inertia('/', 'welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('home');
+Route::get('/', function () {
+    $envPath = base_path('.env');
 
-Route::get('/install', fn () => inertia('installation/index', [
-    'currentStep' => 1,
-    'steps' => [1, 2, 3, 4, 5, 6],
-]))->name('install.index');
-Route::get('/install/requirements', fn () => inertia('installation/requirements', [
-    'requirements' => [],
-    'passed' => true,
-]))->name('install.requirements');
-Route::get('/install/database', fn () => inertia('installation/database'))->name('install.database');
-Route::get('/install/environment', fn () => inertia('installation/environment'))->name('install.environment');
-Route::get('/install/migrations', fn () => inertia('installation/migrations'))->name('install.migrations');
-Route::get('/install/admin', fn () => inertia('installation/admin'))->name('install.admin');
-Route::get('/install/complete', fn () => inertia('installation/complete'))->name('install.complete');
+    if (File::exists($envPath) && ! str_contains(File::get($envPath), 'APP_INSTALLED=true')) {
+        return redirect()->route('install.index');
+    }
+
+    return inertia('welcome', [
+        'canRegister' => Features::enabled(Features::registration()),
+    ]);
+})->name('home');
+
+Route::prefix('install')->name('install.')->group(function () {
+    Route::get('/', [InstallationController::class, 'index'])->name('index');
+    Route::get('/requirements', [InstallationController::class, 'requirements'])->name('requirements');
+    Route::get('/database', [InstallationController::class, 'database'])->name('database');
+    Route::post('/database/test', [InstallationController::class, 'testDatabase'])->name('database.test');
+    Route::post('/database/save', [InstallationController::class, 'saveDatabase'])->name('database.save');
+    Route::get('/environment', [InstallationController::class, 'environment'])->name('environment');
+    Route::post('/environment/save', [InstallationController::class, 'saveEnvironment'])->name('environment.save');
+    Route::get('/migrations', [InstallationController::class, 'migrations'])->name('migrations');
+    Route::post('/migrations/run', [InstallationController::class, 'runMigrations'])->name('migrations.run');
+    Route::get('/admin', [InstallationController::class, 'admin'])->name('admin');
+    Route::post('/admin/create', [InstallationController::class, 'createAdmin'])->name('admin.create');
+    Route::get('/complete', [InstallationController::class, 'complete'])->name('complete');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -106,6 +117,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('leave', [LeaveController::class, 'store'])
         ->middleware('permission:leave.file')
         ->name('leave.store');
+    Route::get('leave/{leaveRequest}/edit', [LeaveController::class, 'edit'])
+        ->middleware('permission:leave.file')
+        ->name('leave.edit');
+    Route::patch('leave/{leaveRequest}', [LeaveController::class, 'update'])
+        ->middleware('permission:leave.file')
+        ->name('leave.update');
     Route::post('leave/{leaveRequest}/submit', [LeaveController::class, 'submit'])
         ->middleware('permission:leave.file')
         ->name('leave.submit');
@@ -140,6 +157,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('personnel-movements', [PersonnelMovementController::class, 'store'])
         ->middleware('permission:movements.manage')
         ->name('personnel-movements.store');
+    Route::get('personnel-movements/{personnelMovement}/edit', [PersonnelMovementController::class, 'edit'])
+        ->middleware('permission:movements.manage')
+        ->name('personnel-movements.edit');
+    Route::patch('personnel-movements/{personnelMovement}', [PersonnelMovementController::class, 'update'])
+        ->name('personnel-movements.update');
+    Route::delete('personnel-movements/{personnelMovement}', [PersonnelMovementController::class, 'destroy'])
+        ->middleware('permission:movements.manage')
+        ->name('personnel-movements.destroy');
     Route::get('personnel-movements/{personnelMovement}', [PersonnelMovementController::class, 'show'])
         ->middleware('permission:movements.view')
         ->name('personnel-movements.show');
@@ -150,6 +175,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('employees/{employee}/compensation', [EmployeeCompensationController::class, 'store'])
         ->middleware('permission:employees.manage')
         ->name('employee-compensation.store');
+    Route::get('employees/{employee}/compensation/{compensation}/edit', [EmployeeCompensationController::class, 'edit'])
+        ->middleware('permission:employees.manage')
+        ->name('employee-compensation.edit');
+    Route::patch('employees/{employee}/compensation/{compensation}', [EmployeeCompensationController::class, 'update'])
+        ->middleware('permission:employees.manage')
+        ->name('employee-compensation.update');
+    Route::delete('employees/{employee}/compensation/{compensation}', [EmployeeCompensationController::class, 'destroy'])
+        ->middleware('permission:employees.manage')
+        ->name('employee-compensation.destroy');
 
     Route::get('attendance', [AttendanceController::class, 'index'])
         ->middleware('permission:attendance.view')
@@ -166,6 +200,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('attendance/biometric', [AttendanceController::class, 'biometricImport'])
         ->middleware('permission:attendance.manage')
         ->name('attendance.biometric-import');
+    Route::get('attendance/{log}/edit', [AttendanceController::class, 'edit'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.edit');
+    Route::patch('attendance/{log}', [AttendanceController::class, 'update'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.update');
+    Route::delete('attendance/{log}', [AttendanceController::class, 'destroy'])
+        ->middleware('permission:attendance.manage')
+        ->name('attendance.destroy');
 
     Route::get('work-schedules', [WorkScheduleController::class, 'index'])
         ->middleware('permission:attendance.manage')

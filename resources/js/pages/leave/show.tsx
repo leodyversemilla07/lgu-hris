@@ -5,6 +5,7 @@ import {
     CheckCircle2,
     Clock3,
     FileText,
+    Pencil,
     XCircle,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -40,6 +41,7 @@ import { index as dashboardIndex } from '@/actions/App/Http/Controllers/Dashboar
 import {
     approve as approveLeave,
     cancel as cancelLeave,
+    edit as editLeave,
     index as leaveIndex,
     show as leaveShow,
     submit as submitLeave,
@@ -78,6 +80,7 @@ type Props = {
     approvalHistory: ApprovalHistoryRecord[];
     canApprove: boolean;
     canSubmit: boolean;
+    canEdit: boolean;
     canCancel: boolean;
 };
 
@@ -121,6 +124,7 @@ export default function LeaveShow({
     approvalHistory,
     canApprove,
     canSubmit,
+    canEdit,
     canCancel,
 }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -222,14 +226,30 @@ export default function LeaveShow({
                                             Back to leave
                                         </Link>
                                     </Button>
-                                    {canSubmit && isDraft && (
-                                        <Button
-                                            onClick={handleSubmit}
-                                            disabled={submitForm.processing}
-                                        >
-                                            <CheckCircle2 data-icon="inline-start" />
-                                            Submit draft
-                                        </Button>
+                                    {isDraft && (
+                                        <>
+                                            {canEdit && (
+                                                <Button asChild variant="outline">
+                                                    <Link
+                                                        href={editLeave.url(
+                                                            leaveRequest.uuid,
+                                                        )}
+                                                    >
+                                                        <Pencil data-icon="inline-start" />
+                                                        Edit
+                                                    </Link>
+                                                </Button>
+                                            )}
+                                            {canSubmit && (
+                                                <Button
+                                                    onClick={handleSubmit}
+                                                    disabled={submitForm.processing}
+                                                >
+                                                    <CheckCircle2 data-icon="inline-start" />
+                                                    Submit draft
+                                                </Button>
+                                            )}
+                                        </>
                                     )}
                                     {canApprove &&
                                         leaveRequest.status === 'submitted' && (

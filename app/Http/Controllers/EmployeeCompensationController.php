@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\EmployeeCompensationUpdateRequest;
 use App\Http\Requests\EmployeeCompensationUpsertRequest;
 use App\Models\Employee;
 use App\Models\EmployeeCompensation;
@@ -72,6 +73,70 @@ class EmployeeCompensationController extends Controller
             'notes' => $request->string('notes')->trim()->value() ?: null,
             'recorded_by' => $request->user()->id,
         ]);
+
+        return to_route('employees.show', $employee);
+    }
+
+    public function edit(Employee $employee, EmployeeCompensation $compensation): Response
+    {
+        $this->authorize('update', $employee);
+
+        $salaryGrades = SalaryGrade::query()
+            ->orderBy('grade')
+            ->orderBy('step')
+            ->get()
+            ->groupBy('grade')
+            ->map(fn ($steps, $grade) => [
+                'grade' => $grade,
+                'steps' => $steps->map(fn (SalaryGrade $salaryGrade): array => [
+                    'value' => (string) $salaryGrade->id,
+                    'step' => $salaryGrade->step,
+                    'monthly_salary' => number_format((float) $salaryGrade->monthly_salary, 2),
+                    'monthly_salary_raw' => (float) $salaryGrade->monthly_salary,
+                ])->values(),
+            ])
+            ->values();
+
+        $compensation->load('salaryGrade');
+
+        return Inertia::render('employees/compensation-edit', [
+            'employee' => [
+                'id' => $employee->id,
+                'uuid' => $employee->uuid,
+                'full_name' => "{$employee->last_name}, {$employee->first_name}",
+                'employee_number' => $employee->employee_number,
+            ],
+            'salaryGrades' => $salaryGrades,
+            'compensation' => [
+                'id' => $compensation->id,
+                'salary_grade_id' => (string) $compensation->salary_grade_id,
+                'grade' => $compensation->salaryGrade->grade,
+                'step' => $compensation->salaryGrade->step,
+                'monthly_salary' => number_format((float) $compensation->salaryGrade->monthly_salary, 2),
+                'effective_date' => $compensation->effective_date->format('Y-m-d'),
+                'allowances' => $compensation->allowances,
+                'deductions' => $compensation->deductions,
+                'notes' => $compensation->notes,
+            ],
+        ]);
+    }
+
+    public function update(EmployeeCompensationUpdateRequest $request, Employee $employee, EmployeeCompensation $compensation): RedirectResponse
+    {
+        $this->authorize('update', $employee);
+
+        $compensation->update(
+            $request->validated(),
+        );
+
+        return to_route('employees.show', $employee);
+    }
+
+    public function destroy(Employee $employee, EmployeeCompensation $compensation): RedirectResponse
+    {
+        $this->authorize('update', $employee);
+
+        $compensation->delete();
 
         return to_route('employees.show', $employee);
     }

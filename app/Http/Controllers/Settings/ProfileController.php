@@ -32,7 +32,7 @@ class ProfileController extends Controller
         $leaveBalances = $employee
             ? $employee->leaveBalances()->with('leaveType')->get()->map(fn ($lb) => [
                 'leave_type' => $lb->leaveType->name,
-                'balance' => $lb->balance,
+                'balance' => $lb->remainingDays(),
             ])
             : collect();
 
@@ -48,7 +48,7 @@ class ProfileController extends Controller
                     'leave_type' => $lr->leaveType->name,
                     'start_date' => $lr->start_date->format('M d, Y'),
                     'end_date' => $lr->end_date->format('M d, Y'),
-                    'days' => $lr->days,
+                    'days' => $lr->days_requested,
                     'status' => $lr->status,
                 ])
             : collect();

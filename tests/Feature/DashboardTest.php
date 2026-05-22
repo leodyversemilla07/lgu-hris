@@ -45,6 +45,7 @@ test('hr staff receives the organization dashboard payload', function () {
                 'attendance.manage',
                 'reports.view',
                 'reports.export',
+                'settings.manage',
             ])
         );
 });

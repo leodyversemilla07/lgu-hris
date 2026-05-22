@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AttendanceBiometricImportRequest;
 use App\Http\Requests\AttendanceLogStoreRequest;
+use App\Http\Requests\AttendanceLogUpdateRequest;
 use App\Models\AttendanceLog;
 use App\Models\AttendanceSummary;
 use App\Models\Employee;
@@ -197,6 +198,96 @@ class AttendanceController extends Controller
                 $this->recomputeSummary($employeeId, $period['year'], $period['month']);
             }
         }
+
+        return to_route('attendance.index');
+    }
+
+    public function edit(Request $request, AttendanceLog $log): Response
+    {
+        $employees = Employee::query()
+            ->with('workSchedule:id,name,time_in,time_out')
+            ->where('is_active', true)
+            ->orderBy('last_name')
+            ->get(['id', 'first_name', 'last_name', 'employee_number', 'work_schedule_id'])
+            ->map(fn (Employee $employee): array => [
+                'value' => (string) $employee->id,
+                'label' => "{$employee->last_name}, {$employee->first_name} ({$employee->employee_number})",
+                'work_schedule' => $employee->workSchedule ? [
+                    'name' => $employee->workSchedule->name,
+                    'time_in' => substr($employee->workSchedule->time_in, 0, 5),
+                    'time_out' => substr($employee->workSchedule->time_out, 0, 5),
+                ] : null,
+            ]);
+
+        return Inertia::render('attendance/log', [
+            'employees' => $employees,
+            'log' => [
+                'id' => $log->id,
+                'employee_id' => (string) $log->employee_id,
+                'log_date' => $log->log_date->format('Y-m-d'),
+                'time_in' => $log->time_in,
+                'time_out' => $log->time_out,
+                'status' => $log->status,
+                'minutes_late' => $log->minutes_late,
+                'minutes_undertime' => $log->minutes_undertime,
+                'remarks' => $log->remarks,
+            ],
+        ]);
+    }
+
+    public function update(AttendanceLogUpdateRequest $request, AttendanceLog $log): RedirectResponse
+    {
+        $employeeId = $request->input('employee_id', $log->employee_id);
+        $status = $request->input('status', $log->status);
+        $timeIn = $this->normalizedTimeValue($request->input('time_in', $log->time_in), $status);
+        $timeOut = $this->normalizedTimeValue($request->input('time_out', $log->time_out), $status);
+
+        if ($request->hasAny(['time_in', 'time_out', 'status', 'minutes_late', 'minutes_undertime'])) {
+            $employee = Employee::with('workSchedule:id,time_in,time_out')->findOrFail($employeeId);
+            $metrics = $this->resolveAttendanceMetrics(
+                $employee,
+                $status,
+                $timeIn,
+                $timeOut,
+                $request->has('minutes_late') ? $request->input('minutes_late') : null,
+                $request->has('minutes_undertime') ? $request->input('minutes_undertime') : null,
+            );
+        } else {
+            $metrics = [
+                'minutes_late' => $log->minutes_late,
+                'minutes_undertime' => $log->minutes_undertime,
+            ];
+        }
+
+        $logDateValue = $request->input('log_date')
+            ? Carbon\Carbon::parse($request->input('log_date'))
+            : $log->log_date;
+
+        $log->update([
+            'employee_id' => $employeeId,
+            'log_date' => $logDateValue,
+            'time_in' => $timeIn,
+            'time_out' => $timeOut,
+            'status' => $status,
+            'minutes_late' => $metrics['minutes_late'],
+            'minutes_undertime' => $metrics['minutes_undertime'],
+            'remarks' => $request->has('remarks') ? ($request->string('remarks')->trim()->value() ?: null) : $log->remarks,
+        ]);
+
+        $this->recomputeSummary($employeeId, $logDateValue->year, $logDateValue->month);
+
+        return to_route('attendance.index');
+    }
+
+    public function destroy(AttendanceLog $log): RedirectResponse
+    {
+        $employeeId = $log->employee_id;
+        $year = $log->log_date->year;
+        $month = $log->log_date->month;
+
+        $log->delete();
+
+        $this->recomputeSummary($employeeId, $year, $month);
 
         return to_route('attendance.index');
     }

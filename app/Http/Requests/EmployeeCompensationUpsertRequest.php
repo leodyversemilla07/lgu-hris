@@ -14,7 +14,6 @@ class EmployeeCompensationUpsertRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id' => ['required', 'integer', 'exists:employees,id'],
             'salary_grade_id' => ['required', 'integer', 'exists:salary_grades,id'],
             'effective_date' => ['required', 'date'],
             'allowances' => ['numeric', 'min:0'],

@@ -4,7 +4,16 @@ use Illuminate\Support\Facades\File;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('installation step pages are accessible via get routes', function () {
-    File::delete(storage_path('framework/install.lock'));
+    // Temporarily remove APP_INSTALLED so the installation wizard is accessible
+    $envPath = base_path('.env');
+    $original = File::get($envPath);
+    $modified = str_replace("\nAPP_INSTALLED=true", '', $original);
+    $modified = str_replace('APP_INSTALLED=true', '', $modified);
+    File::put($envPath, $modified);
+
+    $this->beforeApplicationDestroyed(function () use ($envPath, $original) {
+        File::put($envPath, $original);
+    });
 
     $this->get(route('install.index'))
         ->assertOk()
@@ -18,7 +27,7 @@ test('installation step pages are accessible via get routes', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('installation/requirements')
-            ->has('requirements')
+            ->has('results')
             ->has('passed')
         );
 
