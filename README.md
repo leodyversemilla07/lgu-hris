@@ -1,6 +1,6 @@
 # Local Government Unit Human Resource Information System
 
-**Short description:** A multi-tenant human resource information system for local government units that manages employee records, leave, attendance, documents, personnel movements, reports, and access control.
+**Short description:** A human resource information system for local government units that manages employee records, leave, attendance, documents, personnel movements, reports, and access control.
 
 LGU HRIS is a Laravel 12 and Inertia React application for managing core local government human resource operations.
 
