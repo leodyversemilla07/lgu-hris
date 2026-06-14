@@ -284,7 +284,7 @@ Frontend:
 
 Backend:
 
-- Laravel 12
+- Laravel 13
 - Laravel Fortify
 - `spatie/laravel-permission`
 

@@ -3,7 +3,7 @@
 ## Stack Decision
 
 - Database: `MySQL`
-- Backend: `Laravel 12`
+- Backend: `Laravel 13`
 - Frontend: `React + Inertia + TypeScript + shadcn/ui`
 - Auth/Security Base: `Laravel Fortify`
 - Authorization Package: `spatie/laravel-permission`
