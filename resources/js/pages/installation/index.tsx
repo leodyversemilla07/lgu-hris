@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { Building2, ChevronRight, ShieldCheck } from 'lucide-react';
+import { requirements as installRequirements } from '@/actions/App/Http/Controllers/InstallationController';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -9,10 +10,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    index as installIndex,
-    requirements as installRequirements,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 type Step = Record<string, string>;
 

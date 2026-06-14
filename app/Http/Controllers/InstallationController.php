@@ -307,12 +307,17 @@ class InstallationController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        User::query()->create([
+        $user = User::query()->create([
             'uuid' => (string) Str::uuid(),
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+
+        $user->forceFill([
+            'email_verified_at' => now(),
+        ])->save();
+        $user->syncRoles(['HR Admin']);
 
         $envContent = File::get(base_path('.env'));
 

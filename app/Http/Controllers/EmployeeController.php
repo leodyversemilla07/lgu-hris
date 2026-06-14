@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmployeeStoreRequest;
 use App\Http\Requests\EmployeeUpdateRequest;
+use App\Models\AttendanceLog;
+use App\Models\AttendanceSummary;
 use App\Models\Department;
 use App\Models\DocumentType;
 use App\Models\Employee;
@@ -16,6 +18,7 @@ use App\Models\Position;
 use App\Models\User;
 use App\Models\WorkSchedule;
 use App\Services\EmployeeService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -141,6 +144,8 @@ class EmployeeController extends Controller
             'movements.recordedBy',
             'compensations.salaryGrade',
             'histories.recordedBy',
+            'attendanceSummaries',
+            'attendanceLogs',
         ]);
 
         $documentTypes = DocumentType::query()
@@ -212,6 +217,35 @@ class EmployeeController extends Controller
                     'deductions' => $employee->compensations->sortByDesc('effective_date')->first()->deductions,
                     'effective_date' => $employee->compensations->sortByDesc('effective_date')->first()->effective_date->format('M d, Y'),
                 ] : null,
+            'attendanceSummaries' => $employee->attendanceSummaries
+                ->sortByDesc(fn ($summary) => sprintf('%d-%02d', $summary->year, $summary->month))
+                ->values()
+                ->map(fn (AttendanceSummary $summary): array => [
+                    'id' => $summary->id,
+                    'year' => $summary->year,
+                    'month' => Carbon::createFromDate($summary->year, $summary->month, 1)->format('F'),
+                    'month_num' => $summary->month,
+                    'days_present' => $summary->days_present,
+                    'days_absent' => $summary->days_absent,
+                    'days_leave' => $summary->days_leave,
+                    'total_late_minutes' => $summary->total_late_minutes,
+                    'total_undertime_minutes' => $summary->total_undertime_minutes,
+                ]),
+            'attendanceLogs' => $employee->attendanceLogs
+                ->sortByDesc('log_date')
+                ->take(30)
+                ->values()
+                ->map(fn (AttendanceLog $log): array => [
+                    'id' => $log->id,
+                    'log_date' => $log->log_date->format('M d, Y'),
+                    'time_in' => $log->time_in,
+                    'time_out' => $log->time_out,
+                    'status' => $log->status,
+                    'minutes_late' => $log->minutes_late,
+                    'minutes_undertime' => $log->minutes_undertime,
+                    'source' => $log->source,
+                    'remarks' => $log->remarks,
+                ]),
         ]);
     }
 

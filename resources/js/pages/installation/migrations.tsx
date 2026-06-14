@@ -7,6 +7,11 @@ import {
     Loader2,
     Server,
 } from 'lucide-react';
+import {
+    environment as installEnvironment,
+    runMigrations,
+    admin as installAdmin,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -16,11 +21,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    environment as installEnvironment,
-    runMigrations,
-    admin as installAdmin,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 type Props = {
     currentStep: number;
@@ -109,7 +109,7 @@ export default function InstallationMigrations({
 
                         {form.hasErrors && (
                             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-                                {form.errors.database ??
+                                {(form.errors as Record<string, string>).database ??
                                     'Migration failed. Check the database connection and try again.'}
                             </div>
                         )}
@@ -164,7 +164,7 @@ function StepIndicator({
 
     return (
         <div className="flex items-center justify-center gap-1">
-            {entries.map(([step, label], index) => {
+            {entries.map(([step], index) => {
                 const stepNum = Number(step);
                 const isActive = stepNum === currentStep;
                 const isComplete = stepNum < currentStep;

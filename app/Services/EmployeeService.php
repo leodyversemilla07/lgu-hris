@@ -135,9 +135,16 @@ class EmployeeService
             'recorded_at' => $history->created_at->format('M d, Y g:i A'),
             'changes' => $changes,
             'source_url' => $history->source_type === PersonnelMovement::class && $history->source_id !== null
-                ? route('personnel-movements.show', $history->source_id)
+                ? $this->movementUrl((int) $history->source_id)
                 : null,
         ];
+    }
+
+    private function movementUrl(int $movementId): ?string
+    {
+        $uuid = PersonnelMovement::query()->whereKey($movementId)->value('uuid');
+
+        return $uuid === null ? null : route('personnel-movements.show', $uuid);
     }
 
     /**

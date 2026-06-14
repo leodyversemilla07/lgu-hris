@@ -20,6 +20,25 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy as destroyDocument,
+    download as downloadDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    archive as archiveEmployee,
+    edit as editEmployee,
+    index as employeesIndex,
+    linkUser as linkEmployeeUser,
+    restore as restoreEmployee,
+    show as showEmployeeAction,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import {
+    create as createPersonnelMovement,
+    show as showPersonnelMovement,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -65,25 +84,6 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    destroy as destroyDocument,
-    download as downloadDocument,
-    store as storeDocument,
-} from '@/actions/App/Http/Controllers/DocumentController';
-import { create as createEmployeeCompensation } from '@/actions/App/Http/Controllers/EmployeeCompensationController';
-import {
-    archive as archiveEmployee,
-    edit as editEmployee,
-    index as employeesIndex,
-    linkUser as linkEmployeeUser,
-    restore as restoreEmployee,
-    show as showEmployeeAction,
-} from '@/actions/App/Http/Controllers/EmployeeController';
-import {
-    create as createPersonnelMovement,
-    show as showPersonnelMovement,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 
 type EmployeeDetail = {
     id: number;

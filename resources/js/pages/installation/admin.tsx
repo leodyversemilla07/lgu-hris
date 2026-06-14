@@ -9,6 +9,11 @@ import {
     UserRound,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    migrations as installMigrations,
+    createAdmin,
+} from '@/actions/App/Http/Controllers/InstallationController';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -20,11 +25,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
-import {
-    migrations as installMigrations,
-    createAdmin,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 type Props = {
     currentStep: number;
@@ -222,7 +222,7 @@ function StepIndicator({
 
     return (
         <div className="flex items-center justify-center gap-1">
-            {entries.map(([step, label], index) => {
+            {entries.map(([step], index) => {
                 const stepNum = Number(step);
                 const isActive = stepNum === currentStep;
                 const isComplete = stepNum < currentStep;

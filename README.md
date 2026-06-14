@@ -2,7 +2,7 @@
 
 **Short description:** A human resource information system for local government units that manages employee records, leave, attendance, documents, personnel movements, reports, and access control.
 
-LGU HRIS is a Laravel 12 and Inertia React application for managing core local government human resource operations.
+LGU HRIS is a Laravel 13 and Inertia React v3 application for managing core local government human resource operations.
 
 ## Project Status
 
@@ -88,8 +88,8 @@ Supported export formats vary by report and include `Excel`, `CSV`, and `PDF`.
 ## Technology Stack
 
 - PHP 8.4
-- Laravel 12
-- Inertia.js v2
+- Laravel 13
+- Inertia.js v3
 - React 19
 - Tailwind CSS v4
 - MySQL 8

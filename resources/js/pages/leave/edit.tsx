@@ -5,19 +5,23 @@ import {
     CalendarDays,
     CheckCircle2,
     Clock3,
-    FileText,
     Save,
     ShieldCheck,
 } from 'lucide-react';
 import { useEffect, useEffectEvent } from 'react';
 import type { ReactNode } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    index as leaveIndex,
+    show as leaveShow,
+    update as leaveUpdate,
+} from '@/actions/App/Http/Controllers/LeaveController';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
     Card,
-    CardAction,
     CardContent,
     CardDescription,
     CardFooter,
@@ -42,12 +46,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    index as leaveIndex,
-    show as leaveShow,
-    update as leaveUpdate,
-} from '@/actions/App/Http/Controllers/LeaveController';
 
 type EmployeeOption = {
     value: string;

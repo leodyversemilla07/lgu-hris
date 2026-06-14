@@ -1,7 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, CalendarDays, Save } from 'lucide-react';
-import { useEffect } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    index as movementsIndex,
+    show as movementShow,
+    update as movementUpdate,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -31,12 +36,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    index as movementsIndex,
-    show as movementShow,
-    update as movementUpdate,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 
 type Option = { value: string; label: string };
 
@@ -77,11 +76,9 @@ type Props = {
 
 export default function MovementEdit({
     movement,
-    employees,
     movementTypes,
     departments,
     positions,
-    employmentStatuses,
 }: Props) {
     const form = useForm({
         employee_id: String(movement.employee_id),

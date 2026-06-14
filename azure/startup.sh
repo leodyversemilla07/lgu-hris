@@ -15,5 +15,6 @@ fi
 
 php artisan migrate --force || true
 php artisan optimize || true
+php artisan queue:work --tries=1 --sleep=3 --timeout=90 >/dev/null 2>&1 &
 
 exec php artisan serve --host=0.0.0.0 --port=8080

@@ -11,6 +11,13 @@ import {
     Upload,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import {
+    biometricImport,
+    create as attendanceCreate,
+    index as attendanceIndex,
+    store as storeAttendance,
+} from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,13 +49,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import {
-    biometricImport,
-    create as attendanceCreate,
-    index as attendanceIndex,
-    store as storeAttendance,
-} from '@/actions/App/Http/Controllers/AttendanceController';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 
 type EmployeeOption = {
     value: string;

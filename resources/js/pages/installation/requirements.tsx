@@ -5,6 +5,10 @@ import {
     ChevronRight,
     XCircle,
 } from 'lucide-react';
+import {
+    index as installIndex,
+    database as installDatabase,
+} from '@/actions/App/Http/Controllers/InstallationController';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -14,10 +18,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    index as installIndex,
-    database as installDatabase,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 type CheckItem = {
     label: string;
@@ -37,9 +37,6 @@ export default function InstallationRequirements({
     results,
     passed,
 }: Props) {
-    const requirementCount = results.checks.filter(
-        (c) => c.type === 'requirement',
-    ).length;
     const passedCount = results.checks.filter((c) => c.passed).length;
 
     return (
@@ -157,7 +154,7 @@ function StepIndicator({
 
     return (
         <div className="flex items-center justify-center gap-1">
-            {entries.map(([step, label], index) => {
+            {entries.map(([step], index) => {
                 const stepNum = Number(step);
                 const isActive = stepNum === currentStep;
                 const isComplete = stepNum < currentStep;

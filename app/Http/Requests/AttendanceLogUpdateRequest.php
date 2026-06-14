@@ -21,8 +21,12 @@ class AttendanceLogUpdateRequest extends FormRequest
                 'required',
                 'date',
                 function ($attr, $value, $fail) {
-                    $employeeId = $this->input('employee_id', $this->route('log'));
-                    $logUuid = (string) $this->route('log');
+                    $log = $this->route('log');
+                    $employeeId = $this->input(
+                        'employee_id',
+                        $log instanceof AttendanceLog ? $log->employee_id : $log,
+                    );
+                    $logUuid = $log instanceof AttendanceLog ? $log->uuid : (string) $log;
 
                     $exists = AttendanceLog::query()
                         ->where('employee_id', $employeeId)

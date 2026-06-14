@@ -8,6 +8,7 @@ import {
     Users,
 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -42,7 +43,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: dashboardIndex.url() },

@@ -1,5 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Calculator, Save } from 'lucide-react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    update as compensationUpdate,
+} from '@/actions/App/Http/Controllers/EmployeeCompensationController';
+import {
+    show as employeeShow,
+} from '@/actions/App/Http/Controllers/EmployeeController';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -20,16 +28,8 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    show as employeeShow,
-} from '@/actions/App/Http/Controllers/EmployeeController';
-import {
-    update as compensationUpdate,
-} from '@/actions/App/Http/Controllers/EmployeeCompensationController';
 
 type SalaryGradeGroup = {
     grade: number;
@@ -83,9 +83,15 @@ export default function CompensationEdit({
     );
 
     function handleSubmit(): void {
-        form.patch(compensationUpdate.url(employee.uuid, compensation.id), {
-            onSuccess: () => form.clearErrors(),
-        });
+        form.patch(
+            compensationUpdate.url({
+                employee: employee.uuid,
+                compensation: compensation.id,
+            }),
+            {
+                onSuccess: () => form.clearErrors(),
+            },
+        );
     }
 
     return (

@@ -288,6 +288,7 @@ class PersonnelMovementController extends Controller
             'id' => $movement->id,
             'uuid' => $movement->uuid,
             'employee_id' => $movement->employee_id,
+            'employee_uuid' => $movement->employee->uuid,
             'employee_name' => "{$movement->employee->last_name}, {$movement->employee->first_name}",
             'employee_number' => $movement->employee->employee_number,
             'movement_type' => $movement->movementType->name,

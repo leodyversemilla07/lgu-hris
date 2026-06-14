@@ -1,16 +1,17 @@
 import { Head, Link } from '@inertiajs/react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
+import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { show as showEmployee } from '@/actions/App/Http/Controllers/EmployeeController';
-import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
 
 type MovementDetail = {
     id: number;
     employee_id: number;
+    employee_uuid: string;
     employee_name: string;
     employee_number: string;
     movement_type: string;
@@ -110,7 +111,7 @@ export default function PersonnelMovementsShow({ movement }: Props) {
                                 </Link>
                             </Button>
                             <Button asChild variant="outline">
-                                <Link href={showEmployee(movement.employee_id)}>
+                                <Link href={showEmployee.url(movement.employee_uuid)}>
                                     View employee
                                 </Link>
                             </Button>

@@ -324,3 +324,25 @@ test('employee role cannot access the create movement form', function () {
         ->get(route('personnel-movements.create'))
         ->assertForbidden();
 });
+
+test('employee role cannot update a personnel movement', function () {
+    $this->seed([RoleAndPermissionSeeder::class, MovementTypeSeeder::class]);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    $employee = Employee::factory()->create();
+    $movement = PersonnelMovement::factory()->create([
+        'employee_id' => $employee->id,
+        'movement_type_id' => MovementType::query()->firstOrFail()->id,
+        'order_number' => 'ORD-001',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('personnel-movements.update', $movement), [
+            'order_number' => 'ORD-002',
+        ])
+        ->assertForbidden();
+
+    expect($movement->fresh()->order_number)->toBe('ORD-001');
+});

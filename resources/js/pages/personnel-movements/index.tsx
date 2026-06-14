@@ -8,6 +8,12 @@ import {
     Users,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    create as movementsCreate,
+    index as movementsIndex,
+    show as movementsShow,
+} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,12 +61,6 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    create as movementsCreate,
-    index as movementsIndex,
-    show as movementsShow,
-} from '@/actions/App/Http/Controllers/PersonnelMovementController';
 
 type MovementRecord = {
     id: number;

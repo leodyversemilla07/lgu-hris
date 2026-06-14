@@ -1,5 +1,17 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { CheckCircle2, ChevronLeft, ChevronRight, Database, HelpCircle } from 'lucide-react';
+import {
+    requirements as installRequirements,
+    testDatabase,
+    saveDatabase,
+} from '@/actions/App/Http/Controllers/InstallationController';
+import InputError from '@/components/input-error';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -9,12 +21,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -25,14 +31,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import InputError from '@/components/input-error';
-import {
-    index as installIndex,
-    requirements as installRequirements,
-    environment as installEnvironment,
-    testDatabase,
-    saveDatabase,
-} from '@/actions/App/Http/Controllers/InstallationController';
 
 type ConnectionOption = {
     value: string;
@@ -341,7 +339,7 @@ function StepIndicator({
 
     return (
         <div className="flex items-center justify-center gap-1">
-            {entries.map(([step, label], index) => {
+            {entries.map(([step], index) => {
                 const stepNum = Number(step);
                 const isActive = stepNum === currentStep;
                 const isComplete = stepNum < currentStep;

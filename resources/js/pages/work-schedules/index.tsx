@@ -9,6 +9,14 @@ import {
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
+import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy,
+    index as workSchedulesIndex,
+    store,
+    update,
+} from '@/actions/App/Http/Controllers/WorkScheduleController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,14 +47,6 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    destroy,
-    index as workSchedulesIndex,
-    store,
-    update,
-} from '@/actions/App/Http/Controllers/WorkScheduleController';
 
 type WorkSchedule = {
     id: number;

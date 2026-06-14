@@ -260,7 +260,7 @@ class AttendanceController extends Controller
         }
 
         $logDateValue = $request->input('log_date')
-            ? Carbon\Carbon::parse($request->input('log_date'))
+            ? Carbon::parse($request->input('log_date'))
             : $log->log_date;
 
         $log->update([

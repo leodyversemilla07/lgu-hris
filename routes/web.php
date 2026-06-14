@@ -161,6 +161,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:movements.manage')
         ->name('personnel-movements.edit');
     Route::patch('personnel-movements/{personnelMovement}', [PersonnelMovementController::class, 'update'])
+        ->middleware('permission:movements.manage')
         ->name('personnel-movements.update');
     Route::delete('personnel-movements/{personnelMovement}', [PersonnelMovementController::class, 'destroy'])
         ->middleware('permission:movements.manage')

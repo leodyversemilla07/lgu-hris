@@ -8,7 +8,7 @@ class PersonnelMovementStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('movements.manage') ?? false;
     }
 
     public function rules(): array

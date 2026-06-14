@@ -13,6 +13,15 @@ import {
     Users,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import {
+    destroy as destroyDocument,
+    index as documentsIndex,
+    download as downloadDocument,
+    preview as previewDocument,
+    store as storeDocument,
+} from '@/actions/App/Http/Controllers/DocumentController';
+import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 import InputError from '@/components/input-error';
 import {
     AlertDialog,
@@ -74,15 +83,6 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import {
-    destroy as destroyDocument,
-    index as documentsIndex,
-    download as downloadDocument,
-    preview as previewDocument,
-    store as storeDocument,
-} from '@/actions/App/Http/Controllers/DocumentController';
-import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
 
 type DocumentVersionRecord = {
     id: number;

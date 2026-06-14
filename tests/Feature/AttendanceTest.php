@@ -594,6 +594,30 @@ test('hr staff can update an attendance log', function () {
     expect($log->fresh()->minutes_late)->toBeGreaterThan(0);
 });
 
+test('hr staff can update an attendance log date without failing uniqueness against itself', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('HR Staff');
+
+    $log = AttendanceLog::factory()->create([
+        'log_date' => '2026-03-10',
+        'status' => 'present',
+        'time_in' => '08:00:00',
+        'time_out' => '17:00:00',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('attendance.update', $log), [
+            'employee_id' => $log->employee_id,
+            'log_date' => '2026-03-10',
+            'remarks' => 'Same date correction',
+        ])
+        ->assertRedirect(route('attendance.index'));
+
+    expect($log->fresh()->remarks)->toBe('Same date correction');
+});
+
 test('hr staff can update the status of an attendance log', function () {
     $this->seed(RoleAndPermissionSeeder::class);
 

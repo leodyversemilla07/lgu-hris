@@ -145,7 +145,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     httpsOnly: true
     publicNetworkAccess: 'Enabled'
     siteConfig: {
-      linuxFxVersion: 'PHP|8.3'
+      linuxFxVersion: 'PHP|8.4'
       alwaysOn: false
       minimumElasticInstanceCount: 1
       appCommandLine: 'bash /home/site/wwwroot/azure/startup.sh'
@@ -188,7 +188,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'QUEUE_CONNECTION'
-          value: 'sync'
+          value: 'database'
         }
         {
           name: 'FILESYSTEM_DISK'

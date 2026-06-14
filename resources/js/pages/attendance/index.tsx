@@ -1,6 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { CalendarDays, Clock3, FileText, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
+import {
+    create as attendanceCreate,
+    index as attendanceIndex,
+} from '@/actions/App/Http/Controllers/AttendanceController';
+import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
+import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,12 +43,6 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { Auth, BreadcrumbItem } from '@/types';
-import {
-    create as attendanceCreate,
-    index as attendanceIndex,
-} from '@/actions/App/Http/Controllers/AttendanceController';
-import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
-import { index as workSchedulesIndex } from '@/actions/App/Http/Controllers/WorkScheduleController';
 
 type Summary = {
     id: number;
