@@ -7,6 +7,7 @@ import {
     FileSpreadsheet,
     LayoutGrid,
     ShieldCheck,
+    UserRound,
     UserRoundSearch,
     WalletCards,
 } from 'lucide-react';
@@ -14,7 +15,10 @@ import type { LucideIcon } from 'lucide-react';
 import { index as attendanceIndex } from '@/actions/App/Http/Controllers/AttendanceController';
 import { index as dashboardIndex } from '@/actions/App/Http/Controllers/DashboardController';
 import { index as documentsIndex } from '@/actions/App/Http/Controllers/DocumentController';
-import { index as employeesIndex } from '@/actions/App/Http/Controllers/EmployeeController';
+import {
+    index as employeesIndex,
+    show as employeeShow,
+} from '@/actions/App/Http/Controllers/EmployeeController';
 import { index as leaveIndex } from '@/actions/App/Http/Controllers/LeaveController';
 import { index as movementsIndex } from '@/actions/App/Http/Controllers/PersonnelMovementController';
 import { index as referenceDataIndex } from '@/actions/App/Http/Controllers/ReferenceDataController';
@@ -128,6 +132,14 @@ export function AppSidebar() {
         href,
         icon,
     }));
+
+    if (auth.user.employee_uuid) {
+        mainNavItems.splice(1, 0, {
+            title: 'My Profile',
+            href: employeeShow.url(auth.user.employee_uuid),
+            icon: UserRound,
+        });
+    }
 
     return (
         <Sidebar collapsible="icon" variant="inset">

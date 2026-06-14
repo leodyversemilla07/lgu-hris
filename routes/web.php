@@ -70,7 +70,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:employees.manage')
         ->name('employees.store');
     Route::get('employees/{employee}', [EmployeeController::class, 'show'])
-        ->middleware('permission:employees.view')
         ->name('employees.show');
     Route::get('employees/{employee}/dtr/export', [DtrExportController::class, 'export'])
         ->name('employees.dtr.export');

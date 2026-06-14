@@ -47,12 +47,37 @@ test('guests are redirected from the employee show page', function () {
         ->assertRedirect(route('login'));
 });
 
-test('employees with only leave.file permission cannot view employee profiles', function () {
+test('employees can view their own employee profile', function () {
     $this->seed(RoleAndPermissionSeeder::class);
 
     $user = User::factory()->create();
     $user->assignRole('Employee');
 
+    $employee = Employee::factory()->create([
+        'user_id' => $user->id,
+        'first_name' => 'Juan',
+        'last_name' => 'Dela Cruz',
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('employees.show', $employee))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('employees/show')
+            ->where('employee.id', $employee->id)
+            ->where('employee.first_name', 'Juan')
+            ->where('employee.last_name', 'Dela Cruz')
+            ->has('users', 0)
+        );
+});
+
+test('employees cannot view other employee profiles', function () {
+    $this->seed(RoleAndPermissionSeeder::class);
+
+    $user = User::factory()->create();
+    $user->assignRole('Employee');
+
+    Employee::factory()->create(['user_id' => $user->id]);
     $employee = Employee::factory()->create();
 
     $this->actingAs($user)

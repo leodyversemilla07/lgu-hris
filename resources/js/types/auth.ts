@@ -8,6 +8,7 @@ export type User = {
     roles: string[];
     permissions: string[];
     primary_role?: string | null;
+    employee_uuid?: string | null;
     created_at: string;
     updated_at: string;
     [key: string]: unknown;

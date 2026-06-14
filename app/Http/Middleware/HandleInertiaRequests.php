@@ -64,6 +64,7 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->getRoleNames()->values()->all(),
                     'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
                     'primary_role' => $user->getRoleNames()->first(),
+                    'employee_uuid' => $user->employee?->uuid,
                 ] : null,
             ],
             'notifications' => $notifications,
